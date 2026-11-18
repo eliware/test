@@ -1,4 +1,4 @@
-export function isNavigationOnlyIndex(content) {
+export default function isNavigationOnlyIndex(content) {
   return content
     .split(/\r?\n/u)
     .every(

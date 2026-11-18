@@ -1,6 +1,5 @@
 const ignoredKeys = new Set(["loc", "start", "end", "extra", "comments", "tokens"]);
-
-export function visitJavaScriptProse(value, visit) {
+export default function visitJavaScriptProse(value, visit) {
   if (!value || typeof value !== "object") return;
   if (visit(value) === false) return;
   for (const [key, child] of Object.entries(value)) {

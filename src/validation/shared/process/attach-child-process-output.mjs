@@ -1,4 +1,4 @@
-export function attachChildProcessOutput(child, stream, name, output, reject, isSettled) {
+export default function attachChildProcessOutput(child, stream, name, output, reject, isSettled) {
   if (stream == null) return;
   if (typeof stream.on !== "function") {
     throw new TypeError(`Child process adapter returned an invalid ${name} stream.`);
@@ -11,8 +11,7 @@ export function attachChildProcessOutput(child, stream, name, output, reject, is
     reject(error);
   });
 }
-
-export function terminateChildProcess(child) {
+function terminateChildProcess(child) {
   try {
     if (typeof child?.kill === "function") child.kill();
   } catch {}

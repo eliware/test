@@ -1,4 +1,4 @@
-export function validateDeploymentTimeouts(document) {
+export default function validateDeploymentTimeouts(document) {
   const errors = [];
   const deployments = document?.on?.push?.deployments;
   if (deployments !== undefined) {
@@ -18,7 +18,6 @@ export function validateDeploymentTimeouts(document) {
     }
   return errors;
 }
-
 function checkTimeouts(deployments, label, errors) {
   deployments.forEach((deployment, index) => {
     if (deployment?.timeoutMs !== 300000)

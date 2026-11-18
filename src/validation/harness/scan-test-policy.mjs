@@ -1,8 +1,7 @@
 import { parse } from "@babel/parser";
-import { findTestIsolationViolationsInAst } from "./test-isolation/find/test-isolation-violations.mjs";
-import { findTestWritePolicyViolationsInAst } from "./test-write-policy/scan/source.mjs";
-
-export function findTestPolicyViolations(source, filePath) {
+import findTestIsolationViolationsInAst from "./test-isolation/find/test-isolation-violations/find-test-isolation-violations-in-ast.mjs";
+import findTestWritePolicyViolationsInAst from "./test-write-policy/scan/source/find-test-write-policy-violations-in-ast.mjs";
+export default function findTestPolicyViolations(source, filePath) {
   let ast;
   try {
     ast = parse(source, {

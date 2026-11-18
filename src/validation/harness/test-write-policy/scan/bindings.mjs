@@ -5,11 +5,11 @@ import {
   temporaryDirectoryApis,
   temporaryDirectoryModules,
 } from "../api-names.mjs";
-import { visitAst } from "../../visit-ast.mjs";
-import { trackNamespaceAlias } from "../track-namespace-alias.mjs";
-import { getRestrictedModuleName, isModuleMockedForLoad } from "../collect/mocked-modules.mjs";
-
-export function collectFilesystemBindings(ast) {
+import visitAst from "../../visit-ast.mjs";
+import trackNamespaceAlias from "../track-namespace-alias.mjs";
+import getRestrictedModuleName from "../collect/mocked-modules/get-restricted-module-name.mjs";
+import isModuleMockedForLoad from "../collect/mocked-modules/is-module-mocked-for-load.mjs";
+export default function collectFilesystemBindings(ast) {
   const namespaceBindings = new Set();
   const restrictedBindings = [];
   visitAst(ast, (node) => {
@@ -21,9 +21,11 @@ export function collectFilesystemBindings(ast) {
     trackNamespaceAlias(node, namespaceBindings);
     collectDynamicBindings(node, ast, namespaceBindings, restrictedBindings);
   });
-  return { namespaceBindings, restrictedBindings };
+  return {
+    namespaceBindings,
+    restrictedBindings,
+  };
 }
-
 function collectImportBindings(node, namespaceBindings, restrictedBindings) {
   const moduleName = node.source.value;
   for (const specifier of node.specifiers) {
@@ -32,7 +34,11 @@ function collectImportBindings(node, namespaceBindings, restrictedBindings) {
       (filesystemModules.has(moduleName) && fileMutationApis.has(importedName)) ||
       (temporaryDirectoryModules.has(moduleName) && temporaryDirectoryApis.has(importedName))
     )
-      restrictedBindings.push({ node: specifier, name: importedName, type: "import" });
+      restrictedBindings.push({
+        node: specifier,
+        name: importedName,
+        type: "import",
+      });
     if (
       specifier.type === "ImportNamespaceSpecifier" ||
       specifier.type === "ImportDefaultSpecifier"
@@ -40,7 +46,6 @@ function collectImportBindings(node, namespaceBindings, restrictedBindings) {
       namespaceBindings.add(specifier.local.name);
   }
 }
-
 function collectDynamicBindings(node, ast, namespaceBindings, restrictedBindings) {
   const init = node.init?.type === "AwaitExpression" ? node.init.argument : node.init;
   const moduleName = getRestrictedModuleName(init);
@@ -57,6 +62,10 @@ function collectDynamicBindings(node, ast, namespaceBindings, restrictedBindings
   for (const property of node.id.properties) {
     const name = property.key?.name ?? property.key?.value;
     if (fileMutationApis.has(name) || temporaryDirectoryApis.has(name))
-      restrictedBindings.push({ node: property, name, type: "binding" });
+      restrictedBindings.push({
+        node: property,
+        name,
+        type: "binding",
+      });
   }
 }

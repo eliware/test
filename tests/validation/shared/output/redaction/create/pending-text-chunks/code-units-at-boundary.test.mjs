@@ -1,8 +1,12 @@
 import { expect, test } from "@jest/globals";
-import { readPendingCodeUnitsAtBoundary } from "../../../../../../../src/validation/shared/output/redaction/create/pending-text-chunks/code-units-at-boundary.mjs";
-
+import readPendingCodeUnitsAtBoundary from "../../../../../../../src/validation/shared/output/redaction/create/pending-text-chunks/code-units-at-boundary.mjs";
 test("returns no code units for empty queues and invalid indexes", () => {
-  const chunks = [{ text: "a", start: 0 }];
+  const chunks = [
+    {
+      text: "a",
+      start: 0,
+    },
+  ];
   expect(readPendingCodeUnitsAtBoundary(chunks, 0, 0, 0, 0)).toEqual({
     previous: NaN,
     next: NaN,
@@ -13,11 +17,16 @@ test("returns no code units for empty queues and invalid indexes", () => {
       next: NaN,
     });
 });
-
 test("reads code units within chunks and across a chunk boundary", () => {
   const chunks = [
-    { text: "ab", start: 0 },
-    { text: "😀tail", start: 2 },
+    {
+      text: "ab",
+      start: 0,
+    },
+    {
+      text: "😀tail",
+      start: 2,
+    },
   ];
   expect(readPendingCodeUnitsAtBoundary(chunks, 0, 0, 8, 2)).toEqual({
     previous: "b".charCodeAt(0),
@@ -32,11 +41,16 @@ test("reads code units within chunks and across a chunk boundary", () => {
     next: NaN,
   });
 });
-
 test("uses the active chunk after a consumed prefix", () => {
   const chunks = [
-    { text: "old", start: 0 },
-    { text: "tail", start: 3 },
+    {
+      text: "old",
+      start: 0,
+    },
+    {
+      text: "tail",
+      start: 3,
+    },
   ];
   expect(readPendingCodeUnitsAtBoundary(chunks, 1, 3, 7, 0)).toEqual({
     previous: NaN,

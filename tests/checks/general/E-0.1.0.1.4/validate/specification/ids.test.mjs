@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateSpecificationIds } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/ids.mjs";
-
+import validateSpecificationIds from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/ids.mjs";
 test("accepts sequential rule trees in the assigned namespace", () => {
   expect(
     validateSpecificationIds(
@@ -8,8 +7,20 @@ test("accepts sequential rule trees in the assigned namespace", () => {
         {
           path: "rules.yaml",
           directives: [
-            { id: "E-0.1.0", children: [{ id: "E-0.1.0.0" }, { id: "E-0.1.0.1" }] },
-            { id: "E-0.1.1" },
+            {
+              id: "E-0.1.0",
+              children: [
+                {
+                  id: "E-0.1.0.0",
+                },
+                {
+                  id: "E-0.1.0.1",
+                },
+              ],
+            },
+            {
+              id: "E-0.1.1",
+            },
           ],
         },
       ],
@@ -17,28 +28,93 @@ test("accepts sequential rule trees in the assigned namespace", () => {
     ),
   ).toEqual([]);
 });
-
 test("reports duplicates and wrong namespaces", () => {
-  const directives = [null, { id: "bad" }, { id: "E-0.1" }, { id: "E-1.0" }, { id: "E-0.1" }];
-  const errors = validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ");
+  const directives = [
+    null,
+    {
+      id: "bad",
+    },
+    {
+      id: "E-0.1",
+    },
+    {
+      id: "E-1.0",
+    },
+    {
+      id: "E-0.1",
+    },
+  ];
+  const errors = validateSpecificationIds(
+    [
+      {
+        path: "rules.yaml",
+        directives,
+      },
+    ],
+    "E-0",
+  ).join(" ");
   expect(errors).toContain("Duplicate");
   expect(errors).toContain("assigned E-0");
 });
-
 test("requires the assigned namespace text to match exactly", () => {
-  const directives = [{ id: "E-01.0" }];
-  expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(
-    "must use the assigned E-0 namespace",
-  );
-});
-
-test("rejects child IDs outside their parent prefix", () => {
-  const directives = [{ id: "E-0.1", children: [{ id: "E-0.2.0" }] }];
-  expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(
-    "extend parent",
-  );
-  const deep = [{ id: "E-0.1", children: [{ id: "E-0.1.0.0" }] }];
+  const directives = [
+    {
+      id: "E-01.0",
+    },
+  ];
   expect(
-    validateSpecificationIds([{ path: "rules.yaml", directives: deep }], "E-0").join(" "),
+    validateSpecificationIds(
+      [
+        {
+          path: "rules.yaml",
+          directives,
+        },
+      ],
+      "E-0",
+    ).join(" "),
+  ).toContain("must use the assigned E-0 namespace");
+});
+test("rejects child IDs outside their parent prefix", () => {
+  const directives = [
+    {
+      id: "E-0.1",
+      children: [
+        {
+          id: "E-0.2.0",
+        },
+      ],
+    },
+  ];
+  expect(
+    validateSpecificationIds(
+      [
+        {
+          path: "rules.yaml",
+          directives,
+        },
+      ],
+      "E-0",
+    ).join(" "),
+  ).toContain("extend parent");
+  const deep = [
+    {
+      id: "E-0.1",
+      children: [
+        {
+          id: "E-0.1.0.0",
+        },
+      ],
+    },
+  ];
+  expect(
+    validateSpecificationIds(
+      [
+        {
+          path: "rules.yaml",
+          directives: deep,
+        },
+      ],
+      "E-0",
+    ).join(" "),
   ).toContain("extend parent");
 });

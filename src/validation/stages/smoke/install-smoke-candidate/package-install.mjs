@@ -1,9 +1,8 @@
 import { lstat, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
-import { smokeCommandFailure } from "./command-failure.mjs";
-
-export async function installSmokePackage({
+import assertSmokePackageParents from "../assert-smoke-package-parents.mjs";
+import smokeCommandFailure from "./command-failure.mjs";
+export default async function installSmokePackage({
   targetRoot,
   packageJson,
   tarball,
@@ -37,7 +36,10 @@ export async function installSmokePackage({
       "--no-fund",
       tarball,
     ],
-    { cwd: targetRoot, env },
+    {
+      cwd: targetRoot,
+      env,
+    },
   );
   if (result.code !== 0)
     throw new Error(smokeCommandFailure(result, "Tarball installation failed"));

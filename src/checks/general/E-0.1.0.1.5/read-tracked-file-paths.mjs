@@ -1,4 +1,4 @@
-export async function readTrackedFilePaths(root, runGit) {
+export default async function readTrackedFilePaths(root, runGit) {
   const { stdout } = await runGit("git", ["-C", root, "ls-files", "--cached", "-z"], {
     windowsHide: true,
     encoding: "buffer",

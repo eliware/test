@@ -1,11 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-
+import parseBoundedYamlDocuments from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 const bundledDirectory = new URL("../../../../../specs/conventions", import.meta.url);
-
-export async function validateProfileDocumentPairs({
+export default async function validateProfileDocumentPairs({
   directory = bundledDirectory,
   list = readdir,
   read = readFile,
@@ -29,7 +27,9 @@ export async function validateProfileDocumentPairs({
     const pair = profiles.get(match[1]) ?? {};
     pair[match[2]] = documents.map((document) => {
       const value = document.toJSON();
-      return { version: value?.version };
+      return {
+        version: value?.version,
+      };
     });
     profiles.set(match[1], pair);
   }

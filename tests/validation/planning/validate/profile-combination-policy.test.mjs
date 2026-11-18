@@ -1,21 +1,35 @@
 import { expect, test } from "@jest/globals";
 import { bundledConventionVersion } from "../../../../src/validation/check-discovery/read/bundled-profile-catalog.mjs";
-import { validateProfileCombinationPolicy } from "../../../../src/validation/planning/validate/profile-combination-policy.mjs";
-
+import validateProfileCombinationPolicy from "../../../../src/validation/planning/validate/profile-combination-policy.mjs";
 const profiles = {
-  general: { requires: [], requiresAny: [], prohibits: [] },
-  application: { requires: ["general"], requiresAny: [], prohibits: [] },
+  general: {
+    requires: [],
+    requiresAny: [],
+    prohibits: [],
+  },
+  application: {
+    requires: ["general"],
+    requiresAny: [],
+    prohibits: [],
+  },
 };
-const policy = { version: bundledConventionVersion, profiles };
-
+const policy = {
+  version: bundledConventionVersion,
+  profiles,
+};
 test("accepts a complete policy for every known profile", () => {
   expect(
     validateProfileCombinationPolicy(policy, Object.keys(profiles), bundledConventionVersion),
   ).toEqual([]);
 });
-
 test("requires every known profile and rejects unknown names", () => {
-  const altered = { ...policy, profiles: { general: profiles.general, extra: profiles.general } };
+  const altered = {
+    ...policy,
+    profiles: {
+      general: profiles.general,
+      extra: profiles.general,
+    },
+  };
   const errors = validateProfileCombinationPolicy(
     altered,
     Object.keys(profiles),
@@ -24,13 +38,20 @@ test("requires every known profile and rejects unknown names", () => {
   expect(errors.join(" ")).toContain("omits profiles: application");
   expect(errors.join(" ")).toContain("unknown profiles: extra");
 });
-
 test("rejects invalid, duplicate, unknown, and self-referencing profile lists", () => {
   const altered = {
     version: bundledConventionVersion,
     profiles: {
-      general: { requires: ["missing", "missing"], requiresAny: ["general"], prohibits: [] },
-      application: { requires: [], requiresAny: [], prohibits: [] },
+      general: {
+        requires: ["missing", "missing"],
+        requiresAny: ["general"],
+        prohibits: [],
+      },
+      application: {
+        requires: [],
+        requiresAny: [],
+        prohibits: [],
+      },
     },
   };
   const errors = validateProfileCombinationPolicy(
@@ -44,7 +65,10 @@ test("rejects invalid, duplicate, unknown, and self-referencing profile lists", 
     ...policy,
     profiles: {
       ...profiles,
-      general: { ...profiles.general, requires: ["missing"] },
+      general: {
+        ...profiles.general,
+        requires: ["missing"],
+      },
     },
   };
   expect(
@@ -53,12 +77,14 @@ test("rejects invalid, duplicate, unknown, and self-referencing profile lists", 
     ),
   ).toContain("unknown profiles: missing");
 });
-
 test.each(["requires", "requiresAny", "prohibits"])("rejects a non-list value for %s", (field) => {
   const altered = {
     version: bundledConventionVersion,
     profiles: {
-      general: { ...profiles.general, [field]: "application" },
+      general: {
+        ...profiles.general,
+        [field]: "application",
+      },
       application: profiles.application,
     },
   };
@@ -68,7 +94,6 @@ test.each(["requires", "requiresAny", "prohibits"])("rejects a non-list value fo
     ),
   ).toContain(`general.${field} must be a valid profile list`);
 });
-
 test("rejects contradictory requirements and unsupported fields", () => {
   const altered = {
     version: bundledConventionVersion,
@@ -93,7 +118,10 @@ test("rejects contradictory requirements and unsupported fields", () => {
     ...policy,
     profiles: {
       ...profiles,
-      general: { requires: [], requiresAny: [] },
+      general: {
+        requires: [],
+        requiresAny: [],
+      },
     },
   };
   expect(
@@ -104,31 +132,38 @@ test("rejects contradictory requirements and unsupported fields", () => {
     ).join(" "),
   ).toContain("must define requires, requiresAny, and prohibits");
 });
-
 test("rejects a version that differs from the bundled convention version", () => {
   expect(
     validateProfileCombinationPolicy(
-      { ...policy, version: "0.0" },
+      {
+        ...policy,
+        version: "0.0",
+      },
       Object.keys(profiles),
       bundledConventionVersion,
     ).join(" "),
   ).toContain("must use the current convention version");
 });
-
 test("rejects malformed policy roots and profile entries", () => {
   expect(validateProfileCombinationPolicy(null, [], bundledConventionVersion).join(" ")).toContain(
     "must contain an object",
   );
   expect(
     validateProfileCombinationPolicy(
-      { version: bundledConventionVersion, profiles: [] },
+      {
+        version: bundledConventionVersion,
+        profiles: [],
+      },
       [],
       bundledConventionVersion,
     ).join(" "),
   ).toContain("must define profiles");
   expect(
     validateProfileCombinationPolicy(
-      { ...policy, extra: true },
+      {
+        ...policy,
+        extra: true,
+      },
       Object.keys(profiles),
       bundledConventionVersion,
     ).join(" "),

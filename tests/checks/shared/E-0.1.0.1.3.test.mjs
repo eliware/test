@@ -1,14 +1,18 @@
 import { expect, jest, test } from "@jest/globals";
-
 const readFile = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-const { run, ruleId } = await import("../../../src/checks/shared/E-0.1.0.1.3.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  readFile,
+  default: readFile,
+}));
+const { ruleId } = await import("../../../src/checks/shared/E-0.1.0.1.3.mjs"),
+  run = (await import("../../../src/checks/shared/E-0.1.0.1.3.mjs")).default;
 const packageJson = {
   name: "@eliware/fixture",
   description: "Fixture package.",
   repository: "https://github.com/eliware/fixture",
-  eliware: { apply: ["general"] },
+  eliware: {
+    apply: ["general"],
+  },
 };
 const generalSections = [
   "Features",
@@ -21,7 +25,6 @@ const generalSections = [
   "Security",
 ];
 const support = `For help, questions, or to chat with the author and community, visit:\n\n[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)[![eliware.org](https://eliware.org/logos/eliware_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**`;
-
 function createReadme(sections = generalSections) {
   const title =
     "## @eliware/fixture [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yaml)";
@@ -53,21 +56,31 @@ function createReadme(sections = generalSections) {
     "[MIT © Eliware](LICENSE)",
   ].join("\n");
 }
-
 const read = async () => createReadme();
-
 test("validates a README that follows the general profile structure", async () => {
-  await expect(run({ root: "/repo", packageJson }, { read })).resolves.toEqual({
+  await expect(
+    run(
+      {
+        root: "/repo",
+        packageJson,
+      },
+      {
+        read,
+      },
+    ),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("reports an unresolved specs index link", async () => {
   await expect(
     run(
-      { root: "/repo", packageJson },
+      {
+        root: "/repo",
+        packageJson,
+      },
       {
         read: async (path) => {
           if (path.replaceAll("\\", "/").endsWith("specs/README.md"))
@@ -81,25 +94,34 @@ test("reports an unresolved specs index link", async () => {
     message: expect.stringContaining("specs index link must resolve"),
   });
 });
-
 test("does not resolve the specs index when its link is misplaced", async () => {
   const read = jest.fn(async (path) => {
     if (path.replaceAll("\\", "/").endsWith("README.md"))
       return createReadme().replace("[Specifications](specs/README.md)", "Text");
     throw new Error("unexpected read");
   });
-
-  await expect(run({ root: "/repo", packageJson }, { read })).resolves.toMatchObject({
+  await expect(
+    run(
+      {
+        root: "/repo",
+        packageJson,
+      },
+      {
+        read,
+      },
+    ),
+  ).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining("must link specs/README.md from a content section"),
   });
   expect(read).toHaveBeenCalledTimes(1);
 });
-
 test("reports a missing README", async () => {
   await expect(
     run(
-      { root: "/missing" },
+      {
+        root: "/missing",
+      },
       {
         read: async () => {
           throw new Error("missing");
@@ -112,15 +134,22 @@ test("reports a missing README", async () => {
     message: "README.md is required.",
   });
 });
-
 test("uses default context and reports missing package metadata", async () => {
-  await expect(run({ root: "/repo" }, { read })).resolves.toMatchObject({
+  await expect(
+    run(
+      {
+        root: "/repo",
+      },
+      {
+        read,
+      },
+    ),
+  ).resolves.toMatchObject({
     ruleId,
     status: "fail",
     message: expect.stringContaining("README.md title must match package.json.name."),
   });
 });
-
 test("uses default context, dependencies, and file reader", async () => {
   readFile.mockResolvedValue(createReadme());
   await expect(run()).resolves.toMatchObject({
@@ -129,7 +158,6 @@ test("uses default context, dependencies, and file reader", async () => {
     message: expect.stringContaining("README.md title must match package.json.name."),
   });
 });
-
 test("requires sections selected by the applied profile", async () => {
   const sections = [...generalSections, "Configuration", "Operations"];
   const incomplete = createReadme(sections)
@@ -139,9 +167,16 @@ test("requires sections selected by the applied profile", async () => {
     run(
       {
         root: "/repo",
-        packageJson: { ...packageJson, eliware: { apply: ["general", "application"] } },
+        packageJson: {
+          ...packageJson,
+          eliware: {
+            apply: ["general", "application"],
+          },
+        },
       },
-      { read: async () => incomplete },
+      {
+        read: async () => incomplete,
+      },
     ),
   ).resolves.toMatchObject({
     ruleId,

@@ -1,4 +1,4 @@
-export function isProcessRunning(pid, check = process.kill) {
+export default function isProcessRunning(pid, check = process.kill) {
   try {
     check(pid, 0);
     return true;

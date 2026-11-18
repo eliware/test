@@ -28,7 +28,6 @@ export const fileMutationApis = new Set([
   "writeFile",
   "writeFileSync",
 ]);
-
 export const temporaryDirectoryApis = new Set(["tmpdir", "tmpdirSync"]);
 export const filesystemModules = new Set(["fs", "node:fs", "fs/promises", "node:fs/promises"]);
 export const temporaryDirectoryModules = new Set(["os", "node:os"]);

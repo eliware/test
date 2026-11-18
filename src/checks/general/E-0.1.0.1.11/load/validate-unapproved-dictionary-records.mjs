@@ -1,4 +1,4 @@
-export function validateUnapprovedDictionaryRecords(rows) {
+export default function validateUnapprovedDictionaryRecords(rows) {
   const [header, ...records] = rows;
   if (header?.[0] !== "word" || header.length < 2)
     throw new Error("Dictionary CSV has an invalid header.");

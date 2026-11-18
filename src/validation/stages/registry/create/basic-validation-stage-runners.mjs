@@ -1,16 +1,17 @@
-import { AUDIT_TIMEOUT_MS, executeAuditProcess } from "../../audit/execute-audit-process.mjs";
-import { runNpmAudit } from "../../audit/run-npm-audit.mjs";
-import { auditFailureIsExempt, formatAuditFailure } from "../../audit/format-audit-failure.mjs";
-import { runChild } from "../../../shared/process/run/child.mjs";
-import { runOxlint } from "../../lint/run-oxlint.mjs";
-import { runJestStage } from "../../jest/execution/run/jest/stage.mjs";
-import { runJestValidationStage } from "../../jest/execution/run/jest/validation-stage.mjs";
-import { executeFormatterValidation } from "../../format/execute-formatter-validation.mjs";
-import { runPrettier } from "../../format/run-prettier.mjs";
-import { createValidationStageResult } from "../../shared/create-validation-stage-result.mjs";
-import { resolveFocusedValidationPaths } from "../../shared/resolve-focused-validation-paths.mjs";
-
-export function createBasicValidationStageRunners({
+import { AUDIT_TIMEOUT_MS } from "../../audit/execute-audit-process.mjs";
+import executeAuditProcess from "../../audit/execute-audit-process.mjs";
+import runNpmAudit from "../../audit/run-npm-audit.mjs";
+import auditFailureIsExempt from "../../audit/format-audit-failure.mjs";
+import formatAuditFailure from "../../audit/format-audit-failure/format-audit-failure.mjs";
+import runChild from "../../../shared/process/run/child.mjs";
+import runOxlint from "../../lint/run-oxlint.mjs";
+import runJestStage from "../../jest/execution/run/jest/stage.mjs";
+import runJestValidationStage from "../../jest/execution/run/jest/validation-stage.mjs";
+import executeFormatterValidation from "../../format/execute-formatter-validation.mjs";
+import runPrettier from "../../format/run-prettier.mjs";
+import createValidationStageResult from "../../shared/create-validation-stage-result.mjs";
+import resolveFocusedValidationPaths from "../../shared/resolve-focused-validation-paths.mjs";
+export default function createBasicValidationStageRunners({
   runJest = runJestStage,
   runLint = runOxlint,
   runFormatter = runPrettier,
@@ -98,15 +99,7 @@ export function createBasicValidationStageRunners({
           auditExemption &&
           auditFailureIsExempt(value, auditExemption.advisories)
         ) {
-          return {
-            ...createValidationStageResult(
-              "audit",
-              0,
-              `WARNING: npm audit findings covered by an approved exemption: ${auditExemption.advisories.join(", ")}.`,
-              value,
-            ),
-            status: "warning",
-          };
+          return createValidationStageResult("audit", 0, "", value);
         }
         return createValidationStageResult(
           "audit",

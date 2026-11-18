@@ -1,10 +1,9 @@
-import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { validateReleaseNoteSections } from "../note-sections.mjs";
-import { validateReleaseVersionHistory } from "../version-history.mjs";
-import { releaseEntryHeadings } from "./headings.mjs";
-import { validateReleaseNotesTitle } from "./title.mjs";
-
-export function validateReleaseNotesContent(content, packageVersion) {
+import removeMarkdownCode from "../../../../E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import validateReleaseNoteSections from "../note-sections.mjs";
+import validateReleaseVersionHistory from "../version-history.mjs";
+import releaseEntryHeadings from "./headings.mjs";
+import validateReleaseNotesTitle from "./title.mjs";
+export default function validateReleaseNotesContent(content, packageVersion) {
   const errors = validateReleaseNotesTitle(content);
   const normalized = content.replace(/^\uFEFF/u, "");
   const lines = removeMarkdownCode(normalized).split(/\r?\n/u);

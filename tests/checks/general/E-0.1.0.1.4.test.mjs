@@ -1,34 +1,47 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-
 const validateMarkdownLinks = jest.fn();
 const validateSpecificationIndexes = jest.fn();
 const validateSpecificationDirectives = jest.fn();
-
 jest.unstable_mockModule(
   "../../../src/checks/general/E-0.1.0.1.4/validate/markdown/links.mjs",
-  () => ({ validateMarkdownLinks }),
+  () => ({
+    validateMarkdownLinks,
+    default: validateMarkdownLinks,
+  }),
 );
 jest.unstable_mockModule(
   "../../../src/checks/general/E-0.1.0.1.4/validate/specification/indexes.mjs",
-  () => ({ validateSpecificationIndexes }),
+  () => ({
+    validateSpecificationIndexes,
+    default: validateSpecificationIndexes,
+  }),
 );
 jest.unstable_mockModule(
   "../../../src/checks/general/E-0.1.0.1.4/validate/specification/directives.mjs",
-  () => ({ validateSpecificationDirectives }),
+  () => ({
+    validateSpecificationDirectives,
+    default: validateSpecificationDirectives,
+  }),
 );
-
-const { run, ruleId } = await import("../../../src/checks/general/E-0.1.0.1.4.mjs");
-
+const { ruleId } = await import("../../../src/checks/general/E-0.1.0.1.4.mjs"),
+  run = (await import("../../../src/checks/general/E-0.1.0.1.4.mjs")).default;
 beforeEach(() => {
   validateMarkdownLinks.mockReset().mockResolvedValue([]);
   validateSpecificationIndexes.mockReset().mockResolvedValue([]);
   validateSpecificationDirectives.mockReset().mockResolvedValue([]);
 });
-
 test("passes when each specification validator returns no findings", async () => {
-  const context = { root: "repo", packageJson: { eliware: { id: "E-0" } } };
-  const dependencies = { read: jest.fn() };
-
+  const context = {
+    root: "repo",
+    packageJson: {
+      eliware: {
+        id: "E-0",
+      },
+    },
+  };
+  const dependencies = {
+    read: jest.fn(),
+  };
   await expect(run(context, dependencies)).resolves.toEqual({
     ruleId,
     status: "pass",
@@ -42,14 +55,11 @@ test("passes when each specification validator returns no findings", async () =>
     dependencies,
   );
 });
-
 test("combines validator failures when the context and dependencies use defaults", async () => {
   validateMarkdownLinks.mockResolvedValue(["Markdown issue."]);
   validateSpecificationIndexes.mockResolvedValue(["Index issue."]);
   validateSpecificationDirectives.mockResolvedValue(["Directive issue."]);
-
   const result = await run(undefined, undefined);
-
   expect(result).toEqual({
     ruleId,
     status: "fail",

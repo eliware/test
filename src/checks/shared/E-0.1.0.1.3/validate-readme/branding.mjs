@@ -1,5 +1,4 @@
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
 function repoUrl(packageJson) {
   const value =
     typeof packageJson?.repository === "string"
@@ -12,8 +11,7 @@ function repoUrl(packageJson) {
         .replace(/\/$/u, "")
     : "";
 }
-
-export function validateReadmeBranding(readme, packageJson = {}) {
+export default function validateReadmeBranding(readme, packageJson = {}) {
   const name = packageJson?.name;
   const repository = repoUrl(packageJson);
   const slug = repository.replace("https://github.com/eliware/", "");

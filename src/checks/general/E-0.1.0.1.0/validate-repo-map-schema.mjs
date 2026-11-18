@@ -1,10 +1,12 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-
-export function validateRepoMapAgainstSchema(value, schema) {
+export default function validateRepoMapAgainstSchema(value, schema) {
   let validate;
   try {
-    const ajv = new Ajv({ allErrors: true, strict: false });
+    const ajv = new Ajv({
+      allErrors: true,
+      strict: false,
+    });
     addFormats(ajv);
     validate = ajv.compile(schema);
   } catch (error) {

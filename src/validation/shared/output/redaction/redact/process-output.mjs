@@ -1,6 +1,5 @@
-import { redactCredentialPatterns } from "./patterns.mjs";
-
-export function redactProcessOutput(text, secrets = []) {
+import redactCredentialPatterns from "./patterns.mjs";
+export default function redactProcessOutput(text, secrets = []) {
   let output = String(text);
   for (const secret of secrets) {
     if (typeof secret === "string" && secret.length > 0)

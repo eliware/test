@@ -1,13 +1,15 @@
 import { expect, jest, test } from "@jest/globals";
-import {
-  resolveValidationDependencies,
-  runValidation,
-  validationDependencies,
-} from "../../src/validation/run-validation.mjs";
-import { readProfileCombinationPolicy } from "../../src/validation/planning/read/profile-combination-policy.mjs";
-
+import { validationDependencies } from "../../src/validation/run-validation.mjs";
+import resolveValidationDependencies from "../../src/validation/run-validation.mjs";
+import runValidation from "../../src/validation/run-validation/run-validation.mjs";
+import readProfileCombinationPolicy from "../../src/validation/planning/read/profile-combination-policy.mjs";
 function createDependencies(overrides = {}) {
-  const checks = [{ ruleId: "E-0.1", run: jest.fn() }];
+  const checks = [
+    {
+      ruleId: "E-0.1",
+      run: jest.fn(),
+    },
+  ];
   const executeValidationPlan = jest.fn(async (selected, context, exemptions) => ({
     selected,
     context,
@@ -18,7 +20,11 @@ function createDependencies(overrides = {}) {
     executeValidationPlan,
     dependencies: {
       readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
-      loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
+      loadValidationTarget: jest.fn(async () => ({
+        eliware: {
+          apply: ["general"],
+        },
+      })),
       selectConventionChecks: jest.fn(async () => checks),
       discoverAllChecks: jest.fn(async () => checks),
       findRepositoryEntries: jest.fn(async () => []),
@@ -29,30 +35,38 @@ function createDependencies(overrides = {}) {
     },
   };
 }
-
 test("resolves the default and injected dependency registries", () => {
   const injected = {};
   expect(resolveValidationDependencies()).toBe(validationDependencies);
   expect(resolveValidationDependencies(injected)).toBe(injected);
 });
-
 test("prepares and executes a plan with the requested target and exemptions", async () => {
   const { checks, executeValidationPlan, dependencies } = createDependencies();
-  const planResult = await runValidation("/repo", ["E-9"], { dependencies });
+  const planResult = await runValidation("/repo", ["E-9"], {
+    dependencies,
+  });
   expect(dependencies.loadValidationTarget).toHaveBeenCalledWith("/repo");
   expect(dependencies.executeValidationPlan).toHaveBeenCalledWith(
     checks,
-    expect.objectContaining({ root: "/repo", packageJson: { eliware: { apply: ["general"] } } }),
+    expect.objectContaining({
+      root: "/repo",
+      packageJson: {
+        eliware: {
+          apply: ["general"],
+        },
+      },
+    }),
     new Set(["E-9"]),
   );
   expect(planResult).toEqual({
     selected: checks,
-    context: expect.objectContaining({ root: "/repo" }),
+    context: expect.objectContaining({
+      root: "/repo",
+    }),
     exemptions: new Set(["E-9"]),
   });
   expect(executeValidationPlan).toHaveBeenCalledTimes(1);
 });
-
 test("propagates plan-preparation failures without executing the plan", async () => {
   const executeValidationPlan = jest.fn();
   const { dependencies } = createDependencies({
@@ -61,33 +75,48 @@ test("propagates plan-preparation failures without executing the plan", async ()
     }),
     executeValidationPlan,
   });
-  await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("target unavailable");
+  await expect(
+    runValidation("/repo", [], {
+      dependencies,
+    }),
+  ).rejects.toThrow("target unavailable");
   expect(executeValidationPlan).not.toHaveBeenCalled();
 });
-
 test("rejects invalid profile combinations before discovery and execution", async () => {
   const { dependencies } = createDependencies({
     loadValidationTarget: jest.fn(async () => ({
-      eliware: { apply: ["general", "library", "application", "npm-published"] },
+      eliware: {
+        apply: ["general", "library", "application", "npm-published"],
+      },
     })),
   });
-  await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("conflict");
+  await expect(
+    runValidation("/repo", [], {
+      dependencies,
+    }),
+  ).rejects.toThrow("conflict");
   expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
   expect(dependencies.selectConventionChecks).not.toHaveBeenCalled();
   expect(dependencies.executeValidationPlan).not.toHaveBeenCalled();
 });
-
 test("propagates plan execution failures when no coverage cleanup is needed", async () => {
   const { dependencies } = createDependencies({
     executeValidationPlan: jest.fn(async () => {
       throw new Error("plan failed");
     }),
   });
-  await expect(runValidation("/repo", [], { dependencies })).resolves.toEqual([
-    { ruleId: "E-0.1.20", status: "fail", message: "plan failed" },
+  await expect(
+    runValidation("/repo", [], {
+      dependencies,
+    }),
+  ).resolves.toEqual([
+    {
+      ruleId: "E-0.1.20",
+      status: "fail",
+      message: "plan failed",
+    },
   ]);
 });
-
 test("uses default invocation options when omitted", async () => {
   await expect(runValidation("/missing-repository", [], undefined)).rejects.toBeTruthy();
 });

@@ -1,13 +1,17 @@
 import { join, resolve } from "node:path";
 import { expect, jest, test } from "@jest/globals";
-import { runNpmPack } from "../../../../src/validation/stages/pack/run-npm-pack.mjs";
-import { resolvePackExecutable } from "../../../../src/validation/stages/pack/resolve-pack-executable.mjs";
-
+import runNpmPack from "../../../../src/validation/stages/pack/run-npm-pack.mjs";
+import resolvePackExecutable from "../../../../src/validation/stages/pack/resolve-pack-executable.mjs";
 test("runs npm pack in the repository root", async () => {
   const calls = [];
   const result = await runNpmPack("C:\\repo", async (...args) => {
     calls.push(args);
-    return { code: 0, signal: null, stdout: "", stderr: "" };
+    return {
+      code: 0,
+      signal: null,
+      stdout: "",
+      stderr: "",
+    };
   });
   expect(result.code).toBe(0);
   expect(calls).toHaveLength(1);
@@ -19,14 +23,16 @@ test("runs npm pack in the repository root", async () => {
   });
   expect(calls[0][2].env).not.toBe(process.env);
 });
-
 test("forwards safe npm pack arguments without overriding required flags", async () => {
   const calls = [];
   await runNpmPack(
     "C:\\repo",
     async (...args) => {
       calls.push(args);
-      return { code: 0, stdout: "{}" };
+      return {
+        code: 0,
+        stdout: "{}",
+      };
     },
     () => ["npm", []],
     ["--ignore-scripts"],
@@ -40,7 +46,6 @@ test("forwards safe npm pack arguments without overriding required flags", async
   expect(run).not.toHaveBeenCalled();
   expect(resolve).not.toHaveBeenCalled();
 });
-
 test("uses npm's executable when npm invokes the harness", async () => {
   const root = resolve("/repo");
   const npmCli = join(root, "npm-cli.js");
@@ -49,21 +54,32 @@ test("uses npm's executable when npm invokes the harness", async () => {
     root,
     async (...args) => {
       calls.push(args);
-      return { code: 0, signal: null, stdout: "", stderr: "" };
+      return {
+        code: 0,
+        signal: null,
+        stdout: "",
+        stderr: "",
+      };
     },
     (env, _platform, execPath, directory) =>
       resolvePackExecutable(env, "linux", execPath, directory),
     [],
-    { npm_execpath: "npm-cli.js" },
+    {
+      npm_execpath: "npm-cli.js",
+    },
   );
   expect(calls[0][0]).toBe(process.execPath);
   expect(calls[0][1][0]).toBe(npmCli);
 });
-
 test("passes the selected environment to resolution and execution", async () => {
-  const env = { npm_execpath: "C:\\npm\\cli.js", PATH: "safe-path" };
+  const env = {
+    npm_execpath: "C:\\npm\\cli.js",
+    PATH: "safe-path",
+  };
   const resolve = jest.fn(() => ["node", ["npm-cli.js"]]);
-  const run = jest.fn(async () => ({ code: 0 }));
+  const run = jest.fn(async () => ({
+    code: 0,
+  }));
   await runNpmPack("C:\\repo", run, resolve, [], env);
   expect(resolve).toHaveBeenCalledWith(env, process.platform, process.execPath, "C:\\repo");
   expect(run.mock.calls[0][2].env).toEqual(env);

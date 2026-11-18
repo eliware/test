@@ -1,6 +1,5 @@
-import { validateReadmeSpecificationsLink } from "./link.mjs";
-
-export async function validateReadmeSpecificationsIndex(readme, headings, readIndex) {
+import validateReadmeSpecificationsLink from "./link.mjs";
+export default async function validateReadmeSpecificationsIndex(readme, headings, readIndex) {
   const linkError = validateReadmeSpecificationsLink(readme, headings);
   if (linkError) return linkError;
   try {

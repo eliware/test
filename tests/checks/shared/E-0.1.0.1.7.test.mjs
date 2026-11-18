@@ -1,17 +1,27 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/shared/E-0.1.0.1.7.mjs";
+import { ruleId } from "../../../src/checks/shared/E-0.1.0.1.7.mjs";
+import run from "../../../src/checks/shared/E-0.1.0.1.7.mjs";
 import { validCiWorkflow as validWorkflow } from "../../../test-fixtures/shared-ci-workflows.mjs";
 const inventory = {
   files: async () => [".github/workflows/ci.yaml", ".github/workflows/npm.yaml"],
   readText: async () => validWorkflow,
 };
-
 test("accepts the validation workflow and canonical npm workflow path", async () => {
   await expect(
-    run({ repositoryInventory: inventory, packageJson: { eliware: { apply: ["npm-published"] } } }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+    run({
+      repositoryInventory: inventory,
+      packageJson: {
+        eliware: {
+          apply: ["npm-published"],
+        },
+      },
+    }),
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test("limits general CI validation to ci.yaml when a publisher workflow is present", async () => {
   const readPaths = [];
   await expect(
@@ -23,12 +33,19 @@ test("limits general CI validation to ci.yaml when a publisher workflow is prese
           return validWorkflow;
         },
       },
-      packageJson: { eliware: { apply: ["general", "npm-published"] } },
+      packageJson: {
+        eliware: {
+          apply: ["general", "npm-published"],
+        },
+      },
     }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
   expect(readPaths).toEqual([".github/workflows/ci.yaml"]);
 });
-
 test("allows the canonical GHCR workflow path when the profile applies", async () => {
   await expect(
     run({
@@ -36,11 +53,18 @@ test("allows the canonical GHCR workflow path when the profile applies", async (
         files: async () => [".github/workflows/ci.yaml", ".github/workflows/ghcr.yaml"],
         readText: async () => validWorkflow,
       },
-      packageJson: { eliware: { apply: ["general", "ghcr-published"] } },
+      packageJson: {
+        eliware: {
+          apply: ["general", "ghcr-published"],
+        },
+      },
     }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test("reports invalid workflow settings and steps", async () => {
   const badWorkflow = validWorkflow
     .replace("pull_request:\n    branches: [main]", "pull_request: {}")
@@ -61,9 +85,10 @@ test("reports invalid workflow settings and steps", async () => {
     message: expect.stringContaining("must enable pull_request"),
   });
 });
-
 test("rejects missing inventory, malformed YAML, and multiple documents", async () => {
-  await expect(run()).resolves.toMatchObject({ status: "fail" });
+  await expect(run()).resolves.toMatchObject({
+    status: "fail",
+  });
   await expect(
     run({
       repositoryInventory: {
@@ -71,7 +96,9 @@ test("rejects missing inventory, malformed YAML, and multiple documents", async 
         readText: async () => "x: [",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("could not be parsed") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("could not be parsed"),
+  });
   await expect(
     run({
       repositoryInventory: {
@@ -79,9 +106,10 @@ test("rejects missing inventory, malformed YAML, and multiple documents", async 
         readText: async () => "a: 1\n---\nb: 2",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("exactly one document") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("exactly one document"),
+  });
 });
-
 test("rejects unapproved steps, step overrides, and absent validation jobs", async () => {
   const badWorkflow = validWorkflow.replace(
     "      - run: npm ci",
@@ -94,7 +122,9 @@ test("rejects unapproved steps, step overrides, and absent validation jobs", asy
         readText: async () => badWorkflow,
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("unapproved step") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("unapproved step"),
+  });
   await expect(
     run({
       repositoryInventory: {
@@ -102,9 +132,10 @@ test("rejects unapproved steps, step overrides, and absent validation jobs", asy
         readText: async () => "name: Validation\non: {}\njobs: {}",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("validation job with steps") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("validation job with steps"),
+  });
 });
-
 test("accepts safe literal reporting and rejects unsafe reporting", async () => {
   const safe = validWorkflow.replace(
     "      - run: npm -g install npm@latest",
@@ -117,7 +148,11 @@ test("accepts safe literal reporting and rejects unsafe reporting", async () => 
         readText: async () => safe,
       },
     }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
   for (const replacement of [
     'echo "$TOKEN"',
     "echo 'literal' > output",
@@ -131,10 +166,11 @@ test("accepts safe literal reporting and rejects unsafe reporting", async () => 
           readText: async () => unsafe,
         },
       }),
-    ).resolves.toMatchObject({ message: expect.stringContaining("unapproved step") });
+    ).resolves.toMatchObject({
+      message: expect.stringContaining("unapproved step"),
+    });
   }
 });
-
 test("rejects multiple validation jobs, job conditions, and unsafe permissions", async () => {
   const invalid = validWorkflow
     .replace(
@@ -152,9 +188,10 @@ test("rejects multiple validation jobs, job conditions, and unsafe permissions",
         readText: async () => invalid,
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("one validation job") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("one validation job"),
+  });
 });
-
 test("handles a workflow with no jobs map or runner label", async () => {
   const noRunner = validWorkflow.replace("    runs-on: ubuntu-latest\n", "");
   await expect(
@@ -164,9 +201,10 @@ test("handles a workflow with no jobs map or runner label", async () => {
         readText: async () => noRunner,
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("must run on Ubuntu") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("must run on Ubuntu"),
+  });
 });
-
 test("rejects malformed workflow file inventories", async () => {
   await expect(
     run({
@@ -175,5 +213,7 @@ test("rejects malformed workflow file inventories", async () => {
         readText: async () => "jobs: {}",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("must enable push") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("must enable push"),
+  });
 });

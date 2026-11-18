@@ -1,6 +1,6 @@
-import { buildAuditArguments } from "./build-audit-arguments.mjs";
-import { resolveAuditExecutable } from "./resolve-audit-executable.mjs";
-export async function runNpmAudit({
+import buildAuditArguments from "./build-audit-arguments.mjs";
+import resolveAuditExecutable from "./resolve-audit-executable.mjs";
+export default async function runNpmAudit({
   root,
   run,
   resolveCommand = resolveAuditExecutable,
@@ -28,5 +28,10 @@ export async function runNpmAudit({
   )
     throw new TypeError("resolveCommand must return an executable and string argument prefix.");
   const [command, prefix] = resolved;
-  return run(command, [...prefix, ...auditArguments], { cwd: root, env: { ...env } });
+  return run(command, [...prefix, ...auditArguments], {
+    cwd: root,
+    env: {
+      ...env,
+    },
+  });
 }

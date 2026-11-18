@@ -1,7 +1,6 @@
 import { parse } from "@babel/parser";
-import { analyzeTestToolUse } from "./analyze/test-tool-use.mjs";
-
-export function detectTestToolUse(content, allowHarnessTools = false) {
+import analyzeTestToolUse from "./analyze/test-tool-use.mjs";
+export default function detectTestToolUse(content, allowHarnessTools = false) {
   let ast;
   try {
     ast = parse(content, {

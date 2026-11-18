@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { prepareSmokeState } from "../../../../../src/validation/stages/smoke/prepare-smoke/state.mjs";
-
+import prepareSmokeState from "../../../../../src/validation/stages/smoke/prepare-smoke/state.mjs";
 test("checks target identity, validates package parents, and captures recovery state", async () => {
   const order = [];
   const assertTargetIdentity = jest.fn(async () => order.push("identity"));
@@ -8,14 +7,17 @@ test("checks target identity, validates package parents, and captures recovery s
   const createDirectory = jest.fn(async () => order.push("directory"));
   const captureState = jest.fn(async () => {
     order.push("capture");
-    return { storage: "backup-root" };
+    return {
+      storage: "backup-root",
+    };
   });
   const write = jest.fn();
-
   await expect(
     prepareSmokeState({
       targetRoot: "consumer-root",
-      packageJson: { name: "@eliware/example" },
+      packageJson: {
+        name: "@eliware/example",
+      },
       binNames: ["example"],
       assertTargetIdentity,
       assertPackageParents,
@@ -25,7 +27,9 @@ test("checks target identity, validates package parents, and captures recovery s
       write,
       platform: "test-platform",
     }),
-  ).resolves.toEqual({ storage: "backup-root" });
+  ).resolves.toEqual({
+    storage: "backup-root",
+  });
   expect(order).toEqual(["identity", "parents", "directory", "capture"]);
   expect(assertPackageParents).toHaveBeenCalledWith("consumer-root", "@eliware/example");
   expect(captureState).toHaveBeenCalledWith(
@@ -38,16 +42,16 @@ test("checks target identity, validates package parents, and captures recovery s
   );
   expect(write).toHaveBeenCalledWith("Target recovery snapshot: backup-root");
 });
-
 test("stops before creating a backup when target identity changes", async () => {
   const createDirectory = jest.fn();
   const captureState = jest.fn();
   const error = new Error("target changed");
-
   await expect(
     prepareSmokeState({
       targetRoot: "consumer-root",
-      packageJson: { name: "@eliware/example" },
+      packageJson: {
+        name: "@eliware/example",
+      },
       binNames: [],
       assertTargetIdentity: async () => {
         throw error;

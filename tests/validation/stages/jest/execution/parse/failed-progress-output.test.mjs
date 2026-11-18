@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { parseFailedJestProgressOutput } from "../../../../../../src/validation/stages/jest/execution/parse/failed-progress-output.mjs";
-
+import parseFailedJestProgressOutput from "../../../../../../src/validation/stages/jest/execution/parse/failed-progress-output.mjs";
 test("returns diagnostics from failed progress records", () => {
   const output = [
     '[eliware-test-progress] {"event":"start","path":"tests/active.test.mjs"}',
@@ -13,7 +12,6 @@ test("returns diagnostics from failed progress records", () => {
     "tests/fail.test.mjs\nassertion failed\nextra output",
   );
 });
-
 test("returns an empty result without failed records", () => {
   expect(parseFailedJestProgressOutput(undefined)).toBe("");
   expect(parseFailedJestProgressOutput("ordinary output")).toBe("");

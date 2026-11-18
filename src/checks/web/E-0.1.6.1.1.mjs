@@ -1,11 +1,10 @@
 import { join } from "node:path";
-import { fail, pass } from "../check-result.mjs";
-import { collectWebAssetDirectories } from "./E-0.1.6.1.1/collect-web-asset-directories.mjs";
-import { validateWebAssetMetadata } from "./E-0.1.6.1.1/validate-web-asset-metadata.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import collectWebAssetDirectories from "./E-0.1.6.1.1/collect-web-asset-directories.mjs";
+import validateWebAssetMetadata from "./E-0.1.6.1.1/validate-web-asset-metadata.mjs";
 export const ruleId = "E-0.1.6.1.1";
-
-export async function run(context = {}, dependencies = {}) {
+export default async function run(context = {}, dependencies = {}) {
   const errors = validateWebAssetMetadata(context.packageJson);
   try {
     const directories = await collectWebAssetDirectories(

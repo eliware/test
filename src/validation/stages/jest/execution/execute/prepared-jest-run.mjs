@@ -1,3 +1,3 @@
-export function executePreparedJestRun(prepared, execute) {
+export default function executePreparedJestRun(prepared, execute) {
   return execute(prepared.command, prepared.args, prepared.options);
 }

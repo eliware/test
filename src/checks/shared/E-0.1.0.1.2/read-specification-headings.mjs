@@ -1,8 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { listSpecificationEntries } from "../../general/E-0.1.0.1.4/list-specification-entries.mjs";
+import listSpecificationEntries from "../../general/E-0.1.0.1.4/list-specification-entries.mjs";
 import { parseAllDocuments } from "yaml";
-
 function collectDeclaredHeadings(directives, headings) {
   if (!Array.isArray(directives)) return;
   for (const directive of directives) {
@@ -13,11 +12,12 @@ function collectDeclaredHeadings(directives, headings) {
     collectDeclaredHeadings(directive?.children, headings);
   }
 }
-
-export async function readSpecificationHeadings(root, { read = readFile, readdir } = {}) {
+export default async function readSpecificationHeadings(root, { read = readFile, readdir } = {}) {
   let entries;
   try {
-    entries = await listSpecificationEntries(root, { list: readdir });
+    entries = await listSpecificationEntries(root, {
+      list: readdir,
+    });
   } catch (error) {
     if (error.code === "ENOENT") return new Set();
     throw error;

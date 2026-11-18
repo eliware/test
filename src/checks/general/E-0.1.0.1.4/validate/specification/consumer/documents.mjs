@@ -1,7 +1,6 @@
-import { validateSpecificationDocument } from "../document.mjs";
-import { validateSpecificationIds } from "../ids.mjs";
-
-export function validateConsumerSpecificationDocuments(
+import validateSpecificationDocument from "../document.mjs";
+import validateSpecificationIds from "../ids.mjs";
+export default function validateConsumerSpecificationDocuments(
   documents,
   namespace,
   { directivePathExists, directivePathParsed, directivePathHasDirectives },
@@ -12,7 +11,11 @@ export function validateConsumerSpecificationDocuments(
     errors.push("specs/directives.yaml must contain a directive document.");
   const ids = new Map();
   for (const { path, value } of documents) {
-    errors.push(...validateSpecificationDocument(value, path, { ordering: false }));
+    errors.push(
+      ...validateSpecificationDocument(value, path, {
+        ordering: false,
+      }),
+    );
     const sourcePath = path.replace(/ document \d+$/u, "");
     const directives = ids.get(sourcePath) ?? [];
     if (Array.isArray(value.directives)) directives.push(...value.directives);
@@ -20,7 +23,10 @@ export function validateConsumerSpecificationDocuments(
   }
   errors.push(
     ...validateSpecificationIds(
-      [...ids].map(([path, directives]) => ({ path, directives })),
+      [...ids].map(([path, directives]) => ({
+        path,
+        directives,
+      })),
       namespace,
     ),
   );

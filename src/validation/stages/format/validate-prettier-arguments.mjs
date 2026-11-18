@@ -55,8 +55,7 @@ const wrapperOwnedOptions = new Set([
   "--file-info",
   "--support-info",
 ]);
-
-export function validatePrettierArguments(args) {
+export default function validatePrettierArguments(args) {
   if (!Array.isArray(args)) return "Prettier arguments must be an array of strings.";
   const failures = [];
   for (const argument of args) {
@@ -79,7 +78,6 @@ export function validatePrettierArguments(args) {
   }
   return failures.length ? failures.join("\n") : null;
 }
-
 function isWrapperOwnedOption(option) {
   if (wrapperOwnedOptions.has(option)) return true;
   if (!option.startsWith("--")) return false;

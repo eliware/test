@@ -1,7 +1,6 @@
 import packageMetadata from "../../package.json" with { type: "json" };
 import { helpText } from "./help-text.mjs";
-
-export function dispatchInformationalCommand(args, write) {
+export default function dispatchInformationalCommand(args, write) {
   const informational = args.filter(
     (argument) => argument === "--help" || argument === "--version",
   );

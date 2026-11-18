@@ -1,9 +1,8 @@
-import { isUserFacingAttribute } from "../attributes.mjs";
-import { isUserFacingOutputCall } from "../calls.mjs";
-import { isUserFacingOutputProperty } from "../properties.mjs";
-import { addOutputProseBlocks } from "./blocks.mjs";
-
-export function collectJavaScriptOutputProse(value, blocks) {
+import isUserFacingAttribute from "../attributes.mjs";
+import isUserFacingOutputCall from "../calls.mjs";
+import isUserFacingOutputProperty from "../properties.mjs";
+import addOutputProseBlocks from "./blocks.mjs";
+export default function collectJavaScriptOutputProse(value, blocks) {
   if (value.type === "CallExpression" && isUserFacingOutputCall(value.callee)) {
     for (const argument of value.arguments)
       addOutputProseBlocks(argument, value.loc.start.line, blocks);
@@ -13,7 +12,6 @@ export function collectJavaScriptOutputProse(value, blocks) {
   if (value.type === "CallExpression" && isSetAttributeOutput(value))
     addOutputProseBlocks(value.arguments[1], value.loc.start.line, blocks);
 }
-
 function isSetAttributeOutput(call) {
   return (
     call.callee?.type === "MemberExpression" &&

@@ -1,6 +1,5 @@
-import { readCanonicalOrder } from "../../shared/conventions/read-canonical-order.mjs";
-
-export function validateAppliedProfiles(
+import readCanonicalOrder from "../../shared/conventions/read-canonical-order.mjs";
+export default function validateAppliedProfiles(
   apply,
   policy,
   canonicalProfileOrder = readCanonicalOrder("eliware-apply.yaml").profiles,

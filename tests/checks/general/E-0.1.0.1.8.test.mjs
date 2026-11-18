@@ -1,14 +1,16 @@
 import { expect, test } from "@jest/globals";
 import { requiredIgnoreCases } from "../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
-import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
-
+import { ruleId } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
+import run from "../../../src/checks/general/E-0.1.0.1.8.mjs";
 const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db\n.env*\n!.env.example\n!**/.env.example`;
-
 function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   let index = 0;
   return async (_command, args) => {
     const current = index++;
-    if (current === failAt) throw Object.assign(new Error("git failed"), { code: 2 });
+    if (current === failAt)
+      throw Object.assign(new Error("git failed"), {
+        code: 2,
+      });
     if (args.includes("check-ignore"))
       return {
         code: 0,
@@ -32,55 +34,83 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
     };
   };
 }
-
 test("uses injected dependencies when the check context is omitted", async () => {
   await expect(
-    run(undefined, { runGit: createGitRunner(), readText: async () => ignoreText }),
-  ).resolves.toMatchObject({ ruleId, status: "pass" });
+    run(undefined, {
+      runGit: createGitRunner(),
+      readText: async () => ignoreText,
+    }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "pass",
+  });
 });
-
 test("reports missing ignore rules, ignored tracked files, and symlinks", async () => {
   const runner = async (_command, args) => {
-    if (args.includes("check-ignore")) throw Object.assign(new Error("not ignored"), { code: 1 });
-    if (args.includes("--ignored")) return { stdout: Buffer.from("tracked-output.log\0") };
-    return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
+    if (args.includes("check-ignore"))
+      throw Object.assign(new Error("not ignored"), {
+        code: 1,
+      });
+    if (args.includes("--ignored"))
+      return {
+        stdout: Buffer.from("tracked-output.log\0"),
+      };
+    return {
+      stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`),
+    };
   };
-  const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
+  const result = await run({
+    root: "repo",
+    runGit: runner,
+    readText: async () => ignoreText,
+  });
   expect(result.ruleId).toBe(ruleId);
   expect(result.status).toBe("fail");
   expect(result.message).toContain("must be ignored");
   expect(result.message).toContain("Tracked or staged paths");
   expect(result.message).toContain("Tracked symlink entries");
 });
-
 test("rejects tracked credential paths through the complete rule", async () => {
   const runner = async (_command, args) => {
-    if (args.includes("check-ignore")) return { code: 0 };
+    if (args.includes("check-ignore"))
+      return {
+        code: 0,
+      };
     if (args.includes("--stage"))
-      return { stdout: Buffer.from(`100644 ${"a".repeat(40)} 0\tconfig/credentials\0`) };
-    return { stdout: Buffer.from("") };
+      return {
+        stdout: Buffer.from(`100644 ${"a".repeat(40)} 0\tconfig/credentials\0`),
+      };
+    return {
+      stdout: Buffer.from(""),
+    };
   };
-  const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
+  const result = await run({
+    root: "repo",
+    runGit: runner,
+    readText: async () => ignoreText,
+  });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("Tracked sensitive paths are prohibited: config/credentials.");
 });
-
 test("reports Git status errors", async () => {
   const result = await run({
     root: "repo",
-    runGit: createGitRunner({ failAt: 0 }),
+    runGit: createGitRunner({
+      failAt: 0,
+    }),
     readText: async () => ignoreText,
   });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("Git ignore rules could not be inspected");
   const indexResult = await run({
     root: "repo",
-    runGit: createGitRunner({ failAt: 4 }),
+    runGit: createGitRunner({
+      failAt: 4,
+    }),
     readText: async () => ignoreText,
   });
   expect(indexResult.message).toContain("Git index status could not be read");
 });
-
 test("uses injected dependencies from the current directory to check required ignored paths", async () => {
   const roots = [];
   const runner = async (_command, args) => {
@@ -97,7 +127,9 @@ test("uses injected dependencies from the current directory to check required ig
           })
           .join("\n"),
       };
-    return { stdout: Buffer.from("") };
+    return {
+      stdout: Buffer.from(""),
+    };
   };
   const readPaths = [];
   const result = await run({
@@ -107,7 +139,10 @@ test("uses injected dependencies from the current directory to check required ig
       return ignoreText;
     },
   });
-  expect(result).toMatchObject({ ruleId, status: "pass" });
+  expect(result).toMatchObject({
+    ruleId,
+    status: "pass",
+  });
   expect(roots.every((root) => root === process.cwd())).toBe(true);
   expect(readPaths).toEqual([`${process.cwd()}/.gitignore`]);
 });

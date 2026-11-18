@@ -1,13 +1,11 @@
 import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
-import { compareRuleIds } from "../compare-rule-ids.mjs";
-
+import compareRuleIds from "../compare-rule-ids.mjs";
 const rulePattern = /^([EA]-\d+(?:\.\d+)*)\.mjs$/;
 const maxDepth = 128;
 const maxEntries = 10_000;
-
-export async function discoverCheckTree(
+export default async function discoverCheckTree(
   directory,
   importCheck,
   parentRuleId = null,
@@ -15,13 +13,21 @@ export async function discoverCheckTree(
   root = directory,
 ) {
   const modules = [];
-  const pending = [{ directory, parentRuleId, depth: 0 }];
+  const pending = [
+    {
+      directory,
+      parentRuleId,
+      depth: 0,
+    },
+  ];
   let entryCount = 0;
   while (pending.length) {
     const current = pending.pop();
     if (current.depth > maxDepth)
       throw new Error(`Check discovery exceeded the ${maxDepth}-level depth limit.`);
-    const entries = await readDirectory(current.directory, { withFileTypes: true });
+    const entries = await readDirectory(current.directory, {
+      withFileTypes: true,
+    });
     const directories = [];
     for (const entry of entries) {
       entryCount += 1;
@@ -39,13 +45,15 @@ export async function discoverCheckTree(
       if (!match) continue;
       const id = entry.name.slice(0, -4);
       const module = await importCheck(pathToFileURL(join(current.directory, entry.name)));
+      const run = module.run ?? module.default;
       if (
         module.ruleId !== id ||
-        (typeof module.run !== "function" && module.applicability !== "advisory-only")
+        (typeof run !== "function" && module.applicability !== "advisory-only")
       )
         throw new Error(`Invalid check module: ${entry.name}`);
       modules.push({
         ...module,
+        ...(typeof run === "function" ? { run } : {}),
         parentRuleId: current.parentRuleId,
         modulePath: relative(root, join(current.directory, entry.name)).replaceAll("\\", "/"),
       });

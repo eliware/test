@@ -1,7 +1,7 @@
-import { normalizeRedactionPolicySecrets } from "../../../../normalize-redaction-policy-secrets.mjs";
-import { MAX_SECRET_SEARCH_WORK_PER_CHUNK, resolveRedactedStreamBounds } from "../bounds.mjs";
-
-export function normalizeRedactedStreamSecretBounds(
+import normalizeRedactionPolicySecrets from "../../../../normalize-redaction-policy-secrets.mjs";
+import { MAX_SECRET_SEARCH_WORK_PER_CHUNK } from "../bounds.mjs";
+import resolveRedactedStreamBounds from "../bounds.mjs";
+export default function normalizeRedactedStreamSecretBounds(
   secrets,
   outputLimit,
   maxSearchWorkPerChunk = MAX_SECRET_SEARCH_WORK_PER_CHUNK,
@@ -16,5 +16,9 @@ export function normalizeRedactedStreamSecretBounds(
     maxPendingLength,
     maximumSecretLength,
   );
-  return { values, maximumSecretLength, bounds };
+  return {
+    values,
+    maximumSecretLength,
+    bounds,
+  };
 }

@@ -1,9 +1,8 @@
-import { collectRedactionSecrets } from "../output/redaction/collect-redaction-secrets.mjs";
-import { createRedactedTextStream } from "../output/redaction/create/redacted/text/stream.mjs";
-import { createChildOutputStream } from "./create-child/output-stream.mjs";
-import { createChildOutputCaptureBuffer } from "./create-child/capture.mjs";
-
-export function createChildOutputCapture(
+import collectRedactionSecrets from "../output/redaction/collect-redaction-secrets.mjs";
+import createRedactedTextStream from "../output/redaction/create/redacted/text/stream.mjs";
+import createChildOutputStream from "./create-child/output-stream.mjs";
+import createChildOutputCaptureBuffer from "./create-child/capture.mjs";
+export default function createChildOutputCapture(
   options,
   {
     onStdout,
@@ -25,7 +24,13 @@ export function createChildOutputCapture(
     maxPendingLength,
   });
   const capture = createChildOutputCaptureBuffer(outputLimit);
-  const stream = createChildOutputStream({ onStdout, onStderr }, outputLimit);
+  const stream = createChildOutputStream(
+    {
+      onStdout,
+      onStderr,
+    },
+    outputLimit,
+  );
   const appendStdout = (text) => {
     stream.stdout(text);
     capture.appendStdout(text);
@@ -34,7 +39,6 @@ export function createChildOutputCapture(
     stream.stderr(text);
     capture.appendStderr(captureStderr?.(text) ?? text);
   };
-
   return {
     stdout(text) {
       onRawStdout?.(text);
@@ -53,7 +57,10 @@ export function createChildOutputCapture(
       appendStdout(stdoutRedactor.finish());
       const stderr = stderrRedactor.finish();
       appendStderr(stderr);
-      return { stdout: "", stderr };
+      return {
+        stdout: "",
+        stderr,
+      };
     },
     result() {
       return capture.result();

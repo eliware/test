@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { createEndEntryStore } from "../../../../../../src/validation/shared/search/create/match-interval-index/end-entry-store.mjs";
-
+import createEndEntryStore from "../../../../../../src/validation/shared/search/create/match-interval-index/end-entry-store.mjs";
 test("keeps an extended interval when it discards an older end entry", () => {
   const ends = new Map([[2, 9]]);
   const discardInactive = jest.fn();
@@ -13,7 +12,6 @@ test("keeps an extended interval when it discards an older end entry", () => {
   store.discardThrough(9);
   expect(ends).toEqual(new Map());
 });
-
 test("compacts many stale entries without losing the latest end", () => {
   const ends = new Map();
   const store = createEndEntryStore(ends, () => {});
@@ -27,7 +25,6 @@ test("compacts many stale entries without losing the latest end", () => {
   store.discardThrough(1_100);
   expect(ends).toEqual(new Map());
 });
-
 test("removes consumed entries after the head grows", () => {
   const ends = new Map();
   const store = createEndEntryStore(ends, () => {});

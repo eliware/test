@@ -1,6 +1,5 @@
-import { validateCanonicalOrderDocument } from "../../../../validation/shared/conventions/validate/canonical-order-document.mjs";
-
-export function validateOrderingSpecificationDocument(value, path) {
+import validateCanonicalOrderDocument from "../../../../validation/shared/conventions/validate/canonical-order-document.mjs";
+export default function validateOrderingSpecificationDocument(value, path) {
   const errors = [];
   if (!value || typeof value !== "object" || Array.isArray(value))
     return [`${path} must contain an ordering object.`];
@@ -14,7 +13,6 @@ export function validateOrderingSpecificationDocument(value, path) {
   errors.push(...validateCanonicalOrderDocument(value, path));
   return errors;
 }
-
 function isOrderRecord(value) {
   return Boolean(
     value &&
@@ -24,7 +22,6 @@ function isOrderRecord(value) {
     Object.values(value).every(isOrderValue),
   );
 }
-
 function isOrderValue(value) {
   if (typeof value === "number") return Number.isFinite(value) && value >= 0;
   if (typeof value === "string") return Boolean(value.trim());

@@ -1,8 +1,7 @@
-import { findUnexpectedJestLineRecords } from "./jest-lines.mjs";
-import { isDefaultJestConsoleLine } from "../jest-console/output.mjs";
-import { redactProcessOutput } from "../../../../../shared/output/redaction/redact/process-output.mjs";
-
-export function findUnexpectedJestStdout(stdout, consoleOutput, secrets, root) {
+import findUnexpectedJestLineRecords from "./jest-lines/find-unexpected-jest-line-records.mjs";
+import isDefaultJestConsoleLine from "../jest-console/output/is-default-jest-console-line.mjs";
+import redactProcessOutput from "../../../../../shared/output/redaction/redact/process-output.mjs";
+export default function findUnexpectedJestStdout(stdout, consoleOutput, secrets, root) {
   return findUnexpectedJestLineRecords(stdout)
     .filter(
       (record) =>

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createDocumentationTraversalFileTracker } from "../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/track-traversal-files.mjs";
-
+import createDocumentationTraversalFileTracker from "../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/track-traversal-files.mjs";
 function createTracker(overrides = {}) {
   return createDocumentationTraversalFileTracker({
     prefix: "docs/",
@@ -10,7 +9,6 @@ function createTracker(overrides = {}) {
     ...overrides,
   });
 }
-
 test("tracks matching paths and visited files", () => {
   const tracker = createTracker();
   tracker.onFile("docs/guide.md");
@@ -20,9 +18,10 @@ test("tracks matching paths and visited files", () => {
   expect(tracker.hasSelectedPath("docs/guide.md")).toBe(true);
   expect(tracker.hasSelectedPath("docs/notes.txt")).toBe(false);
 });
-
 test("ignores skipped paths and applies the file limit", () => {
-  const tracker = createTracker({ maxFiles: 1 });
+  const tracker = createTracker({
+    maxFiles: 1,
+  });
   tracker.onFile("docs/build/generated.md");
   expect(tracker.visitedFiles).toBe(0);
   tracker.onFile("docs/one.md");

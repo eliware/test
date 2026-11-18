@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { redactCompleteOutput } from "../../../../../../src/validation/shared/output/redaction/redact/complete-output.mjs";
-import { createSecretTextMatcher } from "../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
-
+import redactCompleteOutput from "../../../../../../src/validation/shared/output/redaction/redact/complete-output.mjs";
+import createSecretTextMatcher from "../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
 test("redacts known matches and trims a partial secret suffix", () => {
   expect(
     redactCompleteOutput("progress opaque-token credential-", {
@@ -13,7 +12,6 @@ test("redacts known matches and trims a partial secret suffix", () => {
     }),
   ).toBe("progress [REDACTED] ");
 });
-
 test("suppresses diagnostics when policy, search budget, or matcher rejects them", () => {
   const options = {
     suppressed: false,
@@ -22,16 +20,31 @@ test("suppresses diagnostics when policy, search budget, or matcher rejects them
     findSecretEnds: () => null,
     trimSuffix: (text) => text,
   };
-  expect(redactCompleteOutput("safe", { ...options, suppressed: true })).toBe("");
+  expect(
+    redactCompleteOutput("safe", {
+      ...options,
+      suppressed: true,
+    }),
+  ).toBe("");
   expect(redactCompleteOutput("safe", options)).toBe("");
   expect(
-    redactCompleteOutput("safe", { ...options, workLimit: 10, findSecretEnds: () => null }),
+    redactCompleteOutput("safe", {
+      ...options,
+      workLimit: 10,
+      findSecretEnds: () => null,
+    }),
   ).toBe("");
   expect(
     redactCompleteOutput("visible secret", {
       ...options,
       workLimit: 100,
-      findSecretEnds: (text) => Array.from({ length: text.length + 1 }, () => 0),
+      findSecretEnds: (text) =>
+        Array.from(
+          {
+            length: text.length + 1,
+          },
+          () => 0,
+        ),
     }),
   ).toBe("");
   expect(
@@ -46,14 +59,15 @@ test("suppresses diagnostics when policy, search budget, or matcher rejects them
     }),
   ).toBe("");
 });
-
 test("suppresses complete diagnostics when matcher construction exceeds its budget", () => {
   const values = ["sensitive-token"];
   const output = redactCompleteOutput("command failed: sensitive-token", {
     suppressed: false,
     values,
     workLimit: 1,
-    findSecretEnds: createSecretTextMatcher(values, { maxScanWork: 1 }),
+    findSecretEnds: createSecretTextMatcher(values, {
+      maxScanWork: 1,
+    }),
     trimSuffix: (text) => text,
   });
   expect(output).toBe("");

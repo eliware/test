@@ -1,12 +1,9 @@
-import { writeStageDiagnostics } from "./stage-diagnostics.mjs";
-import { writeDebugTiming } from "./debug-timing.mjs";
-import {
-  formatAggregateSuccess,
-  formatFocusedSuccess,
-  formatValidationSuccess,
-} from "./success-summary.mjs";
-
-export function writeValidationResults(result, write, debugTiming, startedAt, timingWrite) {
+import writeStageDiagnostics from "./stage-diagnostics.mjs";
+import writeDebugTiming from "./debug-timing.mjs";
+import formatAggregateSuccess from "./success-summary/format/aggregate-success.mjs";
+import formatFocusedSuccess from "./success-summary/format/focused-success.mjs";
+import formatValidationSuccess from "./success-summary.mjs";
+export default function writeValidationResults(result, write, debugTiming, startedAt, timingWrite) {
   writeStageDiagnostics(result, write);
   const warningsOnly = (result.diagnostics ?? []).every((diagnostic) =>
     diagnostic.startsWith("WARNING:"),

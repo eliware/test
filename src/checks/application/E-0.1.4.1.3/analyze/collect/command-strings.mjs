@@ -1,6 +1,5 @@
-import { readStaticString } from "../../read-static-string.mjs";
-
-export function collectCommandStrings(node, strings) {
+import readStaticString from "../../read-static-string.mjs";
+export default function collectCommandStrings(node, strings) {
   const value = readStaticString(node, strings);
   if (value !== null) return [value];
   if (Array.isArray(node)) return node.flatMap((item) => collectCommandStrings(item, strings));

@@ -1,4 +1,4 @@
-export function isValidMatchInterval(interval) {
+export default function isValidMatchInterval(interval) {
   return (
     interval !== null &&
     typeof interval === "object" &&

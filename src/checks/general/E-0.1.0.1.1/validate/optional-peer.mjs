@@ -1,4 +1,4 @@
-export function isOptionalPeer(entry, name) {
+export default function isOptionalPeer(entry, name) {
   const details = entry.peerDependenciesMeta?.[name];
   return (
     details !== null &&

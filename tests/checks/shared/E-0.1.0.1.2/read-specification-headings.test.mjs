@@ -1,26 +1,36 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-
 const readFile = jest.fn();
 const readdir = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile, readdir }));
-
-const { readSpecificationHeadings } =
-  await import("../../../../src/checks/shared/E-0.1.0.1.2/read-specification-headings.mjs");
-
-const file = (name) => ({ name, isDirectory: () => false, isFile: () => true });
-const directory = (name) => ({ name, isDirectory: () => true, isFile: () => false });
+jest.unstable_mockModule("node:fs/promises", () => ({
+  readFile,
+  readdir,
+}));
+const readSpecificationHeadings = (
+  await import("../../../../src/checks/shared/E-0.1.0.1.2/read-specification-headings.mjs")
+).default;
+const file = (name) => ({
+  name,
+  isDirectory: () => false,
+  isFile: () => true,
+});
+const directory = (name) => ({
+  name,
+  isDirectory: () => true,
+  isFile: () => false,
+});
 const root = "C:/repo";
-
 beforeEach(() => {
   readFile.mockReset();
   readdir.mockReset();
 });
-
 test("returns no headings when specs are absent", async () => {
-  readdir.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
+  readdir.mockRejectedValue(
+    Object.assign(new Error("missing"), {
+      code: "ENOENT",
+    }),
+  );
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
 });
-
 test("reads headings declared in nested directive requirements", async () => {
   readdir
     .mockResolvedValueOnce([directory("profiles")])
@@ -30,14 +40,12 @@ test("reads headings declared in nested directive requirements", async () => {
   );
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["Project", "Nested"]));
 });
-
 test("ignores headings in examples and YAML files without directive arrays", async () => {
   readdir.mockResolvedValueOnce([file("README.md"), file("profile.yaml")]);
   readFile.mockResolvedValue("metadata: true\n");
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
   expect(readFile).toHaveBeenCalledTimes(1);
 });
-
 test("reads declared headings from every YAML stream document", async () => {
   readdir.mockResolvedValueOnce([file("profile.yaml")]);
   readFile.mockResolvedValue(
@@ -45,7 +53,6 @@ test("reads declared headings from every YAML stream document", async () => {
   );
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
 });
-
 test("reports listing and read errors but leaves malformed YAML reporting to its validator", async () => {
   readdir.mockRejectedValueOnce(new Error("blocked"));
   await expect(readSpecificationHeadings(root)).rejects.toThrow("blocked");
@@ -56,7 +63,6 @@ test("reports listing and read errors but leaves malformed YAML reporting to its
   readFile.mockResolvedValueOnce("directives: [\n");
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
 });
-
 test("does not apply YAML line limits during heading discovery", async () => {
   readdir.mockResolvedValueOnce([file("long.yaml"), file("valid.yaml")]);
   readFile
@@ -64,7 +70,6 @@ test("does not apply YAML line limits during heading discovery", async () => {
     .mockResolvedValueOnce('directives:\n  - dos: ["## Second"]\n');
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
 });
-
 test("ignores invalid directive fields and null YAML documents", async () => {
   readdir.mockResolvedValueOnce([file("profile.yaml")]);
   readFile.mockResolvedValue(

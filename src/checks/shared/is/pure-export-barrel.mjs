@@ -1,9 +1,10 @@
 import { parse } from "@babel/parser";
-
-export function isPureExportBarrel(content) {
+export default function isPureExportBarrel(content) {
   let program;
   try {
-    program = parse(content, { sourceType: "module" }).program;
+    program = parse(content, {
+      sourceType: "module",
+    }).program;
   } catch {
     return false;
   }

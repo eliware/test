@@ -1,7 +1,6 @@
-import { posix } from "node:path";
-import { removeMarkdownCode } from "../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-
-export function validateReadmeSpecificationsLink(readme, expected) {
+import removeMarkdownCode from "../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import isSpecificationsIndexTarget from "./link/is-specifications-index-target.mjs";
+export default function validateReadmeSpecificationsLink(readme, expected) {
   const lines = removeMarkdownCode(readme).split(/\r?\n/u);
   const sections = readSections(lines);
   const contentHeadings = new Set(expected.slice(1, -3));
@@ -18,19 +17,20 @@ export function validateReadmeSpecificationsLink(readme, expected) {
     return "README.md must not link specs/README.md from its header, Table of Contents, or footer.";
   return linkedFromContent ? null : "README.md must link specs/README.md from a content section.";
 }
-
-export function isSpecificationsIndexTarget(target) {
-  const unwrapped = target.replace(/^<|>$/gu, "").split(/[?#]/u, 1)[0];
-  return (
-    posix.normalize(unwrapped.replaceAll("\\", "/").replace(/^\.\//u, "")) === "specs/README.md"
-  );
-}
-
 function readSections(lines) {
-  const sections = [{ heading: "", body: "" }];
+  const sections = [
+    {
+      heading: "",
+      body: "",
+    },
+  ];
   for (const line of lines) {
     const heading = line.match(/^##\s+(.+)$/u)?.[1]?.trim();
-    if (heading) sections.push({ heading, body: "" });
+    if (heading)
+      sections.push({
+        heading,
+        body: "",
+      });
     else sections.at(-1).body += `${line}\n`;
   }
   return sections;

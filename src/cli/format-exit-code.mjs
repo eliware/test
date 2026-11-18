@@ -12,8 +12,7 @@ const descriptions = new Map([
   [11, "build failure"],
   [12, "convention failure"],
 ]);
-
-export function formatExitCode(code) {
+export default function formatExitCode(code) {
   if (code === 0) return "Exit-code: 0";
   return `Exit-code: ${code} (${descriptions.get(code) ?? "unclassified failure"})`;
 }

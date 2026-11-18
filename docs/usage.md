@@ -146,7 +146,7 @@ Pass supported Prettier options after `--format` or `--format-check`.
 Do not pass paths or options that change the mode, configuration, or file scope.
 
 Use `--audit` to run `npm audit` by itself.
-The command uses JSON output and high severity by default.
+The command omits development dependencies and uses JSON output and high severity by default.
 Pass `--no-fund` to hide fund notices.
 Pass `--no-progress` to hide progress notices.
 Both notices remain enabled by default.

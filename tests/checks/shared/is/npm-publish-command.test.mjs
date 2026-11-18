@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isNpmPublishCommand } from "../../../../src/checks/shared/is/npm-publish-command.mjs";
-
+import isNpmPublishCommand from "../../../../src/checks/shared/is/npm-publish-command.mjs";
 test.each([
   "npm publish",
   "pnpm publish --access public",
@@ -12,7 +11,6 @@ test.each([
 ])("detects npm publication command %s", (command) => {
   expect(isNpmPublishCommand(command)).toBe(true);
 });
-
 test.each(["npm test", "npm run publish", "docker push ghcr.io/eliware/app"])(
   "allows non-npm-publication command %s",
   (command) => {

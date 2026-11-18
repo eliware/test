@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs";
-import { parseUnapprovedCsv } from "./parse-unapproved-csv.mjs";
-import { validateUnapprovedDictionaryRecords } from "./validate-unapproved-dictionary-records.mjs";
-
-export function loadUnapprovedDictionary(
+import parseUnapprovedCsv from "./parse-unapproved-csv.mjs";
+import validateUnapprovedDictionaryRecords from "./validate-unapproved-dictionary-records.mjs";
+export default function loadUnapprovedDictionary(
   csvText = readFileSync(
     new URL("../../../../../dictionary/unapproved.csv", import.meta.url),
     "utf8",

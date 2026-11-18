@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { readTrackedFilePaths } from "../../../../src/checks/general/E-0.1.0.1.5/read-tracked-file-paths.mjs";
-
+import readTrackedFilePaths from "../../../../src/checks/general/E-0.1.0.1.5/read-tracked-file-paths.mjs";
 test("parses NUL-delimited Buffer output from Git", async () => {
   await expect(
     readTrackedFilePaths("repo-root", async () => ({

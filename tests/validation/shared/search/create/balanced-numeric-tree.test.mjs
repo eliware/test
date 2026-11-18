@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createBalancedNumericTree } from "../../../../../src/validation/shared/search/create/balanced-numeric-tree.mjs";
-
+import createBalancedNumericTree from "../../../../../src/validation/shared/search/create/balanced-numeric-tree.mjs";
 test("keeps each insertion order balanced and sorted", () => {
   for (const values of [
     [1, 2, 3],
@@ -16,13 +15,11 @@ test("keeps each insertion order balanced and sorted", () => {
     expect(tree.lowerBound(4)).toBe(3);
   }
 });
-
 test("returns the tree size when a lower bound exceeds every value", () => {
   const tree = createBalancedNumericTree();
   [2, 5, 8, 11, 14, 17].forEach(tree.insert);
   expect(tree.lowerBound(20)).toBe(tree.values().length);
 });
-
 test("inserts large ordered input without recursive insertion", () => {
   const tree = createBalancedNumericTree();
   for (let value = 0; value < 20_000; value += 1) tree.insert(value);
@@ -31,7 +28,6 @@ test("inserts large ordered input without recursive insertion", () => {
   tree.removeMinimum();
   expect(tree.minimum()).toBe(1);
 });
-
 test("removes minimum values and handles an empty tree", () => {
   const tree = createBalancedNumericTree();
   expect(tree.minimum()).toBeUndefined();
@@ -44,7 +40,6 @@ test("removes minimum values and handles an empty tree", () => {
   while (tree.minimum() !== undefined) tree.removeMinimum();
   expect(tree.values()).toEqual([]);
 });
-
 test("rejects non-finite insertion and lower-bound values without corrupting the tree", () => {
   const tree = createBalancedNumericTree();
   tree.insert(4);
@@ -56,7 +51,6 @@ test("rejects non-finite insertion and lower-bound values without corrupting the
   expect(tree.values()).toEqual([2, 4]);
   expect(tree.lowerBound(3)).toBe(1);
 });
-
 test("returns only values in an inclusive range without traversing unrelated branches", () => {
   const tree = createBalancedNumericTree();
   [4, 2, 6, 1, 3, 5, 7].forEach(tree.insert);

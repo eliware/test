@@ -1,14 +1,31 @@
 import { expect, test } from "@jest/globals";
-import { isDialogOutputCall } from "../../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/calls/dialogs.mjs";
-
+import isDialogOutputCall from "../../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/calls/dialogs.mjs";
 test.each([
-  [{ type: "Identifier", name: "alert" }, true],
-  [{ type: "Identifier", name: "custom" }, false],
+  [
+    {
+      type: "Identifier",
+      name: "alert",
+    },
+    true,
+  ],
+  [
+    {
+      type: "Identifier",
+      name: "custom",
+    },
+    false,
+  ],
   [
     {
       type: "MemberExpression",
-      object: { type: "Identifier", name: "window" },
-      property: { type: "Identifier", name: "prompt" },
+      object: {
+        type: "Identifier",
+        name: "window",
+      },
+      property: {
+        type: "Identifier",
+        name: "prompt",
+      },
       computed: false,
     },
     true,

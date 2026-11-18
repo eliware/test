@@ -1,6 +1,5 @@
 import { credentialKeyPattern } from "../../credential-key-pattern.mjs";
-
-export function redactCredentialAssignments(text) {
+export default function redactCredentialAssignments(text) {
   return String(text)
     .replace(
       new RegExp(

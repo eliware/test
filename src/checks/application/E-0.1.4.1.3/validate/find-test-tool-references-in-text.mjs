@@ -1,6 +1,5 @@
-import { isTestToolCommand } from "../command-patterns.mjs";
-
-export function findTestToolReferencesInText(content, harness = false) {
+import isTestToolCommand from "../command-patterns.mjs";
+export default function findTestToolReferencesInText(content, harness = false) {
   return content.split(/\r?\n/u).some((line) => {
     const command = line.trim();
     return command && !command.startsWith("#") && !command.startsWith("//")

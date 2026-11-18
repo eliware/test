@@ -1,11 +1,9 @@
 import { readdir } from "node:fs/promises";
 import { relative, resolve, sep } from "node:path";
-import { findIgnoredRepositoryPaths } from "../../../validation/shared/repository/find-repository-files.mjs";
-import { isIgnoredRepositoryPath } from "../../../validation/shared/repository/repository-inventory/path-filters.mjs";
-
+import findIgnoredRepositoryPaths from "../../../validation/shared/repository/find-repository-files/find/ignored-repository-paths.mjs";
+import isIgnoredRepositoryPath from "../../../validation/shared/repository/repository-inventory/path-filters/is/ignored-repository-path.mjs";
 const excludedDirectories = new Set(["dist", "build", "coverage", "node_modules", ".git"]);
-
-export async function collectWebAssetDirectories(directory, inventory, dependencies = {}) {
+export default async function collectWebAssetDirectories(directory, inventory, dependencies = {}) {
   const readDirectory = dependencies.readDirectory ?? readdir;
   const root = inventory?.root ?? resolve(directory, "..");
   const ignoredPaths = dependencies.ignoredPaths ?? (await findIgnoredRepositoryPaths(root));
@@ -13,7 +11,9 @@ export async function collectWebAssetDirectories(directory, inventory, dependenc
   async function visit(current, prefix) {
     const entries = inventory
       ? await inventory.directoryEntries(current)
-      : await readDirectory(current, { withFileTypes: true });
+      : await readDirectory(current, {
+          withFileTypes: true,
+        });
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const path = prefix ? `${prefix}/${entry.name}` : entry.name;

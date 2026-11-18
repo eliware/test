@@ -1,4 +1,4 @@
-export function rebalanceBalancedNumericTreeNode(node) {
+export default function rebalanceBalancedNumericTreeNode(node) {
   update(node);
   const balance = height(node.left) - height(node.right);
   if (balance > 1) {
@@ -11,7 +11,6 @@ export function rebalanceBalancedNumericTreeNode(node) {
   }
   return node;
 }
-
 function rotateLeft(node) {
   const pivot = node.right;
   node.right = pivot.left;
@@ -19,7 +18,6 @@ function rotateLeft(node) {
   update(node);
   return update(pivot);
 }
-
 function rotateRight(node) {
   const pivot = node.left;
   node.left = pivot.right;
@@ -27,17 +25,14 @@ function rotateRight(node) {
   update(node);
   return update(pivot);
 }
-
 function update(node) {
   node.height = Math.max(height(node.left), height(node.right)) + 1;
   node.size = sizeBalancedNumericTreeNode(node.left) + sizeBalancedNumericTreeNode(node.right) + 1;
   return node;
 }
-
 function height(node) {
   return node?.height ?? 0;
 }
-
-export function sizeBalancedNumericTreeNode(node) {
+function sizeBalancedNumericTreeNode(node) {
   return node?.size ?? 0;
 }

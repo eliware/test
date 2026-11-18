@@ -1,6 +1,5 @@
-import { validateLibraryEntrypointTarget } from "./entrypoint-target.mjs";
-
-export async function validateLibraryDeclarationEntrypoints(
+import validateLibraryEntrypointTarget from "./entrypoint-target.mjs";
+export default async function validateLibraryDeclarationEntrypoints(
   root,
   packageJson,
   exportTargets,

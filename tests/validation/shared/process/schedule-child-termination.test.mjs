@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { scheduleChildTermination } from "../../../../src/validation/shared/process/schedule-child-termination.mjs";
-
+import scheduleChildTermination from "../../../../src/validation/shared/process/schedule-child-termination.mjs";
 function options(signals) {
   return {
     terminateChild: (_child, _platform, _killProcess, _killTree, _environment, signal) =>
@@ -13,7 +12,6 @@ function options(signals) {
     forceKillConfirmationMs: 75,
   };
 }
-
 test("requests graceful termination, escalates, and reports unconfirmed closure", () => {
   jest.useFakeTimers();
   try {
@@ -29,7 +27,6 @@ test("requests graceful termination, escalates, and reports unconfirmed closure"
     jest.useRealTimers();
   }
 });
-
 test("cancels pending escalation or confirmation timers after child close", () => {
   jest.useFakeTimers();
   try {
@@ -40,7 +37,6 @@ test("cancels pending escalation or confirmation timers after child close", () =
     jest.runOnlyPendingTimers();
     expect(signals).toEqual(["SIGTERM"]);
     expect(onUnconfirmed).not.toHaveBeenCalled();
-
     const nextSignals = [];
     const cancelAfterEscalation = scheduleChildTermination({}, options(nextSignals), onUnconfirmed);
     jest.advanceTimersByTime(50);
@@ -52,7 +48,6 @@ test("cancels pending escalation or confirmation timers after child close", () =
     jest.useRealTimers();
   }
 });
-
 test("contains termination adapter exceptions and still confirms its timeout", () => {
   jest.useFakeTimers();
   try {
@@ -60,7 +55,14 @@ test("contains termination adapter exceptions and still confirms its timeout", (
       throw new Error("termination failed");
     });
     const onUnconfirmed = jest.fn();
-    scheduleChildTermination({}, { ...options([]), terminateChild }, onUnconfirmed);
+    scheduleChildTermination(
+      {},
+      {
+        ...options([]),
+        terminateChild,
+      },
+      onUnconfirmed,
+    );
     jest.advanceTimersByTime(125);
     expect(terminateChild).toHaveBeenCalledTimes(2);
     expect(onUnconfirmed).toHaveBeenCalledTimes(1);
@@ -68,7 +70,6 @@ test("contains termination adapter exceptions and still confirms its timeout", (
     jest.useRealTimers();
   }
 });
-
 test("reports tree-termination outcomes for graceful and forced attempts", () => {
   jest.useFakeTimers();
   try {

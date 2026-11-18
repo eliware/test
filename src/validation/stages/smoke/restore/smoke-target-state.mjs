@@ -1,14 +1,20 @@
 import { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
-import { restoreCapturedSmokePath } from "./captured-smoke-path.mjs";
-
-const defaultFs = { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink };
-
-export async function restoreSmokeTargetState(state, fs = defaultFs) {
+import assertSmokePackageParents from "../assert-smoke-package-parents.mjs";
+import restoreCapturedSmokePath from "./captured-smoke-path.mjs";
+const defaultFs = {
+  cp,
+  mkdir,
+  rm,
+  symlink,
+  writeFile,
+  chmod,
+  lstat,
+  unlink,
+};
+export default async function restoreSmokeTargetState(state, fs = defaultFs) {
   if (state?.error) throw new Error(state.error);
   const failures = [];
-
   for (const entry of [...state.entries].reverse()) {
     try {
       if (
@@ -26,9 +32,11 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
     throw new Error(
       `Could not fully restore smoke target: ${failures.join("; ")}. Backups remain at ${state.storage}.`,
     );
-  await fs.rm(state.storage, { recursive: true, force: true });
+  await fs.rm(state.storage, {
+    recursive: true,
+    force: true,
+  });
 }
-
 function isInsideNodeModules(targetRoot, path) {
   const nodeModules = resolve(targetRoot, "node_modules");
   const relativePath = relative(nodeModules, resolve(path));

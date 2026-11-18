@@ -1,16 +1,12 @@
-import { createBalancedNumericTree } from "./balanced-numeric-tree.mjs";
-
-export function createOrderedMatchStartIndex(isActive) {
+import createBalancedNumericTree from "./balanced-numeric-tree.mjs";
+export default function createOrderedMatchStartIndex(isActive) {
   const starts = createBalancedNumericTree();
-
   function insert(start) {
     starts.insert(start);
   }
-
   function discardInactive() {
     while (starts.minimum() !== undefined && !isActive(starts.minimum())) starts.removeMinimum();
   }
-
   return Object.freeze({
     insert,
     lowerBound: starts.lowerBound,

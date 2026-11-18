@@ -1,8 +1,6 @@
-import { memberName } from "../member-name.mjs";
-
+import memberName from "../member-name.mjs";
 const promptMethods = new Set(["alert", "confirm", "prompt"]);
-
-export function isDialogOutputCall(callee) {
+export default function isDialogOutputCall(callee) {
   if (callee?.type === "Identifier") return promptMethods.has(callee.name);
   return (
     callee?.type === "MemberExpression" &&

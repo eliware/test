@@ -1,7 +1,6 @@
-import { resolveTaskkillExecutable } from "../../resolve-windows/taskkill-executable.mjs";
-import { runWindowsProcessTreeFallback } from "../../run/windows-process-tree-fallback.mjs";
-
-export function attemptWindowsProcessTreeFallbacks(
+import resolveTaskkillExecutable from "../../resolve-windows/taskkill-executable.mjs";
+import runWindowsProcessTreeFallback from "../../run/windows-process-tree-fallback.mjs";
+export default function attemptWindowsProcessTreeFallbacks(
   pid,
   env,
   execute,

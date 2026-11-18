@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { redactCredentialFields } from "../../../../../../src/validation/shared/output/redaction/redact/credential-fields.mjs";
-
+import redactCredentialFields from "../../../../../../src/validation/shared/output/redaction/redact/credential-fields.mjs";
 test("composes credential-field and PEM redaction while preserving ordinary text", () => {
   expect(
     redactCredentialFields(

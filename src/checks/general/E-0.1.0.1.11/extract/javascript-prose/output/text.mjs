@@ -1,4 +1,4 @@
-export function collectOutputText(value) {
+export default function collectOutputText(value) {
   if (typeof value === "string") return [value];
   if (!value || typeof value !== "object") return [];
   if (value.type === "StringLiteral") return [value.value];

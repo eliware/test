@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isPureExportBarrel } from "../../../../src/checks/shared/is/pure-export-barrel.mjs";
-
+import isPureExportBarrel from "../../../../src/checks/shared/is/pure-export-barrel.mjs";
 test.each([
   'export { value } from "../value.mjs";',
   'export * from "../value.mjs";',
@@ -9,7 +8,6 @@ test.each([
 ])("recognizes pure re-export modules", (source) => {
   expect(isPureExportBarrel(source)).toBe(true);
 });
-
 test.each([
   "",
   "export {};",

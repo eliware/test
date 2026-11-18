@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { getTestToolReferenceChecker } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/dispatch.mjs";
-
+import getTestToolReferenceChecker from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/dispatch.mjs";
 test.each([
   ["src/run.mjs", 'import("vitest");', false, true],
   ["package.json", '{"scripts":{"test":"vitest run"}}', false, true],

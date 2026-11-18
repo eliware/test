@@ -1,4 +1,4 @@
-export function createChildSpawnOptions(options, environment) {
+export default function createChildSpawnOptions(options, environment) {
   return {
     cwd: options.cwd,
     env: environment,

@@ -6,9 +6,23 @@ export const expectedDirectiveSchema = {
       type: "object",
       required: ["version", "description", "directives"],
       properties: {
-        version: { type: "string", minLength: 1, pattern: "\\S" },
-        description: { type: "string", minLength: 1, pattern: "\\S" },
-        directives: { type: "array", minItems: 1, items: { $ref: "#/$defs/directive" } },
+        version: {
+          type: "string",
+          minLength: 1,
+          pattern: "\\S",
+        },
+        description: {
+          type: "string",
+          minLength: 1,
+          pattern: "\\S",
+        },
+        directives: {
+          type: "array",
+          minItems: 1,
+          items: {
+            $ref: "#/$defs/directive",
+          },
+        },
       },
       additionalProperties: false,
     },
@@ -16,35 +30,54 @@ export const expectedDirectiveSchema = {
       type: "object",
       required: ["id", "dos", "donts"],
       properties: {
-        id: { type: "string", pattern: "^E-[0-9]+(?:\\.[0-9]+)*$" },
+        id: {
+          type: "string",
+          pattern: "^E-[0-9]+(?:\\.[0-9]+)*$",
+        },
         dos: {
           type: "array",
           minItems: 1,
-          items: { type: "string", minLength: 1, pattern: "\\S" },
+          items: {
+            type: "string",
+            minLength: 1,
+            pattern: "\\S",
+          },
         },
         donts: {
           type: "array",
           minItems: 1,
-          items: { type: "string", minLength: 1, pattern: "\\S" },
+          items: {
+            type: "string",
+            minLength: 1,
+            pattern: "\\S",
+          },
         },
         examples: {
           type: "array",
           minItems: 1,
-          items: { type: "string", minLength: 1, pattern: "\\S" },
+          items: {
+            type: "string",
+            minLength: 1,
+            pattern: "\\S",
+          },
         },
-        children: { type: "array", minItems: 1, items: { $ref: "#/$defs/directive" } },
+        children: {
+          type: "array",
+          minItems: 1,
+          items: {
+            $ref: "#/$defs/directive",
+          },
+        },
       },
       additionalProperties: false,
     },
   },
 };
-
-export function validateDirectiveSchema(schema) {
+export default function validateDirectiveSchema(schema) {
   return matchesSchema(schema, expectedDirectiveSchema)
     ? []
     : ["specs/directives-schema.yaml must define the document and directive schema."];
 }
-
 function matchesSchema(actual, expected) {
   if (Array.isArray(expected))
     return (

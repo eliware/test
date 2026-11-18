@@ -1,6 +1,5 @@
-import { validateLibraryEntrypointTarget } from "./entrypoint-target.mjs";
-
-export async function validateLibraryRuntimeEntrypoints(
+import validateLibraryEntrypointTarget from "./entrypoint-target.mjs";
+export default async function validateLibraryRuntimeEntrypoints(
   root,
   packageJson,
   exportTargets,
@@ -21,7 +20,6 @@ export async function validateLibraryRuntimeEntrypoints(
     errors.push(...(await validateLibraryEntrypointTarget(root, target, "runtime", checkFile)));
   return errors;
 }
-
 function isRuntimeTarget(target) {
   return typeof target === "string" && /\.(?:mjs|js)$/u.test(target);
 }

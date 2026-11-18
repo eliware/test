@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validatePackManifestCoverage } from "../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/coverage.mjs";
-
+import validatePackManifestCoverage from "../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/coverage.mjs";
 const required = [
   "package.json",
   "README.md",
@@ -11,17 +10,21 @@ const required = [
   "docs/README.md",
   "specs/directives.yaml",
 ];
-const entries = required.map((path) => ({ path }));
+const entries = required.map((path) => ({
+  path,
+}));
 test("accepts required package content", () => {
   expect(validatePackManifestCoverage(entries)).toBeNull();
 });
-
 test("reports missing required package content", () => {
-  expect(validatePackManifestCoverage([{ path: "package.json" }])).toContain(
-    "omitted required files",
-  );
+  expect(
+    validatePackManifestCoverage([
+      {
+        path: "package.json",
+      },
+    ]),
+  ).toContain("omitted required files");
 });
-
 test("requires runtime, documentation, and specification trees", () => {
   expect(
     validatePackManifestCoverage(entries.filter(({ path }) => !path.startsWith("src/"))),

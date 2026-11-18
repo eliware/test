@@ -1,7 +1,7 @@
-import { isActiveJestTestExpression } from "../../is/active-jest-test-expression.mjs";
-import { isJestGlobalsImport, isTestNamespace } from "../../jest-globals-import.mjs";
-
-export function collectJestTestAliases(node, names) {
+import isActiveJestTestExpression from "../../is/active-jest-test-expression.mjs";
+import isJestGlobalsImport from "../../jest-globals-import.mjs";
+import isTestNamespace from "../../jest-globals-import/is-test-namespace.mjs";
+export default function collectJestTestAliases(node, names) {
   if (node.type !== "VariableDeclarator") return false;
   if (isJestGlobalsImport(node.init)) {
     if (node.id?.type === "Identifier" && !names.namespaces.has(node.id.name)) {
@@ -22,7 +22,6 @@ export function collectJestTestAliases(node, names) {
   names.callbacks.add(node.id.name);
   return true;
 }
-
 function collectDestructuredAliases(pattern, names, namespaceName) {
   if (pattern?.type !== "ObjectPattern") return false;
   let changed = false;

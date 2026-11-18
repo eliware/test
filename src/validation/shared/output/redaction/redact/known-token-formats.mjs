@@ -1,4 +1,4 @@
-export function redactKnownTokenFormats(text) {
+export default function redactKnownTokenFormats(text) {
   return String(text)
     .replace(
       /((?:^|[\s,{])(?:AWS_SECRET_ACCESS_KEY|NPM_TOKEN|GH_TOKEN|CI_JOB_TOKEN)\s*=\s*)[^\s,;}]+/gimu,

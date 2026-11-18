@@ -1,6 +1,5 @@
-export function createJestProgressTracker(timeoutSeconds = 15) {
+export default function createJestProgressTracker(timeoutSeconds = 15) {
   let currentSuite = "Jest startup";
-
   return {
     readProgress(text) {
       const events = [];
@@ -25,11 +24,9 @@ export function createJestProgressTracker(timeoutSeconds = 15) {
     },
   };
 }
-
 function isSuitePath(path) {
   return typeof path === "string" && path.length > 0 && !path.startsWith("/");
 }
-
 function isSuiteResult(event) {
   return (
     event.event === "result" &&

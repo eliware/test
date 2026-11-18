@@ -1,16 +1,13 @@
 import { expect, test } from "@jest/globals";
-import { redactGenericBase64Credentials } from "../../../../../../src/validation/shared/output/redaction/redact/base64-credentials.mjs";
-
+import redactGenericBase64Credentials from "../../../../../../src/validation/shared/output/redaction/redact/base64-credentials.mjs";
 test("redacts generic Base64 credentials", () => {
   expect(redactGenericBase64Credentials("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef2")).toBe("[REDACTED]");
   expect(redactGenericBase64Credentials("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef")).toBe("[REDACTED]");
 });
-
 test("preserves identifiers, hexadecimal strings, slash values, low-entropy text, and paths", () => {
   const hexadecimal = `${"a".repeat(31)}2`;
   const path = "tests/validation/stages/jest/progress/create/jest/console-output-log.mjs";
   const identifier = "isAllowedLibraryBarrelCoverageException";
-
   expect(redactGenericBase64Credentials(identifier)).toBe(identifier);
   expect(redactGenericBase64Credentials(hexadecimal)).toBe(hexadecimal);
   expect(redactGenericBase64Credentials("ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefgh")).toBe(

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateAuditArguments } from "../../../../src/validation/stages/audit/validate-audit-arguments.mjs";
-
+import validateAuditArguments from "../../../../src/validation/stages/audit/validate-audit-arguments.mjs";
 test("allows only harmless flags and rejects audit-scope overrides", () => {
   for (const args of [
     ["--audit-level=low"],
@@ -50,7 +49,6 @@ test("allows only harmless flags and rejects audit-scope overrides", () => {
     expect(validateAuditArguments(args)).toMatch(/cannot override/u);
   }
 });
-
 test("rejects non-string items before parsing audit options", () => {
   expect(validateAuditArguments(["--no-fund", 1])).toBe(
     "Audit arguments must be an array of strings.",
@@ -64,12 +62,13 @@ test("rejects non-string items before parsing audit options", () => {
   expect(validateAuditArguments(sparseArguments)).toBe(
     "Audit arguments must be an array of strings.",
   );
-  Object.setPrototypeOf(sparseArguments, { 1: "--no-progress" });
+  Object.setPrototypeOf(sparseArguments, {
+    1: "--no-progress",
+  });
   expect(validateAuditArguments(sparseArguments)).toBe(
     "Audit arguments must be an array of strings.",
   );
 });
-
 test("returns a diagnostic when a proxy-backed argument array throws", () => {
   const descriptorFailure = new Proxy(["--no-fund"], {
     getOwnPropertyDescriptor() {
@@ -82,7 +81,6 @@ test("returns a diagnostic when a proxy-backed argument array throws", () => {
       return Reflect.get(target, property, receiver);
     },
   });
-
   for (const args of [descriptorFailure, valueFailure])
     expect(validateAuditArguments(args)).toBe("Audit arguments must be an array of strings.");
 });

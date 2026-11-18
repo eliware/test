@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { validateEntrypointTargetFilesystem } from "../../../../../../../src/checks/application/E-0.1.4.1.1/validate/entrypoint/target/filesystem.mjs";
-
+import validateEntrypointTargetFilesystem from "../../../../../../../src/checks/application/E-0.1.4.1.1/validate/entrypoint/target/filesystem.mjs";
 test.each([
   [null, null],
   ["symlink", "Entrypoint target path must not contain a symlink: bin/tool.mjs."],

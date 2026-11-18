@@ -1,7 +1,6 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
-
 const assertSmokePackageParents = jest.fn();
 const captureSmokeTargetState = jest.fn();
 const createSmokeTempRoot = jest.fn();
@@ -13,57 +12,92 @@ const prepareSmokeTargetContext = jest.fn();
 const resolvePackExecutable = jest.fn();
 const restoreSmokeTargetState = jest.fn();
 const runSmokePackageTransaction = jest.fn();
-
-jest.unstable_mockModule("node:fs/promises", () => ({ lstat, mkdir }));
+jest.unstable_mockModule("node:fs/promises", () => ({
+  lstat,
+  mkdir,
+}));
 jest.unstable_mockModule(
   "../../../../../src/validation/shared/process/execute-child-process.mjs",
-  () => ({ execute }),
+  () => ({
+    execute,
+    default: execute,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/pack/resolve-pack-executable.mjs",
-  () => ({ resolvePackExecutable }),
+  () => ({
+    resolvePackExecutable,
+    default: resolvePackExecutable,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/assert-smoke-package-parents.mjs",
-  () => ({ assertSmokePackageParents }),
+  () => ({
+    assertSmokePackageParents,
+    default: assertSmokePackageParents,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/capture-smoke/target-state.mjs",
-  () => ({ captureSmokeTargetState }),
+  () => ({
+    captureSmokeTargetState,
+    default: captureSmokeTargetState,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/create-smoke-temp-root.mjs",
-  () => ({ createSmokeTempRoot }),
+  () => ({
+    createSmokeTempRoot,
+    default: createSmokeTempRoot,
+  }),
 );
 jest.unstable_mockModule("../../../../../src/validation/stages/smoke/finish-smoke-run.mjs", () => ({
   finishSmokeRun,
+  default: finishSmokeRun,
 }));
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/prepare-smoke/target-context.mjs",
-  () => ({ prepareSmokeTargetContext }),
+  () => ({
+    prepareSmokeTargetContext,
+    default: prepareSmokeTargetContext,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/restore/smoke-target-state.mjs",
-  () => ({ restoreSmokeTargetState }),
+  () => ({
+    restoreSmokeTargetState,
+    default: restoreSmokeTargetState,
+  }),
 );
 jest.unstable_mockModule(
   "../../../../../src/validation/stages/smoke/run/smoke-package-transaction.mjs",
-  () => ({ runSmokePackageTransaction }),
+  () => ({
+    runSmokePackageTransaction,
+    default: runSmokePackageTransaction,
+  }),
 );
-
-const { runNpmConsumerSmoke } =
-  await import("../../../../../src/validation/stages/smoke/run/npm-consumer-smoke.mjs");
-
-const packageJson = { name: "@eliware/test", version: packageVersion };
+const runNpmConsumerSmoke = (
+  await import("../../../../../src/validation/stages/smoke/run/npm-consumer-smoke.mjs")
+).default;
+const packageJson = {
+  name: "@eliware/test",
+  version: packageVersion,
+};
 const targetContext = {
   targetRoot: "consumer-root",
   assertTargetIdentity: jest.fn(),
   binNames: ["eliware-test"],
-  childEnv: { PATH: "consumer-path" },
+  childEnv: {
+    PATH: "consumer-path",
+  },
 };
-const tempState = { path: "temp-root", identity: "temp-identity" };
-const smokeState = { storage: "snapshot-root" };
-
+const tempState = {
+  path: "temp-root",
+  identity: "temp-identity",
+};
+const smokeState = {
+  storage: "snapshot-root",
+};
 beforeEach(() => {
   jest.resetAllMocks();
   prepareSmokeTargetContext.mockResolvedValue(targetContext);
@@ -74,7 +108,6 @@ beforeEach(() => {
   runSmokePackageTransaction.mockResolvedValue("sha256-digest");
   finishSmokeRun.mockImplementation(async ({ outcome }) => outcome);
 });
-
 function smoke(options = {}) {
   return runNpmConsumerSmoke({
     root: "source-root",
@@ -83,10 +116,11 @@ function smoke(options = {}) {
     ...options,
   });
 }
-
 test("prepares, runs, and finishes the package consumer workflow", async () => {
   const write = jest.fn();
-  const outcome = await smoke({ write });
+  const outcome = await smoke({
+    write,
+  });
   expect(outcome).toBe(finishSmokeRun.mock.calls[0][0].outcome);
   expect(prepareSmokeTargetContext).toHaveBeenCalledWith({
     root: "source-root",
@@ -127,7 +161,10 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
       packDirectory: join("temp-root", "pack"),
       targetRoot: "consumer-root",
       assertTargetIdentity: targetContext.assertTargetIdentity,
-      env: { ...targetContext.childEnv, npm_config_cache: join("temp-root", "npm-cache") },
+      env: {
+        ...targetContext.childEnv,
+        npm_config_cache: join("temp-root", "npm-cache"),
+      },
     }),
   );
   expect(write).toHaveBeenCalledWith("Target recovery snapshot: snapshot-root");
@@ -141,24 +178,24 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
     }),
   );
 });
-
 test("returns a consumer context error before it creates a temporary directory", async () => {
-  prepareSmokeTargetContext.mockResolvedValue({ error: "consumer metadata failed" });
+  prepareSmokeTargetContext.mockResolvedValue({
+    error: "consumer metadata failed",
+  });
   await expect(smoke()).resolves.toBe("consumer metadata failed");
   expect(createSmokeTempRoot).not.toHaveBeenCalled();
   expect(finishSmokeRun).not.toHaveBeenCalled();
 });
-
 test("returns a temporary directory error before it captures target state", async () => {
-  createSmokeTempRoot.mockResolvedValue({ error: "temporary path failed" });
+  createSmokeTempRoot.mockResolvedValue({
+    error: "temporary path failed",
+  });
   await expect(smoke()).resolves.toBe("temporary path failed");
   expect(captureSmokeTargetState).not.toHaveBeenCalled();
   expect(finishSmokeRun).not.toHaveBeenCalled();
 });
-
 test("finalizes the temporary workspace when snapshot preparation fails", async () => {
   captureSmokeTargetState.mockRejectedValue(new Error("snapshot failed"));
-
   await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: snapshot failed");
   expect(runSmokePackageTransaction).not.toHaveBeenCalled();
   expect(finishSmokeRun).toHaveBeenCalledWith(
@@ -170,7 +207,6 @@ test("finalizes the temporary workspace when snapshot preparation fails", async 
     }),
   );
 });
-
 test("reports workflow failures and passes them to finalization", async () => {
   runSmokePackageTransaction.mockRejectedValue(new Error("consumer test failed"));
   const outcome = await smoke();
@@ -182,26 +218,20 @@ test("reports workflow failures and passes them to finalization", async () => {
     }),
   );
 });
-
 test("preserves the smoke outcome when finalization rejects", async () => {
   finishSmokeRun.mockRejectedValueOnce(new Error("restore diagnostic failed"));
-
   await expect(smoke()).resolves.toBe(
     `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest. ` +
       "Smoke finalization failed: restore diagnostic failed. Recovery data may remain at temp-root.",
   );
 });
-
 test("formats non-Error finalization failures", async () => {
   finishSmokeRun.mockRejectedValueOnce("restore diagnostic failed");
-
   await expect(smoke()).resolves.toContain(
     "Smoke finalization failed: restore diagnostic failed. Recovery data may remain at temp-root.",
   );
 });
-
 test("reports non-Error transaction failures", async () => {
   runSmokePackageTransaction.mockRejectedValueOnce("transaction failure");
-
   await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: transaction failure");
 });

@@ -1,9 +1,7 @@
-import { parseFocusedArguments } from "../../parse/focused-arguments.mjs";
-import { validateForwardedTestPaths } from "./validate-forwarded-test-paths.mjs";
-
+import parseFocusedArguments from "../../parse/focused-arguments.mjs";
+import validateForwardedTestPaths from "./validate-forwarded-test-paths.mjs";
 const focusedTestPathPattern = /^tests[\\/].*\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu;
-
-export function resolveFocusedTestPaths(args, hasToolMode) {
+export default function resolveFocusedTestPaths(args, hasToolMode) {
   const parsed = parseFocusedArguments(args);
   const forwardedPathError = validateForwardedTestPaths(parsed.forwardedTestPaths, hasToolMode);
   if (forwardedPathError) throw new Error(forwardedPathError);
@@ -23,7 +21,6 @@ export function resolveFocusedTestPaths(args, hasToolMode) {
     throw new Error("Focused test paths must have a source module name.");
   return focused;
 }
-
 function hasFocusedSourceName(path) {
   const fileName = path.split(/[\\/]/u).at(-1);
   const suffixIndex = fileName.search(/\.(?:test|spec)\./u);

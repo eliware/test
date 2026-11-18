@@ -1,4 +1,4 @@
-export function selectJestCli(resolveConsumer, resolveShared) {
+export default function selectJestCli(resolveConsumer, resolveShared) {
   const consumerCli = resolveConsumer();
   if (consumerCli) return consumerCli;
   const sharedCli = resolveShared();

@@ -1,3 +1,3 @@
-export function getConsumerDirectiveNamespace(packageJson) {
+export default function getConsumerDirectiveNamespace(packageJson) {
   return packageJson?.eliware?.id;
 }

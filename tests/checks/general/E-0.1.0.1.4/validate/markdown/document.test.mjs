@@ -1,10 +1,12 @@
 import { expect, jest, test } from "@jest/globals";
-
 const readFile = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-const { validateMarkdownDocument } =
-  await import("../../../../../../src/checks/general/E-0.1.0.1.4/validate/markdown/document.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  readFile,
+  default: readFile,
+}));
+const validateMarkdownDocument = (
+  await import("../../../../../../src/checks/general/E-0.1.0.1.4/validate/markdown/document.mjs")
+).default;
 test("reads the document and validates its references", async () => {
   const validateLocal = jest.fn(async () => null);
   await expect(
@@ -12,7 +14,6 @@ test("reads the document and validates its references", async () => {
   ).resolves.toEqual([]);
   expect(validateLocal).not.toHaveBeenCalled();
 });
-
 test("reports a document read failure", async () => {
   await expect(
     validateMarkdownDocument(
@@ -25,7 +26,6 @@ test("reports a document read failure", async () => {
     ),
   ).resolves.toEqual(["README.md could not be read: denied"]);
 });
-
 test("uses the mocked file reader by default", async () => {
   readFile.mockResolvedValueOnce("No links.");
   await expect(validateMarkdownDocument("/repo", "README.md", async () => null)).resolves.toEqual(

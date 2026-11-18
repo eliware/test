@@ -2,8 +2,7 @@ import { expect, test } from "@jest/globals";
 import { fileURLToPath } from "node:url";
 import { stringify } from "yaml";
 import { bundledConventionVersion } from "../../../../src/validation/check-discovery/read/bundled-profile-catalog.mjs";
-import { readProfileCombinationPolicy } from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
-
+import readProfileCombinationPolicy from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
 test("loads one validated policy for every bundled profile", () => {
   const policy = readProfileCombinationPolicy();
   expect(Object.keys(policy.profiles)).toEqual(
@@ -25,7 +24,6 @@ test("loads one validated policy for every bundled profile", () => {
     ]),
   );
 });
-
 test("rejects an invalid policy before planning continues", () => {
   expect(() =>
     readProfileCombinationPolicy({
@@ -33,7 +31,6 @@ test("rejects an invalid policy before planning continues", () => {
     }),
   ).toThrow("Profile policy omits profiles");
 });
-
 test("reads the policy from the ordering specifications folder", () => {
   let path;
   const contents = stringify(readProfileCombinationPolicy());
@@ -41,8 +38,11 @@ test("reads the policy from the ordering specifications folder", () => {
     path = fileURLToPath(url);
     return contents;
   };
-
-  expect(readProfileCombinationPolicy({ read }).profiles.general).toEqual({
+  expect(
+    readProfileCombinationPolicy({
+      read,
+    }).profiles.general,
+  ).toEqual({
     requires: [],
     requiresAny: [],
     prohibits: [],
@@ -51,10 +51,13 @@ test("reads the policy from the ordering specifications folder", () => {
     /\/specs\/conventions\/ordering\/profile-combinations\.yaml$/u,
   );
 });
-
 test("keeps canonical order out of the combination policy", () => {
   const policy = readProfileCombinationPolicy();
-  expect(policy.profiles.general).toEqual({ requires: [], requiresAny: [], prohibits: [] });
+  expect(policy.profiles.general).toEqual({
+    requires: [],
+    requiresAny: [],
+    prohibits: [],
+  });
   expect(policy.profiles["ghcr-published"]).toEqual({
     requires: ["general"],
     requiresAny: [],

@@ -1,9 +1,7 @@
-import { visitAst } from "../../../../visit-ast.mjs";
-
+import visitAst from "../../../../visit-ast.mjs";
 const methods = new Set(["get", "request"]);
 const modules = new Set(["http", "https", "node:http", "node:https"]);
-
-export function collectHttpBindings(ast) {
+export default function collectHttpBindings(ast) {
   const bindings = new Map();
   visitAst(ast, (node) => {
     if (node.type === "ImportDeclaration") {
@@ -15,7 +13,6 @@ export function collectHttpBindings(ast) {
   });
   return bindings;
 }
-
 function addBindings(moduleName, specifiers, bindings) {
   if (!modules.has(moduleName)) return;
   for (const item of specifiers) {
@@ -31,7 +28,6 @@ function addBindings(moduleName, specifiers, bindings) {
     else if (item.local?.name) bindings.set(item.local.name, moduleName);
   }
 }
-
 function readModuleName(node) {
   const expression = node?.type === "AwaitExpression" ? node.argument : node;
   if (expression?.type === "ImportExpression") return expression.source.value;

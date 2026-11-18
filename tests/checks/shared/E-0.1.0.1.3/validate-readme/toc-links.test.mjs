@@ -1,9 +1,6 @@
 import { expect, test } from "@jest/globals";
-import {
-  readTocLinks,
-  validateReadmeTocLinks,
-} from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/toc-links.mjs";
-
+import readTocLinks from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/toc-links.mjs";
+import validateReadmeTocLinks from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/toc-links/validate-readme-toc-links.mjs";
 test("reads inline and reference-style local heading links", () => {
   expect(
     readTocLinks(
@@ -14,14 +11,12 @@ test("reads inline and reference-style local heading links", () => {
     ["Setup", "setup"],
   ]);
 });
-
 test("supports collapsed and shortcut reference links", () => {
   expect(readTocLinks("[Features][]\n[Setup]\n\n[features]: #features\n[setup]: #setup")).toEqual([
     ["Features", "features"],
     ["Setup", "setup"],
   ]);
 });
-
 test("normalizes labels and skips definitions and non-local destinations", () => {
   expect(
     readTocLinks(
@@ -29,11 +24,9 @@ test("normalizes labels and skips definitions and non-local destinations", () =>
     ),
   ).toEqual([["Read Me", "read-me"]]);
 });
-
 test("returns no links when the content has no links", () => {
   expect(readTocLinks("Table of contents\n\n[unlinked]: #heading")).toEqual([]);
 });
-
 test("validates the required links and their order", () => {
   expect(
     validateReadmeTocLinks(["## Table of Contents", "- [Features](#features)", "## Features"], 0, [

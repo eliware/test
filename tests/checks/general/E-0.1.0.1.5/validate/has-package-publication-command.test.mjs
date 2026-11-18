@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { hasPackagePublicationCommand } from "../../../../../src/checks/general/E-0.1.0.1.5/validate/has-package-publication-command.mjs";
-
+import hasPackagePublicationCommand from "../../../../../src/checks/general/E-0.1.0.1.5/validate/has-package-publication-command.mjs";
 test.each([
   "npm publish",
   "npx semantic-release",
@@ -12,7 +11,6 @@ test.each([
 ])("detects publication command %s", (command) => {
   expect(hasPackagePublicationCommand(command)).toBe(true);
 });
-
 test.each([undefined, null, 7, "npm test", 'echo "ghcr.io/eliware/example:latest"'])(
   "allows non-publication command %s",
   (command) => {

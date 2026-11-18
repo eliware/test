@@ -19,10 +19,8 @@ export const testToolRunners = Object.freeze([
   "testcafe",
   "protractor",
 ]);
-
 const runnerPattern = testToolRunners.join("|");
-
-export function hasAlternativePackageScriptCommand(command) {
+export default function hasAlternativePackageScriptCommand(command) {
   const direct = new RegExp(
     `(?:^|[\\s.&|])(?:${runnerPattern}|bun\\s+test|deno\\s+test)(?=$|\\s)`,
     "iu",

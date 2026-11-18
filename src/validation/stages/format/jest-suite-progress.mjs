@@ -1,4 +1,4 @@
-export function formatJestSuiteProgress(event, elapsed = "0.000") {
+export default function formatJestSuiteProgress(event, elapsed = "0.000") {
   if (event.event === "start" && typeof event.path === "string")
     return [`[${elapsed}s] ${event.path}...`];
   if (event.event !== "result") return [];

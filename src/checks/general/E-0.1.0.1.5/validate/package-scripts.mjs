@@ -1,5 +1,4 @@
-import { hasPackagePublicationCommand } from "./has-package-publication-command.mjs";
-
+import hasPackagePublicationCommand from "./has-package-publication-command.mjs";
 const consumerScripts = {
   test: "eliware-test",
   lint: "eliware-test --lint",
@@ -15,8 +14,7 @@ const selfScripts = {
   "format:check": "node bin/eliware-test.mjs --format-check",
 };
 const selfRepository = "git+https://github.com/eliware/test.git";
-
-export function validatePackageScripts(packageJson = {}) {
+export default function validatePackageScripts(packageJson = {}) {
   const scripts = packageJson?.scripts;
   if (!scripts || typeof scripts !== "object" || Array.isArray(scripts))
     return ["package.json.scripts must be an object."];

@@ -1,10 +1,8 @@
 import { posix, win32 } from "node:path";
-import { getRepositoryPathStyle } from "./path-style.mjs";
-
-export function normalizeRepositoryRelativePath(path, root = process.cwd()) {
+import getRepositoryPathStyle from "./path-style.mjs";
+export default function normalizeRepositoryRelativePath(path, root = process.cwd()) {
   if (typeof path !== "string" || path.length === 0) return "unknown";
   if (typeof root !== "string" || root.length === 0) return "[outside repository]";
-
   const pathStyle = getRepositoryPathStyle(root, path);
   if (!pathStyle) return "[outside repository]";
   const pathApi = pathStyle === "windows" ? win32 : posix;

@@ -1,17 +1,19 @@
 import prettier from "prettier";
 import { minimatch } from "minimatch";
 import { join } from "node:path";
-import { readTrackedFilePaths } from "../../read-tracked-file-paths.mjs";
-
+import readTrackedFilePaths from "../../read-tracked-file-paths.mjs";
 const maintainedExtensions = new Set([".mjs", ".json", ".yml", ".yaml", ".md"]);
-
-export async function validatePrettierIgnorePolicy(repositoryInventory, files, root, runGit) {
+export default async function validatePrettierIgnorePolicy(
+  repositoryInventory,
+  files,
+  root,
+  runGit,
+) {
   const errors = [];
   const prettierIgnoreFiles = files.filter((file) => /(?:^|\/)\.prettierignore$/iu.test(file));
   if (prettierIgnoreFiles.length)
     errors.push(`Prettier ignore files are not allowed: ${prettierIgnoreFiles.join(", ")}.`);
   if (!repositoryInventory.readText || !files.includes(".gitignore")) return errors;
-
   const ignoreText = await repositoryInventory.readText(".gitignore");
   const patterns = ignoreText
     .split(/\r?\n/u)
@@ -27,7 +29,6 @@ export async function validatePrettierIgnorePolicy(repositoryInventory, files, r
     errors.push(`.gitignore must not exclude maintained files: ${excluded.join(", ")}.`);
   return errors;
 }
-
 async function findPrettierIgnored(files, root, trackedFiles) {
   const ignorePath = [join(root, ".gitignore")];
   const ignored = [];
@@ -35,13 +36,16 @@ async function findPrettierIgnored(files, root, trackedFiles) {
     if (!maintainedExtensions.has(file.slice(file.lastIndexOf(".")))) continue;
     if (
       trackedFiles.has(file) &&
-      (await prettier.getFileInfo(join(root, file), { ignorePath })).ignored
+      (
+        await prettier.getFileInfo(join(root, file), {
+          ignorePath,
+        })
+      ).ignored
     )
       ignored.push(file);
   }
   return ignored;
 }
-
 function isIgnored(file, patterns) {
   const parts = file.split("/");
   const paths = parts.map((_, index) => parts.slice(0, index + 1).join("/"));
@@ -55,7 +59,10 @@ function isIgnored(file, patterns) {
       const isDirectory = index < paths.length - 1;
       const matches =
         (!directoryOnly || isDirectory) &&
-        minimatch(path, pattern, { matchBase: !anchored, dot: true });
+        minimatch(path, pattern, {
+          matchBase: !anchored,
+          dot: true,
+        });
       return matches ? !negated : state;
     }, false),
   );

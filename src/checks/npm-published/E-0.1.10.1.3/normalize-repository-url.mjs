@@ -1,4 +1,4 @@
-export function normalizeRepositoryUrl(value) {
+export default function normalizeRepositoryUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   const match =
     /^(?:git\+)?(?:https:\/\/github\.com\/|ssh:\/\/git@github\.com\/|git@github\.com:)([^/?#]+)\/([^/?#]+?)(?:\.git)?\/?$/iu.exec(

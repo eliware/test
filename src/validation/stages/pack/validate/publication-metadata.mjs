@@ -1,10 +1,9 @@
-import { compatibleWithNode26 } from "./compatible-node-range.mjs";
-import { derivePackageFilesAllowlist } from "../derive-package-files-allowlist.mjs";
-import { validateOrderedPackageFiles } from "./ordered-package-files.mjs";
-import { validatePackageLifecycleScripts } from "./package-lifecycle-scripts.mjs";
-import { validatePackScript } from "./pack-script.mjs";
-
-export function validatePublicationMetadata(packageJson, { selfHosted = false } = {}) {
+import compatibleWithNode26 from "./compatible-node-range.mjs";
+import derivePackageFilesAllowlist from "../derive-package-files-allowlist.mjs";
+import validateOrderedPackageFiles from "./ordered-package-files.mjs";
+import validatePackageLifecycleScripts from "./package-lifecycle-scripts.mjs";
+import validatePackScript from "./pack-script.mjs";
+export default function validatePublicationMetadata(packageJson, { selfHosted = false } = {}) {
   if (packageJson?.private !== false) {
     return "Public npm packages must set package.json.private to false.";
   }

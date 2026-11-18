@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { parseActionableJestOutput } from "../../../../../../src/validation/stages/jest/execution/parse/actionable-output.mjs";
-
+import parseActionableJestOutput from "../../../../../../src/validation/stages/jest/execution/parse/actionable-output.mjs";
 test("removes routine Jest and coverage lines from failure output", () => {
   expect(
     parseActionableJestOutput(
@@ -23,7 +22,6 @@ test("removes routine Jest and coverage lines from failure output", () => {
     ),
   ).toBe("Expected: 1");
 });
-
 test("handles absent output and keeps ordinary failure text", () => {
   expect(parseActionableJestOutput(undefined)).toBe("");
   expect(parseActionableJestOutput("FAIL tests/bad.test.mjs\nExpected 2")).toBe(

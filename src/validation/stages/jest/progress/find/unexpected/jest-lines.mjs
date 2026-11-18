@@ -1,5 +1,4 @@
-import { createActiveSuiteTracker } from "../active-suite.mjs";
-
+import createActiveSuiteTracker from "../active-suite.mjs";
 const JEST_LINES = [
   /^(?:PASS|FAIL)\s/,
   /^Test Suites:/,
@@ -23,23 +22,27 @@ const JEST_LINES = [
   /^\[REDACTED\].+\(\d+(?:\.\d+)?\s(?:ms|s)\)$/u,
 ];
 const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
-
-export function findUnexpectedJestLines(text) {
+export default function findUnexpectedJestLines(text) {
   return findUnexpectedJestLineRecords(text).map(({ line }) => line);
 }
-
-export function findUnexpectedJestLineRecords(text) {
+function findUnexpectedJestLineRecords(text) {
   const lines = text.split(/\r?\n/);
   const completeLines = text.endsWith("…") ? lines.slice(0, -1) : lines;
   const activeSuite = createActiveSuiteTracker();
   return completeLines.flatMap((rawLine) => {
     const line = rawLine.replace(ANSI_ESCAPE, "").trim();
-    const record = isUnexpectedLine(line) ? [{ line, suite: activeSuite.current() }] : [];
+    const record = isUnexpectedLine(line)
+      ? [
+          {
+            line,
+            suite: activeSuite.current(),
+          },
+        ]
+      : [];
     activeSuite.observe(line);
     return record;
   });
 }
-
 function isUnexpectedLine(line) {
   return Boolean(
     line &&

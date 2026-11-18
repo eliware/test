@@ -1,15 +1,18 @@
 import { expect, jest, test } from "@jest/globals";
-import { createPendingTextChunks } from "../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
-import { finishRedactedStreamBuffer } from "../../../../../src/validation/shared/output/redaction/finish-redacted-stream-buffer.mjs";
-
-const boundary = () => ({ matchEnds: [], suppressed: false });
-
+import createPendingTextChunks from "../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
+import finishRedactedStreamBuffer from "../../../../../src/validation/shared/output/redaction/finish-redacted-stream-buffer.mjs";
+const boundary = () => ({
+  matchEnds: [],
+  suppressed: false,
+});
 test("finishes a string buffer and appends decoder output", () => {
   const append = jest.fn((text) => text);
   const findSafeBoundary = jest.fn(boundary);
   const result = finishRedactedStreamBuffer({
     pending: "pending",
-    decoder: { end: () => " tail" },
+    decoder: {
+      end: () => " tail",
+    },
     findSafeBoundary,
     trimSuffix: (text) => text,
     append,
@@ -19,14 +22,17 @@ test("finishes a string buffer and appends decoder output", () => {
   expect(findSafeBoundary).toHaveBeenCalledWith("pending tail", true);
   expect(append).toHaveBeenCalledWith("pending tail", []);
 });
-
 test("finishes chunked buffers through the incremental boundary scanner", () => {
   const pendingChunks = createPendingTextChunks();
   pendingChunks.append("pending");
-  const findSafeBoundary = { appendText: jest.fn(boundary) };
+  const findSafeBoundary = {
+    appendText: jest.fn(boundary),
+  };
   const result = finishRedactedStreamBuffer({
     pendingChunks,
-    decoder: { end: () => " tail" },
+    decoder: {
+      end: () => " tail",
+    },
     findSafeBoundary,
     trimSuffix: (text) => text,
     append: (text) => text,
@@ -36,7 +42,6 @@ test("finishes chunked buffers through the incremental boundary scanner", () => 
   expect(findSafeBoundary.appendText).toHaveBeenCalledWith(" tail", 12, true);
   expect(pendingChunks.length).toBe(0);
 });
-
 test("suppresses unsafe final text and clears retained chunks", () => {
   const pendingChunks = createPendingTextChunks();
   pendingChunks.append("secret");
@@ -44,8 +49,14 @@ test("suppresses unsafe final text and clears retained chunks", () => {
   const append = jest.fn();
   const result = finishRedactedStreamBuffer({
     pendingChunks,
-    decoder: { end: () => "" },
-    findSafeBoundary: { appendText: () => ({ suppressed: true }) },
+    decoder: {
+      end: () => "",
+    },
+    findSafeBoundary: {
+      appendText: () => ({
+        suppressed: true,
+      }),
+    },
     trimSuffix: (text) => text,
     append,
     suppress,

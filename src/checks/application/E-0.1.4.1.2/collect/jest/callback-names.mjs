@@ -1,9 +1,8 @@
-export function collectJestCallbackNames(root) {
+export default function collectJestCallbackNames(root) {
   const names = new Set();
   visit(root, names);
   return names;
 }
-
 function visit(node, names) {
   if (Array.isArray(node)) node.forEach((item) => visit(item, names));
   else if (node && typeof node === "object") {

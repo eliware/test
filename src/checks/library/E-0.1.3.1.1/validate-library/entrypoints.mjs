@@ -1,11 +1,10 @@
-import { validateLibraryInternalExportBarrels } from "./internal-export-barrels.mjs";
-import { collectLibraryExportTargets } from "../collect-library-export-targets.mjs";
-import { validateLibraryRuntimeEntrypoints } from "./runtime-entrypoints.mjs";
-import { validateLibraryDeclarationEntrypoints } from "./declaration-entrypoints.mjs";
+import validateLibraryInternalExportBarrels from "./internal-export-barrels.mjs";
+import collectLibraryExportTargets from "../collect-library-export-targets.mjs";
+import validateLibraryRuntimeEntrypoints from "./runtime-entrypoints.mjs";
+import validateLibraryDeclarationEntrypoints from "./declaration-entrypoints.mjs";
 import { stat } from "node:fs/promises";
-import { validateSingleDefaultMethods } from "../../../shared/single-default-methods.mjs";
-
-export async function validateLibraryEntrypoints(context = {}, dependencies = {}) {
+import validateSingleDefaultMethods from "../../../shared/single-default-methods.mjs";
+export default async function validateLibraryEntrypoints(context = {}, dependencies = {}) {
   const packageJson = context.packageJson ?? {};
   const root = context.root ?? process.cwd();
   const checkFile = dependencies.stat ?? stat;
@@ -42,7 +41,9 @@ export async function validateLibraryEntrypoints(context = {}, dependencies = {}
         context.repositoryInventory.readText,
         packageJson,
         root,
-        { library: true },
+        {
+          library: true,
+        },
       )),
     );
   }

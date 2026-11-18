@@ -1,19 +1,16 @@
 import { expect, test } from "@jest/globals";
-import { resolveFocusedTestPaths } from "../../../../src/cli/resolve/focused/test-paths.mjs";
-
+import resolveFocusedTestPaths from "../../../../src/cli/resolve/focused/test-paths.mjs";
 test("returns a single supported test file before the Jest separator", () => {
   expect(resolveFocusedTestPaths(["tests/example.test.mjs"], false)).toEqual([
     "tests/example.test.mjs",
   ]);
 });
-
 test("returns multiple supported test files in the supplied order", () => {
   expect(resolveFocusedTestPaths(["tests/first.test.mjs", "tests/second.spec.ts"], false)).toEqual([
     "tests/first.test.mjs",
     "tests/second.spec.ts",
   ]);
 });
-
 test.each(["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"])(
   "accepts the supported focused test extension .%s",
   (extension) => {
@@ -22,14 +19,12 @@ test.each(["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"])(
     ]);
   },
 );
-
 test("rejects focused test paths combined with tool modes", () => {
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], true)).toThrow(
     "cannot be combined with tool modes",
   );
   expect(() => resolveFocusedTestPaths(["src/example.mjs"], false)).toThrow("must be under tests/");
 });
-
 test.each([
   "test/example.test.mjs",
   "specs/example.test.mjs",
@@ -40,7 +35,6 @@ test.each([
 ])("rejects unsupported focused path %s", (path) => {
   expect(() => resolveFocusedTestPaths([path], false)).toThrow("must be under tests/");
 });
-
 test.each(["tests/../outside.test.mjs", "tests\\..\\outside.test.mjs"])(
   "rejects parent-directory traversal in %s",
   (path) => {
@@ -49,13 +43,11 @@ test.each(["tests/../outside.test.mjs", "tests\\..\\outside.test.mjs"])(
     );
   },
 );
-
 test("rejects a focused path without a source module name", () => {
   expect(() => resolveFocusedTestPaths(["tests/.test.mjs"], false)).toThrow(
     "must have a source module name",
   );
 });
-
 test("rejects focused tests with tool modes and allows non-path mode arguments", () => {
   expect(() => resolveFocusedTestPaths(["tests/example.test.mjs"], true)).toThrow(
     "cannot be combined with tool modes",

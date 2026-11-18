@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findUnexpectedJestLines } from "../../../../../../../src/validation/stages/jest/progress/find/unexpected/jest-lines.mjs";
-
+import findUnexpectedJestLines from "../../../../../../../src/validation/stages/jest/progress/find/unexpected/jest-lines.mjs";
 test("allows Jest summaries, assertion markers, and harness timing lines", () => {
   expect(
     findUnexpectedJestLines(
@@ -8,33 +7,28 @@ test("allows Jest summaries, assertion markers, and harness timing lines", () =>
     ),
   ).toEqual([]);
 });
-
 test("allows timed Jest reporter lines whose assertion marker was redacted", () => {
   expect(findUnexpectedJestLines("[REDACTED] handles the test (1 ms)\n")).toEqual([]);
   expect(findUnexpectedJestLines("[REDACTED] application output")).toEqual([
     "[REDACTED] application output",
   ]);
 });
-
 test("allows progress lines with framing whitespace", () => {
   expect(findUnexpectedJestLines("  [eliware-test-progress] complete suite 0.100s  \n")).toEqual(
     [],
   );
 });
-
 test("allows harness output after transport framing removes brackets", () => {
   expect(
     findUnexpectedJestLines("eliware-test-progress start suite\n[eliware-test] Running suite...\n"),
   ).toEqual([]);
 });
-
 test("returns unexpected output lines", () => {
   expect(findUnexpectedJestLines("application log\napplication log\n")).toEqual([
     "application log",
     "application log",
   ]);
 });
-
 test("ignores only the partial final line marked as truncated", () => {
   expect(findUnexpectedJestLines("application log\nE-0.1.70.mjs | 100% …")).toEqual([
     "application log",

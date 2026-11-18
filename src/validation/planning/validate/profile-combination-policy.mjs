@@ -1,6 +1,5 @@
 const profileName = /^[a-z0-9-]+$/u;
-
-export function validateProfileCombinationPolicy(policy, knownProfiles, expectedVersion) {
+export default function validateProfileCombinationPolicy(policy, knownProfiles, expectedVersion) {
   const errors = [];
   if (!policy || typeof policy !== "object" || Array.isArray(policy))
     return ["specs/conventions/ordering/profile-combinations.yaml must contain an object."];
@@ -17,13 +16,11 @@ export function validateProfileCombinationPolicy(policy, knownProfiles, expected
       ...errors,
       "specs/conventions/ordering/profile-combinations.yaml must define profiles.",
     ];
-
   const declaredProfiles = Object.keys(policy.profiles);
   const missing = knownProfiles.filter((profile) => !declaredProfiles.includes(profile));
   const unknown = declaredProfiles.filter((profile) => !knownProfiles.includes(profile));
   if (missing.length) errors.push(`Profile policy omits profiles: ${missing.join(", ")}.`);
   if (unknown.length) errors.push(`Profile policy names unknown profiles: ${unknown.join(", ")}.`);
-
   for (const [profile, values] of Object.entries(policy.profiles)) {
     if (
       !profileName.test(profile) ||
@@ -38,7 +35,6 @@ export function validateProfileCombinationPolicy(policy, knownProfiles, expected
   }
   return errors;
 }
-
 function validateProfileLists(profile, values, declaredProfiles, errors) {
   for (const field of ["requires", "requiresAny", "prohibits"]) {
     const names = values[field];

@@ -1,16 +1,18 @@
 import { readFile, readdir, stat as statPath } from "node:fs/promises";
 import { posix, win32 } from "node:path";
-import { findRepositoryEntries } from "../find-repository-files.mjs";
-import { createRepositoryDiscovery } from "./inventory/discovery.mjs";
-import { createRepositoryFileViews } from "./inventory/views.mjs";
-import { createRepositoryContentCache } from "./inventory/content.mjs";
-import { createDocumentationFileView } from "./inventory/documentation.mjs";
-import { createRepositoryDirectoryEntries } from "./directory/entries.mjs";
-
-export function createRepositoryInventory(root, options = {}, currentPlatform = process.platform) {
+import findRepositoryEntries from "../find-repository-files.mjs";
+import createRepositoryDiscovery from "./inventory/discovery.mjs";
+import createRepositoryFileViews from "./inventory/views.mjs";
+import createRepositoryContentCache from "./inventory/content.mjs";
+import createDocumentationFileView from "./inventory/documentation.mjs";
+import createRepositoryDirectoryEntries from "./directory/entries.mjs";
+export default function createRepositoryInventory(
+  root,
+  options = {},
+  currentPlatform = process.platform,
+) {
   if (typeof root !== "string" || !root.trim())
     throw new TypeError("Repository inventory root must be a non-empty path string.");
-
   const windowsRoot = /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(root);
   if (windowsRoot && currentPlatform !== "win32")
     throw new Error("Windows repository inventory roots require a Windows host.");
@@ -47,7 +49,6 @@ export function createRepositoryInventory(root, options = {}, currentPlatform = 
     statDirectory,
     hasFullDiscovery: discovery.hasFullDiscovery,
   });
-
   return Object.freeze({
     root,
     focusedScope,

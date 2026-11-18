@@ -1,4 +1,4 @@
-export function validateMirroredTests(files) {
+export default function validateMirroredTests(files) {
   const sources = files.filter((path) => /^src\/.*\.mjs$/u.test(path));
   const tests = files.filter((path) => path.startsWith("tests/"));
   const expected = new Set(sources.map((path) => `tests/${path.slice(4, -4)}.test.mjs`));

@@ -1,8 +1,8 @@
+import findPackageScriptValidatorPaths from "../../../shared/package-scripts/validate/package-script-file-locations/find-package-script-validator-paths.mjs";
 const modulePath = /\.(?:mjs|js|mts|ts|jsx|tsx|cjs|cts)$/iu;
 const allowedRoots = /^(?:src|bin|tests|test-fixtures|examples)\//u;
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
-
-export function validateImplementationPlacement(files, profiles = [], packageJson = {}) {
+export default function validateImplementationPlacement(files, profiles = [], packageJson = {}) {
   const discoveryRoots = [];
   const validatorPaths = new Set(findPackageScriptValidatorPaths(packageJson));
   if (profiles.includes("discord")) discoveryRoots.push("commands", "events");
@@ -21,4 +21,3 @@ export function validateImplementationPlacement(files, profiles = [], packageJso
     )
     .map((path) => `${path} is an implementation module outside its allowed root.`);
 }
-import { findPackageScriptValidatorPaths } from "../../../shared/package-scripts/validate/package-script-file-locations.mjs";

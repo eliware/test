@@ -1,5 +1,4 @@
 import { isDeepStrictEqual } from "node:util";
-
 export const canonicalPrettierConfiguration = Object.freeze({
   printWidth: 100,
   tabWidth: 2,
@@ -15,8 +14,7 @@ export const canonicalPrettierConfiguration = Object.freeze({
   proseWrap: "preserve",
   endOfLine: "lf",
 });
-
-export function validatePrettierConfiguration(packageJson = {}) {
+export default function validatePrettierConfiguration(packageJson = {}) {
   if (!isDeepStrictEqual(packageJson?.prettier, canonicalPrettierConfiguration))
     return ["package.json.prettier must match the canonical Eliware configuration exactly."];
   return [];

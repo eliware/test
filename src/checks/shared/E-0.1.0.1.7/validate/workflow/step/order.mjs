@@ -1,6 +1,5 @@
-import { readCanonicalOrder } from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validateWorkflowStepOrder(steps) {
+import readCanonicalOrder from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validateWorkflowStepOrder(steps) {
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
   const indexes = validationSteps.map((name, index) =>
     steps.findIndex((step) => (index < 2 ? step.uses : step.run) === stepValues[name]),

@@ -13,8 +13,7 @@ const protectedOptions = new Set([
   "-C",
 ]);
 const valueOptions = new Set(["--loglevel"]);
-
-export function validatePackArguments(args = []) {
+export default function validatePackArguments(args = []) {
   if (!Array.isArray(args) || args.some((argument) => typeof argument !== "string"))
     return "Provide pack arguments in an array of strings.";
   let expectsValue = false;
@@ -44,11 +43,9 @@ export function validatePackArguments(args = []) {
   if (expectsValue) failures.push("Pack argument --loglevel requires a value.");
   return failures.length ? failures.join("\n") : null;
 }
-
 function isProtectedOption(option) {
   return protectedOptions.has(option) || /^-(?:w|C).+$/u.test(option);
 }
-
 function protectedArgumentError(argument) {
   return `Pack arguments cannot override dry-run, JSON output, output location, or package selection: ${argument}.`;
 }

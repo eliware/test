@@ -1,10 +1,8 @@
 import { relative, resolve } from "node:path";
 import { requiredIgnoreCases } from "../../ignore-patterns.mjs";
-
-export function parseGitIgnoreProbeResults(output, root) {
+export default function parseGitIgnoreProbeResults(output, root) {
   return new Set(output.split(/\r?\n/u).flatMap((line) => parseIgnoredPath(line, root)));
 }
-
 function parseIgnoredPath(line, root) {
   const separator = line.indexOf("\t");
   if (separator < 0) return [];

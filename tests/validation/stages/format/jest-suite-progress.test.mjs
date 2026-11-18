@@ -1,18 +1,25 @@
 import { expect, test } from "@jest/globals";
-import { formatJestSuiteProgress } from "../../../../src/validation/stages/format/jest-suite-progress.mjs";
-
+import formatJestSuiteProgress from "../../../../src/validation/stages/format/jest-suite-progress.mjs";
 test("writes one start line for a suite", () => {
   expect(
-    formatJestSuiteProgress({ event: "start", path: "tests/example.test.mjs" }, "24.503"),
+    formatJestSuiteProgress(
+      {
+        event: "start",
+        path: "tests/example.test.mjs",
+      },
+      "24.503",
+    ),
   ).toEqual(["[24.503s] tests/example.test.mjs..."]);
 });
-
 test("writes PASS and duration for a successful suite", () => {
-  expect(formatJestSuiteProgress({ event: "result", duration: "0.212", failed: false })).toEqual([
-    " PASS - 0.212s\n",
-  ]);
+  expect(
+    formatJestSuiteProgress({
+      event: "result",
+      duration: "0.212",
+      failed: false,
+    }),
+  ).toEqual([" PASS - 0.212s\n"]);
 });
-
 test("writes failures and unexpected output before FAIL and duration", () => {
   expect(
     formatJestSuiteProgress({
@@ -28,14 +35,24 @@ test("writes failures and unexpected output before FAIL and duration", () => {
     " FAIL - 1.250s\n",
   ]);
 });
-
 test("ignores unknown or incomplete progress events", () => {
-  expect(formatJestSuiteProgress({ event: "start" })).toEqual([]);
-  expect(formatJestSuiteProgress({ event: "other" })).toEqual([]);
+  expect(
+    formatJestSuiteProgress({
+      event: "start",
+    }),
+  ).toEqual([]);
+  expect(
+    formatJestSuiteProgress({
+      event: "other",
+    }),
+  ).toEqual([]);
 });
-
 test("writes FAIL even when no failure details are available", () => {
-  expect(formatJestSuiteProgress({ event: "result", failed: true, duration: "0.000" })).toEqual([
-    " FAIL - 0.000s\n",
-  ]);
+  expect(
+    formatJestSuiteProgress({
+      event: "result",
+      failed: true,
+      duration: "0.000",
+    }),
+  ).toEqual([" FAIL - 0.000s\n"]);
 });

@@ -1,4 +1,4 @@
-export function parseFailedJestProgressOutput(text) {
+export default function parseFailedJestProgressOutput(text) {
   return String(text ?? "")
     .split(/\r?\n/u)
     .flatMap((line) => {

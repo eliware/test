@@ -3,9 +3,8 @@ import {
   moduleParserOptions,
   repositorySourceParserOptions,
 } from "../../../../validation/shared/ast/create-repository-ast/cache.mjs";
-import { collectCommonJsFindings } from "../collect-commonjs/findings.mjs";
-
-export async function scanCommonJsSourceModule({ root, file, parseAst, readSource }) {
+import collectCommonJsFindings from "../collect-commonjs/findings.mjs";
+export default async function scanCommonJsSourceModule({ root, file, parseAst, readSource }) {
   const findings = [];
   try {
     const options = file.endsWith(".mjs") ? moduleParserOptions : repositorySourceParserOptions;

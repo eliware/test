@@ -1,9 +1,8 @@
-import { findSeparateTestRunnerConfigs } from "../../../find-separate-test-runner-configs.mjs";
-import { collectJestPolicyFiles } from "../collect-policy-files.mjs";
-import { validateJestSourceFilePolicy } from "./file-policy.mjs";
-import { isPrimaryLibraryBarrel } from "./is-primary-library-barrel.mjs";
-
-export async function validateJestSourcePolicy(context = {}) {
+import findSeparateTestRunnerConfigs from "../../../find-separate-test-runner-configs.mjs";
+import collectJestPolicyFiles from "../collect-policy-files.mjs";
+import validateJestSourceFilePolicy from "./file-policy.mjs";
+import isPrimaryLibraryBarrel from "./is-primary-library-barrel.mjs";
+export default async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
   const harness = context.packageJson?.name === "@eliware/test";

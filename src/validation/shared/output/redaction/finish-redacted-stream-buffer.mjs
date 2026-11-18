@@ -1,6 +1,5 @@
-import { redactMatchedSecrets } from "./redact/secrets.mjs";
-
-export function finishRedactedStreamBuffer({
+import redactMatchedSecrets from "./redact/secrets.mjs";
+export default function finishRedactedStreamBuffer({
   pending,
   pendingChunks,
   decoder,

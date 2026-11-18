@@ -1,8 +1,6 @@
-import { visitAst } from "../../visit-ast.mjs";
-
+import visitAst from "../../visit-ast.mjs";
 const timerNames = new Set(["setTimeout", "setInterval", "setImmediate"]);
-
-export function findClockEffectViolations(ast) {
+export default function findClockEffectViolations(ast) {
   const findings = [];
   let fakeTimers = false;
   visitAst(ast, (node) => {
@@ -16,7 +14,6 @@ export function findClockEffectViolations(ast) {
   });
   return [...new Set(findings)];
 }
-
 function isFakeTimersCall(node) {
   return (
     node.type === "CallExpression" &&
@@ -25,11 +22,9 @@ function isFakeTimersCall(node) {
     propertyName(node.callee) === "useFakeTimers"
   );
 }
-
 function isTimerCall(node) {
   return node.type === "CallExpression" && timerNames.has(node.callee?.name);
 }
-
 function isUncontrolledDate(node) {
   return (
     (node.type === "NewExpression" &&
@@ -41,7 +36,6 @@ function isUncontrolledDate(node) {
       propertyName(node.callee) === "now")
   );
 }
-
 function propertyName(member) {
   return member.computed ? member.property?.value : member.property?.name;
 }

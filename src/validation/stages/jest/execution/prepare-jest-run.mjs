@@ -1,12 +1,11 @@
 import { join } from "node:path";
-import { prepareConsumerCoverageDirectory } from "../configuration/prepare-consumer-coverage-directory.mjs";
-import { createJestProcessOptions } from "../../../shared/process/create/jest-process-options.mjs";
-import { buildJestArguments } from "../configuration/build-jest-arguments.mjs";
-import { resolveFocusedCoverage } from "../configuration/resolve/focused-coverage.mjs";
-import { validateFocusedTestPath } from "../configuration/validate-focused-test-path.mjs";
-import { resolveJestReporters } from "../configuration/resolve/jest/reporters.mjs";
-
-export async function prepareJestRun(root, args = [], resolveCli, options) {
+import prepareConsumerCoverageDirectory from "../configuration/prepare-consumer-coverage-directory.mjs";
+import createJestProcessOptions from "../../../shared/process/create/jest-process-options.mjs";
+import buildJestArguments from "../configuration/build-jest-arguments.mjs";
+import resolveFocusedCoverage from "../configuration/resolve/focused-coverage.mjs";
+import validateFocusedTestPath from "../configuration/validate-focused-test-path.mjs";
+import resolveJestReporters from "../configuration/resolve/jest/reporters.mjs";
+export default async function prepareJestRun(root, args = [], resolveCli, options) {
   const focusedPath = await validateFocusedTestPath(root, args);
   const focusedCoverage = await resolveFocusedCoverage(root, focusedPath);
   const jestArguments = buildJestArguments(args);
@@ -15,7 +14,10 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   const coverageDirectory = await prepareConsumerCoverageDirectory(root, options?.coverageFs);
   const jestLogFile = join(coverageDirectory, "jest.log");
   const consoleReportFile = join(coverageDirectory, "jest-console-events.json");
-  const processOptions = createJestProcessOptions(root, args, { ...options, consoleReportFile });
+  const processOptions = createJestProcessOptions(root, args, {
+    ...options,
+    consoleReportFile,
+  });
   return {
     coverageDirectory,
     jestLogFile,

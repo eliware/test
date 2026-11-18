@@ -1,7 +1,6 @@
-import { removeMarkdownCode } from "./extract-markdown/remove-markdown-code.mjs";
-import { slugMarkdownHeading } from "./slug-markdown-heading.mjs";
-
-export function hasMarkdownFragment(content, fragment) {
+import removeMarkdownCode from "./extract-markdown/remove-markdown-code.mjs";
+import slugMarkdownHeading from "./slug-markdown-heading.mjs";
+export default function hasMarkdownFragment(content, fragment) {
   let wanted;
   try {
     wanted = decodeURIComponent(fragment);
@@ -10,7 +9,9 @@ export function hasMarkdownFragment(content, fragment) {
   }
   const anchors = new Set();
   const counts = new Map();
-  const lines = removeMarkdownCode(content, { preserveInlineCodeText: true }).split(/\r?\n/u);
+  const lines = removeMarkdownCode(content, {
+    preserveInlineCodeText: true,
+  }).split(/\r?\n/u);
   const markupLines = removeMarkdownCode(content).split(/\r?\n/u);
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];

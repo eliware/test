@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateJestSettings } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/settings.mjs";
-
+import validateJestSettings from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/settings.mjs";
 const validSettings = {
   collectCoverageFrom: ["src/**/*.mjs"],
   coverageReporters: ["text", "json-summary"],
@@ -8,11 +7,9 @@ const validSettings = {
   testEnvironment: "node",
   testMatch: ["**/tests/**/*.test.mjs"],
 };
-
 test("accepts the required Jest settings", () => {
   expect(validateJestSettings(validSettings)).toEqual([]);
 });
-
 test("reports extra keys and changed Jest settings", () => {
   const errors = validateJestSettings({
     ...validSettings,
@@ -22,7 +19,6 @@ test("reports extra keys and changed Jest settings", () => {
     collectCoverageFrom: [],
     coverageReporters: [],
   });
-
   expect(errors).toEqual([
     "package.json Jest settings must use only the required configuration keys.",
     'Jest testEnvironment must be "node".',

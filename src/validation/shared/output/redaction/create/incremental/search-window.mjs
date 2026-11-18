@@ -1,6 +1,5 @@
-import { createMatchIntervalIndex } from "../../../../search/create/match-interval-index.mjs";
-
-export function createIncrementalSearchWindow(values) {
+import createMatchIntervalIndex from "../../../../search/create/match-interval-index.mjs";
+export default function createIncrementalSearchWindow(values) {
   const matchIndex = createMatchIntervalIndex();
   const maximumSecretLength = values.reduce(
     (maximum, secret) => Math.max(maximum, secret.length),
@@ -9,13 +8,18 @@ export function createIncrementalSearchWindow(values) {
   let bufferStart = 0;
   let previousPending = "";
   let previousBoundary = 0;
-
   function appendedText(pending) {
     const retained = previousPending.slice(previousBoundary);
-    if (!pending.startsWith(retained)) return { text: "", suppressed: true };
-    return { text: pending.slice(retained.length), suppressed: false };
+    if (!pending.startsWith(retained))
+      return {
+        text: "",
+        suppressed: true,
+      };
+    return {
+      text: pending.slice(retained.length),
+      suppressed: false,
+    };
   }
-
   function applyMatches(matches, pendingLength, includePendingMatches) {
     matchIndex.add(matches);
     const candidateBoundary = Math.max(0, pendingLength - maximumSecretLength);
@@ -28,9 +32,12 @@ export function createIncrementalSearchWindow(values) {
       : matchIndex.materialize(bufferStart, boundary);
     matchIndex.discardThrough(bufferStart + boundary);
     bufferStart += boundary;
-    return { boundary, matchEnds, suppressed: false };
+    return {
+      boundary,
+      matchEnds,
+      suppressed: false,
+    };
   }
-
   return {
     appendedText,
     applyMatches,

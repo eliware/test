@@ -1,7 +1,6 @@
-import { createRedactedTextStream } from "../../../../output/redaction/create/redacted/text/stream.mjs";
-import { createSecretTextMatcher } from "../../../../output/redaction/create/secret-text-matcher.mjs";
-
-export function createLazyChildProcessRedactors(
+import createRedactedTextStream from "../../../../output/redaction/create/redacted/text/stream.mjs";
+import createSecretTextMatcher from "../../../../output/redaction/create/secret-text-matcher.mjs";
+export default function createLazyChildProcessRedactors(
   redactionSecrets,
   outputLimit,
   maxPendingLength,

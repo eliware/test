@@ -1,7 +1,6 @@
 const brand =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
-
-export function validateReadmeHeader(lines, markdownLines, packageJson, order) {
+export default function validateReadmeHeader(lines, markdownLines, packageJson, order) {
   const headerIndexes = order.header.map((name) => order.headerLines[name]);
   const tocIndex = order.headerLines["table-of-contents"];
   const headerOrderIsValid = headerIndexes.every(

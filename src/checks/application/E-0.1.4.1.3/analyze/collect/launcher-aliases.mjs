@@ -7,8 +7,7 @@ const builtInLaunchers = new Set([
   "execFileSync",
   "fork",
 ]);
-
-export function collectLauncherAliases(root) {
+export default function collectLauncherAliases(root) {
   const names = new Set(builtInLaunchers);
   let changed = true;
   while (changed) {
@@ -42,7 +41,6 @@ export function collectLauncherAliases(root) {
   }
   return names;
 }
-
 function visit(node, callback) {
   if (!node || typeof node !== "object") return;
   callback(node);

@@ -1,5 +1,4 @@
 const userFacingAttributes = new Set(["alt", "aria-label", "placeholder", "title"]);
-
-export function isUserFacingAttribute(name) {
+export default function isUserFacingAttribute(name) {
   return userFacingAttributes.has(name);
 }

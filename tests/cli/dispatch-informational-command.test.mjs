@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import packageMetadata from "../../package.json" with { type: "json" };
-import { dispatchInformationalCommand } from "../../src/cli/dispatch-informational-command.mjs";
-
+import dispatchInformationalCommand from "../../src/cli/dispatch-informational-command.mjs";
 test("dispatches version and help commands", () => {
   const output = [];
   expect(dispatchInformationalCommand(["--version"], (value) => output.push(value))).toBe(0);
@@ -19,11 +18,9 @@ test("dispatches version and help commands", () => {
   expect(output[0]).toContain("Pack accepts npm pack options");
   expect(output[0]).toContain("Do not put --debug-timing after --.");
 });
-
 test("returns no result for validation commands", () => {
   expect(dispatchInformationalCommand([], () => {})).toBeNull();
 });
-
 test("owns informational conflict validation", () => {
   expect(() => dispatchInformationalCommand(["--help", "--help"], () => {})).toThrow(
     "cannot be repeated",

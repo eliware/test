@@ -1,4 +1,5 @@
-export function createBundledCheckManifest(checks) {
+import packageMetadata from "../../../package.json" with { type: "json" };
+export default function createBundledCheckManifest(checks) {
   if (
     checks.some(
       ({ enforcementMode, applicability }) =>
@@ -30,8 +31,16 @@ export function createBundledCheckManifest(checks) {
       parentRuleId,
       enforcementMode,
       modulePath,
-      ...(ownerProfile === undefined ? {} : { ownerProfile }),
-      ...(requiredProfiles === undefined ? {} : { requiredProfiles }),
+      ...(ownerProfile === undefined
+        ? {}
+        : {
+            ownerProfile,
+          }),
+      ...(requiredProfiles === undefined
+        ? {}
+        : {
+            requiredProfiles,
+          }),
     }),
   );
   if (records.some(({ modulePath }) => typeof modulePath !== "string" || modulePath.length === 0)) {
@@ -48,6 +57,8 @@ export function createBundledCheckManifest(checks) {
     paths.add(record.modulePath);
   }
   const version = packageMetadata.version.split(".").slice(0, 2).join(".");
-  return Object.freeze({ version, checks: records });
+  return Object.freeze({
+    version,
+    checks: records,
+  });
 }
-import packageMetadata from "../../../package.json" with { type: "json" };

@@ -1,18 +1,36 @@
 import { expect, test } from "@jest/globals";
-import { collectLocalShadowedJestNames } from "../../../../../../src/checks/application/E-0.1.4.1.2/collect/shadowed-jest-names/local-bindings.mjs";
-
+import collectLocalShadowedJestNames from "../../../../../../src/checks/application/E-0.1.4.1.2/collect/shadowed-jest-names/local-bindings/collect-local-shadowed-jest-names.mjs";
 function result() {
-  return { tests: new Set(), callbacks: new Set(), describes: new Set() };
+  return {
+    tests: new Set(),
+    callbacks: new Set(),
+    describes: new Set(),
+  };
 }
-
 test("collects shadows from local bindings and assignments", () => {
   const shadowed = result();
   collectLocalShadowedJestNames(
     [
-      { type: "VariableDeclarator", id: { type: "Identifier", name: "test" } },
-      { type: "AssignmentExpression", left: { type: "Identifier", name: "callback" } },
+      {
+        type: "VariableDeclarator",
+        id: {
+          type: "Identifier",
+          name: "test",
+        },
+      },
+      {
+        type: "AssignmentExpression",
+        left: {
+          type: "Identifier",
+          name: "callback",
+        },
+      },
     ],
-    { callbacks: new Set(["test"]), namespaces: new Set(), describes: new Set() },
+    {
+      callbacks: new Set(["test"]),
+      namespaces: new Set(),
+      describes: new Set(),
+    },
     new Set(["callback"]),
     shadowed,
   );
@@ -22,23 +40,36 @@ test("collects shadows from local bindings and assignments", () => {
     describes: new Set(),
   });
 });
-
 test("tracks function bindings and ignores nested block declarations", () => {
   const shadowed = result();
   collectLocalShadowedJestNames(
     [
       {
         type: "FunctionDeclaration",
-        id: { name: "test" },
+        id: {
+          name: "test",
+        },
       },
       {
         type: "BlockStatement",
-        body: [{ type: "FunctionDeclaration", id: { name: "jest" } }],
+        body: [
+          {
+            type: "FunctionDeclaration",
+            id: {
+              name: "jest",
+            },
+          },
+        ],
       },
       {
         type: "VariableDeclarator",
-        id: { type: "Identifier", name: "describe" },
-        init: { type: "ArrowFunctionExpression" },
+        id: {
+          type: "Identifier",
+          name: "describe",
+        },
+        init: {
+          type: "ArrowFunctionExpression",
+        },
       },
     ],
     {
@@ -55,12 +86,21 @@ test("tracks function bindings and ignores nested block declarations", () => {
     describes: new Set(["describe"]),
   });
 });
-
 test("does not descend into nested functions", () => {
   const shadowed = result();
   collectLocalShadowedJestNames(
-    { type: "ArrowFunctionExpression", body: { type: "Identifier", name: "test" } },
-    { callbacks: new Set(["test"]), namespaces: new Set(), describes: new Set() },
+    {
+      type: "ArrowFunctionExpression",
+      body: {
+        type: "Identifier",
+        name: "test",
+      },
+    },
+    {
+      callbacks: new Set(["test"]),
+      namespaces: new Set(),
+      describes: new Set(),
+    },
     new Set(),
     shadowed,
   );

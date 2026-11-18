@@ -1,9 +1,14 @@
 import { expect, test } from "@jest/globals";
-import { resolveValidationStageOptions } from "../../../src/cli/resolve/validation-stage-options.mjs";
-
+import resolveValidationStageOptions from "../../../src/cli/resolve/validation-stage-options.mjs";
 test("keeps focused lint and formatting enabled while disabling aggregate stages", () => {
   expect(
-    resolveValidationStageOptions({ mode: null, jestArgs: ["tests/example.test.mjs"] }, {}),
+    resolveValidationStageOptions(
+      {
+        mode: null,
+        jestArgs: ["tests/example.test.mjs"],
+      },
+      {},
+    ),
   ).toEqual({
     executeJest: true,
     executeLint: true,
@@ -18,9 +23,15 @@ test("keeps focused lint and formatting enabled while disabling aggregate stages
     modeRuleId: null,
   });
 });
-
 test("enables lint and format for the default repository-wide validation run", () => {
-  expect(resolveValidationStageOptions({ mode: null }, {})).toEqual(
+  expect(
+    resolveValidationStageOptions(
+      {
+        mode: null,
+      },
+      {},
+    ),
+  ).toEqual(
     expect.objectContaining({
       executeLint: true,
       executeFormat: true,
@@ -32,7 +43,6 @@ test("enables lint and format for the default repository-wide validation run", (
     }),
   );
 });
-
 test.each([
   ["lint", "executeLint"],
   ["format", "executeFormat"],
@@ -40,7 +50,20 @@ test.each([
   ["audit", "executeAudit"],
   ["pack", "executePack"],
 ])("enables the selected explicit %s stage", (mode, stage) => {
-  expect(resolveValidationStageOptions({ mode }, { executeJest: false })).toEqual(
-    expect.objectContaining({ [stage]: true, executeJest: false, mode }),
+  expect(
+    resolveValidationStageOptions(
+      {
+        mode,
+      },
+      {
+        executeJest: false,
+      },
+    ),
+  ).toEqual(
+    expect.objectContaining({
+      [stage]: true,
+      executeJest: false,
+      mode,
+    }),
   );
 });

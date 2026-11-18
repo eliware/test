@@ -1,24 +1,26 @@
 import { expect, jest, test } from "@jest/globals";
-import { validateReleaseNotes } from "../../../../../src/checks/general/E-0.1.0.1.13/validate/release-notes.mjs";
+import validateReleaseNotes from "../../../../../src/checks/general/E-0.1.0.1.13/validate/release-notes.mjs";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
-
 test("requires readable release notes", async () => {
   await expect(
     validateReleaseNotes({
-      repositoryInventory: { readText: async () => Promise.reject(new Error("missing")) },
+      repositoryInventory: {
+        readText: async () => Promise.reject(new Error("missing")),
+      },
     }),
   ).resolves.toEqual(["RELEASE_NOTES.md is required."]);
 });
-
 test("reports a missing README link after reading release notes", async () => {
   const inventory = {
     readText: async (path) => (path.endsWith("README.md") ? "" : "# Release Notes\n"),
   };
   await expect(
-    validateReleaseNotes({ root: "repo", repositoryInventory: inventory }),
+    validateReleaseNotes({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
-
 test("reports an unreadable README as a missing release notes link", async () => {
   const inventory = {
     readText: async (path) => {
@@ -27,10 +29,12 @@ test("reports an unreadable README as a missing release notes link", async () =>
     },
   };
   await expect(
-    validateReleaseNotes({ root: "repo", repositoryInventory: inventory }),
+    validateReleaseNotes({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
-
 test("accepts the current release without querying historical tags", async () => {
   const runGit = jest.fn();
   const repositoryInventory = {
@@ -41,13 +45,19 @@ test("accepts the current release without querying historical tags", async () =>
   };
   await expect(
     validateReleaseNotes(
-      { packageJson: { version: packageVersion }, repositoryInventory },
-      { runGit },
+      {
+        packageJson: {
+          version: packageVersion,
+        },
+        repositoryInventory,
+      },
+      {
+        runGit,
+      },
     ),
   ).resolves.toEqual([]);
   expect(runGit).not.toHaveBeenCalled();
 });
-
 test("uses a context Git runner when the context provides one", async () => {
   const runGit = jest.fn();
   const repositoryInventory = {
@@ -58,14 +68,15 @@ test("uses a context Git runner when the context provides one", async () => {
   };
   await expect(
     validateReleaseNotes({
-      packageJson: { version: packageVersion },
+      packageJson: {
+        version: packageVersion,
+      },
       repositoryInventory,
       runGit,
     }),
   ).resolves.toEqual([]);
   expect(runGit).not.toHaveBeenCalled();
 });
-
 test("requires package metadata without a context", async () => {
   await expect(validateReleaseNotes()).resolves.toContain(
     "package.json.version is required for release-note validation.",

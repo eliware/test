@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isYamlProseField } from "../../../../../../src/checks/general/E-0.1.0.1.11/extract/yaml-prose/prose-fields.mjs";
-
+import isYamlProseField from "../../../../../../src/checks/general/E-0.1.0.1.11/extract/yaml-prose/prose-fields.mjs";
 test("identifies configured YAML prose fields and excludes metadata", () => {
   expect(
     [

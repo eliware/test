@@ -1,9 +1,8 @@
-import { fail, pass } from "../check-result.mjs";
-import { findMachineSpecificPaths } from "./E-0.1.0.1.9/machine-specific-paths/findings.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import findMachineSpecificPaths from "./E-0.1.0.1.9/machine-specific-paths/findings.mjs";
 export const ruleId = "E-0.1.0.1.9";
-
-export async function run(context = {}) {
+export default async function run(context = {}) {
   const inventory = context.repositoryInventory;
   if (!inventory?.repositoryFiles || !inventory?.readBytes)
     return fail(ruleId, "Repository files could not be inspected.");

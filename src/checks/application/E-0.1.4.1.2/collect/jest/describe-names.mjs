@@ -1,4 +1,4 @@
-export function collectJestDescribeNames(program) {
+export default function collectJestDescribeNames(program) {
   const names = new Set(["describe", "context"]);
   for (const node of program.body) {
     if (node.type !== "ImportDeclaration" || node.source.value !== "@jest/globals") continue;

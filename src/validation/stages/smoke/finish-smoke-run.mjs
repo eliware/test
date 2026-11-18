@@ -1,11 +1,8 @@
-import { cleanupSmokeTempRoot } from "./cleanup-smoke-temp-root.mjs";
-import { attemptSmokeTargetRestoration } from "./restore/attempt-target-restoration.mjs";
-import {
-  formatSmokeCleanupFailure,
-  formatSmokeFinishResult,
-} from "./finish-smoke-run/format-result.mjs";
-
-export async function finishSmokeRun({
+import cleanupSmokeTempRoot from "./cleanup-smoke-temp-root.mjs";
+import attemptSmokeTargetRestoration from "./restore/attempt-target-restoration.mjs";
+import formatSmokeCleanupFailure from "./finish-smoke-run/format-result.mjs";
+import formatSmokeFinishResult from "./finish-smoke-run/format-result/format-smoke-finish-result.mjs";
+export default async function finishSmokeRun({
   outcome,
   state,
   assertTargetIdentity,

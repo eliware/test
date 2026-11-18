@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { extractJavaScriptProse } from "../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose.mjs";
-
+import extractJavaScriptProse from "../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose.mjs";
 test("checks comments, visible JSX text, and user-facing JSX attributes", () => {
   const source = [
     "// Choose a valid option.",
@@ -24,7 +23,6 @@ test("checks comments, visible JSX text, and user-facing JSX attributes", () => 
     "Hidden data",
   ]);
 });
-
 test("checks supported CLI, dialog, DOM, and Discord output contexts", () => {
   const source = [
     'console.error("Enter a valid name.");',
@@ -58,7 +56,6 @@ test("checks supported CLI, dialog, DOM, and Discord output contexts", () => {
     "Show an accessible value.",
   ]);
 });
-
 test("skips machine strings, templates, regular expressions, and non-user-facing attributes", () => {
   const source = [
     'const css = ".item { color: red; }";',
@@ -73,11 +70,9 @@ test("skips machine strings, templates, regular expressions, and non-user-facing
   ].join("\n");
   expect(extractJavaScriptProse(source).map(({ text }) => text.trim())).toEqual(["Save now"]);
 });
-
 test("skips dynamic template output", () => {
   expect(extractJavaScriptProse("console.log(`Choose a value for ${name}.`);")).toEqual([]);
 });
-
 test("skips invalid source because lint reports parse errors", () => {
   expect(extractJavaScriptProse("const =")).toEqual([]);
 });

@@ -1,6 +1,5 @@
 import { writeFileSync } from "node:fs";
-
-export function createJestConsoleReport(path, writeFile = writeFileSync) {
+export default function createJestConsoleReport(path, writeFile = writeFileSync) {
   const output = [];
   return {
     capture(testFilePath, entries = []) {

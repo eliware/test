@@ -1,15 +1,21 @@
 import { expect, test } from "@jest/globals";
-import { executeConventionRules } from "../../../../../src/validation/check-execution/execute/convention/rules.mjs";
-
-const pass = (ruleId) => ({ ruleId, status: "pass", message: "" });
+import executeConventionRules from "../../../../../src/validation/check-execution/execute/convention/rules.mjs";
+const pass = (ruleId) => ({
+  ruleId,
+  status: "pass",
+  message: "",
+});
 const makeCheck = (ruleId, calls, status = "pass") => ({
   ruleId,
   run: async () => {
     calls.push(ruleId);
-    return { ruleId, status, message: status === "fail" ? "check failed" : "" };
+    return {
+      ruleId,
+      status,
+      message: status === "fail" ? "check failed" : "",
+    };
   },
 });
-
 test("executes selected checks in discovery order", async () => {
   const calls = [];
   const checks = ["E-0.1.4", "E-0.1.20.17", "E-0.1.20.19"].map((id) => makeCheck(id, calls));
@@ -17,7 +23,6 @@ test("executes selected checks in discovery order", async () => {
   expect(calls).toEqual(checks.map(({ ruleId }) => ruleId));
   expect(results).toEqual(checks.map(({ ruleId }) => pass(ruleId)));
 });
-
 test("executes selected checks in parallel and preserves result order", async () => {
   let active = 0;
   let maximumActive = 0;
@@ -31,14 +36,12 @@ test("executes selected checks in parallel and preserves result order", async ()
       return pass(ruleId);
     },
   }));
-
   await expect(executeConventionRules(checks, {}, new Set())).resolves.toEqual([
     pass("E-first"),
     pass("E-second"),
   ]);
   expect(maximumActive).toBe(2);
 });
-
 test("passes rule-scoped paths to the matching check only", async () => {
   const calls = [];
   const checks = [
@@ -63,7 +66,6 @@ test("passes rule-scoped paths to the matching check only", async () => {
     ["E-0.1.5", undefined],
   ]);
 });
-
 test("continues after a check returns a failure", async () => {
   const calls = [];
   const results = await executeConventionRules(
@@ -74,7 +76,6 @@ test("continues after a check returns a failure", async () => {
   expect(calls).toEqual(["E-0.1", "E-2"]);
   expect(results.map(({ status }) => status)).toEqual(["fail", "pass"]);
 });
-
 test("executes selected non-deterministic checks", async () => {
   const nonDeterministic = makeCheck("E-3", []);
   nonDeterministic.enforcementMode = "non-deterministic";

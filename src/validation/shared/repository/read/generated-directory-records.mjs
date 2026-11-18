@@ -1,6 +1,5 @@
 const recordsByDirectoryEntries = new WeakMap();
-
-export async function readGeneratedDirectoryRecords(directory, readDirectory) {
+export default async function readGeneratedDirectoryRecords(directory, readDirectory) {
   const entries = await readDirectory(directory);
   let recordsByDirectory = recordsByDirectoryEntries.get(entries);
   if (!recordsByDirectory) {
@@ -11,7 +10,12 @@ export async function readGeneratedDirectoryRecords(directory, readDirectory) {
   const records = entries.flatMap((entry) => {
     const isDirectory = entry.isDirectory();
     if (!isDirectory && !entry.isFile()) return [];
-    return [{ path: `${directory}/${entry.name}`, type: isDirectory ? "directory" : "file" }];
+    return [
+      {
+        path: `${directory}/${entry.name}`,
+        type: isDirectory ? "directory" : "file",
+      },
+    ];
   });
   recordsByDirectory.set(directory, records);
   return records;

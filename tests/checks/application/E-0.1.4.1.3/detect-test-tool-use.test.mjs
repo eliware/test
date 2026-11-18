@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { detectTestToolUse } from "../../../../src/checks/application/E-0.1.4.1.3/detect-test-tool-use.mjs";
-
+import detectTestToolUse from "../../../../src/checks/application/E-0.1.4.1.3/detect-test-tool-use.mjs";
 test("detects static, aliased, and computed runner imports", () => {
   expect(detectTestToolUse('import "vitest";')).toBe(true);
   expect(detectTestToolUse('const runner = "@vitest/runner"; import(runner);')).toBe(true);
@@ -12,7 +11,6 @@ test("detects static, aliased, and computed runner imports", () => {
   expect(detectTestToolUse('import "istanbul-lib-instrument";', true)).toBe(false);
   expect(detectTestToolUse('import "istanbul-lib-instrument";')).toBe(true);
 });
-
 test("detects test runner and coverage tools in executable calls", () => {
   expect(detectTestToolUse('require("jest-cli");')).toBe(true);
   expect(detectTestToolUse('module.require("@jest/core");')).toBe(true);
@@ -27,7 +25,6 @@ test("detects test runner and coverage tools in executable calls", () => {
     ),
   ).toBe(true);
 });
-
 test("detects all supported module loader call forms", () => {
   for (const source of [
     'require("vitest");',
@@ -37,12 +34,10 @@ test("detects all supported module loader call forms", () => {
   ])
     expect(detectTestToolUse(source)).toBe(true);
 });
-
 test("ignores runner names in comments and non-executable text", () => {
   expect(detectTestToolUse('// vitest run\nconst message = "jest";')).toBe(false);
   expect(detectTestToolUse("invalid {")).toBe(true);
 });
-
 test("ignores ordinary module loads and non-test launcher commands", () => {
   expect(
     detectTestToolUse(

@@ -1,6 +1,5 @@
-import { truncateChildOutputText } from "../truncate-child-output-text.mjs";
-
-export function createChildOutputStream({ onStdout, onStderr }, outputLimit) {
+import truncateChildOutputText from "../truncate-child-output-text.mjs";
+export default function createChildOutputStream({ onStdout, onStderr }, outputLimit) {
   let streamed = 0;
   const stream = (callback, text) => {
     if (!callback || streamed >= outputLimit || text.length === 0) return;

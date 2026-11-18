@@ -1,19 +1,22 @@
 import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { prepareSmokeWorkspace } from "../../../../../src/validation/stages/smoke/prepare-smoke/workspace.mjs";
-
+import prepareSmokeWorkspace from "../../../../../src/validation/stages/smoke/prepare-smoke/workspace.mjs";
 test("creates pack and backup folders around the recovery snapshot", async () => {
   const order = [];
   const createTempWorkspace = jest.fn(async () => {
     order.push("temp");
-    return { path: "smoke-root", identity: "temp-identity" };
+    return {
+      path: "smoke-root",
+      identity: "temp-identity",
+    };
   });
   const prepareState = jest.fn(async ({ backupDirectory }) => {
     order.push(`state:${backupDirectory}`);
-    return { storage: "snapshot" };
+    return {
+      storage: "snapshot",
+    };
   });
   const createDirectory = jest.fn(async (path) => order.push(`directory:${path}`));
-
   await expect(
     prepareSmokeWorkspace({
       root: "repo",
@@ -23,13 +26,17 @@ test("creates pack and backup folders around the recovery snapshot", async () =>
       createTempWorkspace,
       prepareState,
       createDirectory,
-      stateOptions: { targetRoot: "consumer" },
+      stateOptions: {
+        targetRoot: "consumer",
+      },
     }),
   ).resolves.toEqual({
     tempRoot: "smoke-root",
     tempIdentity: "temp-identity",
     packDirectory: join("smoke-root", "pack"),
-    state: { storage: "snapshot" },
+    state: {
+      storage: "snapshot",
+    },
   });
   expect(order).toEqual([
     "temp",
@@ -42,11 +49,11 @@ test("creates pack and backup folders around the recovery snapshot", async () =>
     createDirectory,
   });
 });
-
 test("returns temp-root errors before preparing workspace state", async () => {
   const prepareState = jest.fn();
-  const createTempWorkspace = jest.fn(async () => ({ error: "temporary path failed" }));
-
+  const createTempWorkspace = jest.fn(async () => ({
+    error: "temporary path failed",
+  }));
   await expect(
     prepareSmokeWorkspace({
       root: "repo",
@@ -58,10 +65,11 @@ test("returns temp-root errors before preparing workspace state", async () => {
       createDirectory: jest.fn(),
       stateOptions: {},
     }),
-  ).resolves.toEqual({ error: "temporary path failed" });
+  ).resolves.toEqual({
+    error: "temporary path failed",
+  });
   expect(prepareState).not.toHaveBeenCalled();
 });
-
 test("returns workspace details when state preparation fails", async () => {
   const error = new Error("snapshot failed");
   const prepareState = jest.fn(async () => {
@@ -72,7 +80,6 @@ test("returns workspace details when state preparation fails", async () => {
     identity: "temp-identity",
   }));
   const createDirectory = jest.fn();
-
   await expect(
     prepareSmokeWorkspace({
       root: "repo",

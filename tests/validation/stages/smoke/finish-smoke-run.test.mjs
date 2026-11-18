@@ -1,22 +1,23 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-
 const lstat = jest.fn();
 const rm = jest.fn();
-
-jest.unstable_mockModule("node:fs/promises", () => ({ lstat, rm }));
-
-const { finishSmokeRun } =
-  await import("../../../../src/validation/stages/smoke/finish-smoke-run.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  lstat,
+  rm,
+}));
+const finishSmokeRun = (
+  await import("../../../../src/validation/stages/smoke/finish-smoke-run.mjs")
+).default;
 const base = {
   outcome: "Smoke passed.",
-  state: { storage: "backup" },
+  state: {
+    storage: "backup",
+  },
   assertTargetIdentity: async () => {},
   restoreState: async () => {},
   tempRoot: "temporary",
   tempIdentity: {},
 };
-
 beforeEach(() => {
   lstat.mockReset().mockResolvedValue({
     dev: 1,
@@ -26,15 +27,24 @@ beforeEach(() => {
   });
   rm.mockReset().mockResolvedValue(undefined);
 });
-
 test("restores prior state and appends cleanup diagnostics", async () => {
   const cleanup = jest.fn().mockResolvedValue("Temporary directory left untouched.");
-  await expect(finishSmokeRun({ ...base, cleanup })).resolves.toBe(
+  await expect(
+    finishSmokeRun({
+      ...base,
+      cleanup,
+    }),
+  ).resolves.toBe(
     "Smoke passed. Previous target package state restored. Temporary directory left untouched.",
   );
-  expect(cleanup).toHaveBeenCalledWith("temporary", {}, { preserve: false });
+  expect(cleanup).toHaveBeenCalledWith(
+    "temporary",
+    {},
+    {
+      preserve: false,
+    },
+  );
 });
-
 test("preserves the backup when identity verification prevents restoration", async () => {
   const cleanup = jest.fn().mockResolvedValue("Backup retained.");
   const result = await finishSmokeRun({
@@ -45,19 +55,36 @@ test("preserves the backup when identity verification prevents restoration", asy
     cleanup,
   });
   expect(result).toContain("Target restoration failed: target changed");
-  expect(cleanup).toHaveBeenCalledWith("temporary", {}, { preserve: true });
+  expect(cleanup).toHaveBeenCalledWith(
+    "temporary",
+    {},
+    {
+      preserve: true,
+    },
+  );
 });
-
 test("preserves the temporary root when the snapshot is invalid", async () => {
   const restoreState = jest.fn();
   const cleanup = jest.fn().mockResolvedValue("");
   await expect(
-    finishSmokeRun({ ...base, state: { error: "snapshot failed" }, restoreState, cleanup }),
+    finishSmokeRun({
+      ...base,
+      state: {
+        error: "snapshot failed",
+      },
+      restoreState,
+      cleanup,
+    }),
   ).resolves.toContain("Smoke passed. Target restoration failed: snapshot failed.");
   expect(restoreState).not.toHaveBeenCalled();
-  expect(cleanup).toHaveBeenCalledWith("temporary", {}, { preserve: true });
+  expect(cleanup).toHaveBeenCalledWith(
+    "temporary",
+    {},
+    {
+      preserve: true,
+    },
+  );
 });
-
 test("reports cleanup rejection as a smoke failure result", async () => {
   await expect(
     finishSmokeRun({
@@ -66,22 +93,27 @@ test("reports cleanup rejection as a smoke failure result", async () => {
     }),
   ).resolves.toContain("Temporary smoke cleanup failed: cleanup denied.");
 });
-
 test("appends cleanup diagnostics after a successful restore", async () => {
   const cleanup = jest
     .fn()
     .mockResolvedValue("Temporary directory identity changed; left untouched.");
-  await expect(finishSmokeRun({ ...base, cleanup })).resolves.toContain(
+  await expect(
+    finishSmokeRun({
+      ...base,
+      cleanup,
+    }),
+  ).resolves.toContain(
     "Smoke passed. Previous target package state restored. Temporary directory identity changed; left untouched.",
   );
 });
-
 test("returns the successful restore message when cleanup adds no diagnostics", async () => {
-  await expect(finishSmokeRun({ ...base, cleanup: async () => "" })).resolves.toBe(
-    "Smoke passed. Previous target package state restored.",
-  );
+  await expect(
+    finishSmokeRun({
+      ...base,
+      cleanup: async () => "",
+    }),
+  ).resolves.toBe("Smoke passed. Previous target package state restored.");
 });
-
 test("retains the default temporary directory when no snapshot exists", async () => {
   const tempRoot = "C:/temp/smoke";
   const tempIdentity = {

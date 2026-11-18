@@ -1,4 +1,4 @@
-export function isRuntimeTestCommand(command) {
+export default function isRuntimeTestCommand(command) {
   return (
     /^node(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?:\s|$)/iu.test(command) ||
     /^(?:bun|deno)\s+test(?:\s|$)/iu.test(command)

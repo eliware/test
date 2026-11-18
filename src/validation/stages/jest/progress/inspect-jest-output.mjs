@@ -1,8 +1,7 @@
-import { findUnexpectedJestStdout } from "./find/unexpected/stdout.mjs";
-import { findUnexpectedJestStderr } from "./find/unexpected/stderr.mjs";
-import { findJestConsoleFindings } from "./find/jest-console/findings.mjs";
-
-export function findUnexpectedJestOutput(
+import findUnexpectedJestStdout from "./find/unexpected/stdout.mjs";
+import findUnexpectedJestStderr from "./find/unexpected/stderr.mjs";
+import findJestConsoleFindings from "./find/jest-console/findings.mjs";
+export default function findUnexpectedJestOutput(
   { stdout = "", stderr = "", consoleOutput, consoleReportError } = {},
   secrets = [],
   root,

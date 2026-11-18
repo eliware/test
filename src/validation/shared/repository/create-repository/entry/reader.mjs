@@ -1,6 +1,5 @@
-import { normalizeRepositoryInventoryRecords } from "../../normalize-repository/inventory-records.mjs";
-
-export function createRepositoryEntryReader({
+import normalizeRepositoryInventoryRecords from "../../normalize-repository/inventory-records.mjs";
+export default function createRepositoryEntryReader({
   root,
   findEntries,
   readDirectoryCached,
@@ -12,7 +11,6 @@ export function createRepositoryEntryReader({
   let entriesPromise;
   let freshnessPromise;
   let snapshotRevision;
-
   function discover() {
     subtreeEntries.clear();
     const pending = Promise.resolve(
@@ -32,7 +30,6 @@ export function createRepositoryEntryReader({
     entriesPromise = discovery;
     return discovery;
   }
-
   async function refreshIfChanged(snapshot) {
     const records = await snapshot;
     const directoriesExist = await Promise.all(
@@ -51,7 +48,6 @@ export function createRepositoryEntryReader({
     if (directoriesExist && readDirectoryCached.getRevision() === snapshotRevision) return records;
     return discover();
   }
-
   function entries() {
     if (!entriesPromise) return discover();
     if (!freshnessPromise) {
@@ -61,6 +57,9 @@ export function createRepositoryEntryReader({
     }
     return freshnessPromise;
   }
-
-  return { entries, subtreeEntries, hasFullDiscovery: () => Boolean(entriesPromise) };
+  return {
+    entries,
+    subtreeEntries,
+    hasFullDiscovery: () => Boolean(entriesPromise),
+  };
 }

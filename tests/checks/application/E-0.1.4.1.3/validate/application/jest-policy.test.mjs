@@ -1,10 +1,18 @@
 import { expect, test } from "@jest/globals";
-import { validateApplicationJestPolicy } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/application/jest-policy.mjs";
-
+import validateApplicationJestPolicy from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/application/jest-policy.mjs";
 test("combines configuration and test-tool policy failures", async () => {
   const context = {
-    packageJson: { name: "app", jest: {}, scripts: { test: "vitest run" } },
-    repositoryInventory: { files: async () => [], readText: async () => "" },
+    packageJson: {
+      name: "app",
+      jest: {},
+      scripts: {
+        test: "vitest run",
+      },
+    },
+    repositoryInventory: {
+      files: async () => [],
+      readText: async () => "",
+    },
   };
   await expect(validateApplicationJestPolicy(context)).resolves.toEqual(
     expect.arrayContaining([

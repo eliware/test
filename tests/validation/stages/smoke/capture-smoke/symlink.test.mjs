@@ -1,9 +1,10 @@
 import { expect, test } from "@jest/globals";
-import { captureSmokeSymlink } from "../../../../../src/validation/stages/smoke/capture-smoke/symlink.mjs";
-
+import captureSmokeSymlink from "../../../../../src/validation/stages/smoke/capture-smoke/symlink.mjs";
 test("captures a Windows junction and its target", async () => {
   const fs = {
-    stat: async () => ({ isDirectory: () => true }),
+    stat: async () => ({
+      isDirectory: () => true,
+    }),
     readlink: async () => "C:/checkout/target",
   };
   await expect(captureSmokeSymlink("link", fs, "win32")).resolves.toEqual({
@@ -13,10 +14,11 @@ test("captures a Windows junction and its target", async () => {
     linkType: "junction",
   });
 });
-
 test("rejects Windows file symlinks and accepts them on other platforms", async () => {
   const fs = {
-    stat: async () => ({ isDirectory: () => false }),
+    stat: async () => ({
+      isDirectory: () => false,
+    }),
     readlink: async () => "target",
   };
   await expect(captureSmokeSymlink("link", fs, "win32")).rejects.toThrow(

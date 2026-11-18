@@ -1,8 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { validateGitIgnoreRequiredRules } from "../../../../../../../src/checks/general/E-0.1.0.1.8/validate/git/ignore/required-rules.mjs";
-
+import validateGitIgnoreRequiredRules from "../../../../../../../src/checks/general/E-0.1.0.1.8/validate/git/ignore/required-rules.mjs";
 const validIgnoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db\n.env*\n!.env.example\n!**/.env.example`;
-
 test("checks required rules from the repository ignore file", async () => {
   const readText = async (path, encoding) => {
     expect(path).toBe("repo/.gitignore");
@@ -11,7 +9,6 @@ test("checks required rules from the repository ignore file", async () => {
   };
   await expect(validateGitIgnoreRequiredRules("repo", readText)).resolves.toEqual([]);
 });
-
 test("reports an unreadable repository ignore file", async () => {
   await expect(
     validateGitIgnoreRequiredRules("repo", async () => {

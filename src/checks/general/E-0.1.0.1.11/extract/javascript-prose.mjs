@@ -1,7 +1,6 @@
 import { parse } from "@babel/parser";
-import { collectJavaScriptProse } from "./javascript-prose/collect.mjs";
-
-export function extractJavaScriptProse(source, parserOptions = {}) {
+import collectJavaScriptProse from "./javascript-prose/collect.mjs";
+export default function extractJavaScriptProse(source, parserOptions = {}) {
   let ast;
   try {
     ast = parse(source, {

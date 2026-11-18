@@ -1,10 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
-import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { validateSpecificationIndex } from "./index/directory.mjs";
-import { validateSpecificationTreeRequirements } from "./tree-requirements.mjs";
-import { loadSpecificationIndexInventory } from "./inventory.mjs";
-
-export async function validateSpecificationIndexes(root, dependencies = {}) {
+import readCanonicalOrder from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import validateSpecificationIndex from "./index/directory.mjs";
+import validateSpecificationTreeRequirements from "./tree-requirements.mjs";
+import loadSpecificationIndexInventory from "./inventory.mjs";
+export default async function validateSpecificationIndexes(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
   const list = dependencies.readdir ?? readdir;
   let inventory;

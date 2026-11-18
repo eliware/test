@@ -1,7 +1,6 @@
-import { readStaticString } from "../../read-static-string.mjs";
-import { visitAst } from "../../visit-ast.mjs";
-
-export function collectStaticStrings(root) {
+import readStaticString from "../../read-static-string.mjs";
+import visitAst from "../../visit-ast.mjs";
+export default function collectStaticStrings(root) {
   const strings = new Map();
   visitAst(root, (node) => {
     if (["VariableDeclarator", "AssignmentExpression"].includes(node.type)) {

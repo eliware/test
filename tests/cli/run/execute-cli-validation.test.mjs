@@ -10,28 +10,37 @@ import {
   timing,
   writeValidationResults,
 } from "../../../test-fixtures/cli/run-cli-harness.mjs";
-const { executeCliValidation } = await import("../../../src/cli/run/execute-cli-validation.mjs");
-
+const executeCliValidation = (await import("../../../src/cli/run/execute-cli-validation.mjs"))
+  .default;
 beforeEach(resetCli);
-
 test("executes validation stages and reports the validation result", async () => {
   const write = jest.fn();
-
-  await expect(executeCliValidation({ args: [], write, root: "/repo", options: {} })).resolves.toBe(
-    0,
-  );
-
+  await expect(
+    executeCliValidation({
+      args: [],
+      write,
+      root: "/repo",
+      options: {},
+    }),
+  ).resolves.toBe(0);
   expect(runConventionStage).toHaveBeenCalledWith(expect.any(Function));
-  expect(runValidation).toHaveBeenCalledWith("/repo", [], { runOption: true });
+  expect(runValidation).toHaveBeenCalledWith("/repo", [], {
+    runOption: true,
+  });
   expect(createValidationRunOptions).toHaveBeenCalledWith(
     [],
     diagnosticOptions,
-    expect.objectContaining({ validationSummary: expect.any(Object) }),
+    expect.objectContaining({
+      validationSummary: expect.any(Object),
+    }),
     timing,
     expect.any(Function),
   );
   expect(writeValidationResults).toHaveBeenCalledWith(
-    expect.objectContaining({ validationSummary: expect.any(Object), mode: "focused" }),
+    expect.objectContaining({
+      validationSummary: expect.any(Object),
+      mode: "focused",
+    }),
     write,
     false,
     expect.any(Number),

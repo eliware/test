@@ -19,8 +19,7 @@ const protectedOptions = new Set([
   "-w",
 ]);
 const allowedOptions = new Set(["--no-fund", "--no-progress"]);
-
-export function validateAuditArguments(args = []) {
+export default function validateAuditArguments(args = []) {
   let suppliedArguments;
   try {
     if (!Array.isArray(args)) return "Audit arguments must be an array of strings.";

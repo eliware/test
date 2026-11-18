@@ -1,4 +1,4 @@
-export function createProgressTimeout({ timeoutMs, onTimeout }) {
+export default function createProgressTimeout({ timeoutMs, onTimeout }) {
   let timer;
   let timedOut = false;
   const reset = () => {

@@ -1,8 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
-import { runValidationStages } from "../../../src/validation/stages/run-validation-stages.mjs";
-
+import runValidationStages from "../../../src/validation/stages/run-validation-stages.mjs";
 test("runs selected stages in parallel and stores each result for checks", async () => {
-  const context = { executeLint: true, executeFormat: true };
+  const context = {
+    executeLint: true,
+    executeFormat: true,
+  };
   const order = [];
   let active = 0;
   let maximumActive = 0;
@@ -13,41 +15,61 @@ test("runs selected stages in parallel and stores each result for checks", async
       maximumActive = Math.max(maximumActive, active);
       await Promise.resolve();
       active -= 1;
-      return { stage, status: "pass", output };
+      return {
+        stage,
+        status: "pass",
+        output,
+      };
     });
   const runners = {
     lint: run("lint", "lint output"),
     format: run("format", "format output"),
   };
-
   await expect(runValidationStages(context, ["lint", "format"], runners)).resolves.toEqual([]);
   expect(order).toEqual(["lint", "format"]);
   expect(context.stageResults).toEqual({
-    lint: { stage: "lint", status: "pass", output: "lint output" },
-    format: { stage: "format", status: "pass", output: "format output" },
+    lint: {
+      stage: "lint",
+      status: "pass",
+      output: "lint output",
+    },
+    format: {
+      stage: "format",
+      status: "pass",
+      output: "format output",
+    },
   });
   expect(maximumActive).toBe(2);
 });
-
 test("reuses cached results and returns stage failures", async () => {
-  const context = { executeLint: true };
+  const context = {
+    executeLint: true,
+  };
   const runner = jest.fn(async () => ({
     stage: "lint",
     status: "fail",
     code: 5,
     message: "failed",
   }));
-
-  const first = await runValidationStages(context, ["lint"], { lint: runner });
-  const second = await runValidationStages(context, ["lint"], { lint: runner });
+  const first = await runValidationStages(context, ["lint"], {
+    lint: runner,
+  });
+  const second = await runValidationStages(context, ["lint"], {
+    lint: runner,
+  });
   expect(first).toEqual([context.stageResults.lint]);
   expect(second).toEqual([context.stageResults.lint]);
   expect(runner).toHaveBeenCalledTimes(1);
 });
-
 test("returns stage warnings and continues with later stages", async () => {
-  const context = { executeAudit: true, executeOutdated: true };
-  const laterStage = jest.fn(async () => ({ stage: "outdated", status: "pass" }));
+  const context = {
+    executeAudit: true,
+    executeOutdated: true,
+  };
+  const laterStage = jest.fn(async () => ({
+    stage: "outdated",
+    status: "pass",
+  }));
   await expect(
     runValidationStages(context, ["audit", "outdated"], {
       audit: async () => ({
@@ -58,32 +80,52 @@ test("returns stage warnings and continues with later stages", async () => {
       }),
       outdated: laterStage,
     }),
-  ).resolves.toMatchObject([{ stage: "audit", status: "warning", code: 0 }]);
+  ).resolves.toMatchObject([
+    {
+      stage: "audit",
+      status: "warning",
+      code: 0,
+    },
+  ]);
   expect(laterStage).toHaveBeenCalledTimes(1);
 });
-
 test("records runner errors as internal stage failures", async () => {
-  const context = { executeAudit: true };
+  const context = {
+    executeAudit: true,
+  };
   await expect(
     runValidationStages(context, ["audit"], {
       audit: async () => {
         throw new Error("child failed");
       },
     }),
-  ).resolves.toMatchObject([{ stage: "audit", code: 1, status: "fail", message: "child failed" }]);
+  ).resolves.toMatchObject([
+    {
+      stage: "audit",
+      code: 1,
+      status: "fail",
+      message: "child failed",
+    },
+  ]);
 });
-
 test("does not run stages that are disabled", async () => {
   await expect(runValidationStages({}, ["jest", "lint"])).resolves.toEqual([]);
 });
-
 test("records non-Error runner failures", async () => {
-  const context = { executeAudit: true };
+  const context = {
+    executeAudit: true,
+  };
   await expect(
     runValidationStages(context, ["audit"], {
       audit: async () => {
         throw "audit failed";
       },
     }),
-  ).resolves.toMatchObject([{ code: 1, message: "audit failed", status: "fail" }]);
+  ).resolves.toMatchObject([
+    {
+      code: 1,
+      message: "audit failed",
+      status: "fail",
+    },
+  ]);
 });

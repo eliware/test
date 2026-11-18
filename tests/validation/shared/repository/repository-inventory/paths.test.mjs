@@ -1,10 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { join } from "node:path";
-import {
-  inventoryDirectory,
-  inventoryPath,
-} from "../../../../../src/validation/shared/repository/repository-inventory/paths.mjs";
-
+import inventoryDirectory from "../../../../../src/validation/shared/repository/repository-inventory/paths/inventory-directory.mjs";
+import inventoryPath from "../../../../../src/validation/shared/repository/repository-inventory/paths.mjs";
 test("normalizes relative and absolute repository paths", () => {
   const root = join(process.cwd(), "inventory-fixture");
   expect(inventoryPath(root, "src/index.mjs")).toBe(join(root, "src", "index.mjs"));

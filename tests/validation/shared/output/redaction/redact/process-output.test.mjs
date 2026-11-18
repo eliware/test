@@ -1,13 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { redactProcessOutput } from "../../../../../../src/validation/shared/output/redaction/redact/process-output.mjs";
-
+import redactProcessOutput from "../../../../../../src/validation/shared/output/redaction/redact/process-output.mjs";
 test("redacts configured secret values literally", () => {
   expect(redactProcessOutput("child leaked opaque-value-123", ["opaque-value-123"])).toBe(
     "child leaked [REDACTED]",
   );
   expect(redactProcessOutput("unchanged", [null, ""])).toBe("unchanged");
 });
-
 test("redacts structured, quoted, and authorization credentials", () => {
   expect(redactProcessOutput('password: "secret value" token=abc12345')).toBe(
     "password: [REDACTED] token=[REDACTED]",
@@ -22,7 +20,6 @@ test("redacts structured, quoted, and authorization credentials", () => {
     "https://[REDACTED]@example.test/path",
   );
 });
-
 test("redacts header credentials and private-key formats in process output", () => {
   const output = redactProcessOutput(
     [
@@ -33,12 +30,10 @@ test("redacts header credentials and private-key formats in process output", () 
   expect(output).not.toContain("header-secret");
   expect(output).not.toContain("BEGIN PRIVATE KEY");
 });
-
 test("skips credential scans for text shorter than every supported token", () => {
   expect(redactProcessOutput("abc")).toBe("abc");
   expect(redactProcessOutput("sk-a")).toBe("[REDACTED]");
 });
-
 test("redacts JSON and camelCase credential keys", () => {
   expect(redactProcessOutput('{"apiKey":"json-secret","refreshToken":"refresh-secret"}')).toBe(
     '{"apiKey":[REDACTED],"refreshToken":[REDACTED]}',
@@ -47,13 +42,11 @@ test("redacts JSON and camelCase credential keys", () => {
   expect(multiline).toMatch(/password[\s=:]+\[REDACTED\]/iu);
   expect(multiline).not.toContain("multi");
 });
-
 test("redacts cookie and common CI credential formats", () => {
   const output = redactProcessOutput("Cookie: session=secret\nNPM_TOKEN=abc123secret");
   expect(output).not.toContain("session=secret");
   expect(output).not.toContain("abc123secret");
 });
-
 test("redacts mature sensitive key names from Eliware Redact", () => {
   const output = redactProcessOutput(
     "passphrase=private webhook=private signature=private tlsKey=private tlsCert=private",
@@ -63,7 +56,6 @@ test("redacts mature sensitive key names from Eliware Redact", () => {
       "tlsKey=[REDACTED] tlsCert=[REDACTED]",
   );
 });
-
 test("composes environment-value and pattern-family redaction", () => {
   expect(redactProcessOutput('password="xoxb-123456789"', ["private-value"])).toBe(
     "password=[REDACTED]",

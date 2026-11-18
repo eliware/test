@@ -1,4 +1,4 @@
-export function selectPackManifestEntry(manifest, packageName) {
+export default function selectPackManifestEntry(manifest, packageName) {
   if (Array.isArray(manifest)) {
     const candidates = packageName
       ? manifest.filter((entry) => entry?.name === packageName)

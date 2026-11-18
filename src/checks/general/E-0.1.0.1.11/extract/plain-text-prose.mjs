@@ -1,6 +1,5 @@
-import { createProseParagraphCollector } from "./paragraph-collector.mjs";
-
-export function extractPlainTextProse(source) {
+import createProseParagraphCollector from "./paragraph-collector.mjs";
+export default function extractPlainTextProse(source) {
   const paragraphs = createProseParagraphCollector();
   for (const [index, line] of source.replace(/\r\n?/gu, "\n").split("\n").entries()) {
     if (!line.trim()) paragraphs.flush();

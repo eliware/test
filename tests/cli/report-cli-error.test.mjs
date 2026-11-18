@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { reportCliError } from "../../src/cli/report-cli-error.mjs";
-
+import reportCliError from "../../src/cli/report-cli-error.mjs";
 test("reports a normalized error and returns its exit code", () => {
   const write = jest.fn();
   expect(reportCliError(new Error("validation failed"), write)).toBe(1);

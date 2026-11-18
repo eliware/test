@@ -1,10 +1,8 @@
-import { resolveOutputLimit } from "./bounds/output-limit.mjs";
-import { resolveSearchWorkLimit } from "./bounds/search-work-limit.mjs";
-import { resolvePendingLimit } from "./bounds/pending-limit.mjs";
-
+import resolveOutputLimit from "./bounds/output-limit.mjs";
+import resolveSearchWorkLimit from "./bounds/search-work-limit.mjs";
+import resolvePendingLimit from "./bounds/pending-limit.mjs";
 export { MAX_SECRET_SEARCH_WORK_PER_CHUNK } from "./bounds/search-work-limit.mjs";
-
-export function resolveRedactedStreamBounds(
+export default function resolveRedactedStreamBounds(
   outputLimit,
   maxSearchWorkPerChunk,
   maxPendingLength,
@@ -17,5 +15,9 @@ export function resolveRedactedStreamBounds(
     maxPendingLength,
     maximumSecretLength,
   );
-  return { outputLimit: boundedOutputLimit, workLimit, pendingLimit };
+  return {
+    outputLimit: boundedOutputLimit,
+    workLimit,
+    pendingLimit,
+  };
 }

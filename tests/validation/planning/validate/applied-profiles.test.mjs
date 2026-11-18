@@ -1,19 +1,15 @@
 import { expect, test } from "@jest/globals";
-import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
-import { readProfileCombinationPolicy } from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
-import { validateAppliedProfiles } from "../../../../src/validation/planning/validate/applied-profiles.mjs";
-
+import readCanonicalOrder from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
+import readProfileCombinationPolicy from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
+import validateAppliedProfiles from "../../../../src/validation/planning/validate/applied-profiles.mjs";
 const policy = readProfileCombinationPolicy();
 const order = readCanonicalOrder("eliware-apply.yaml").profiles;
-
 function canonical(names) {
   return [...new Set(names)].sort((left, right) => order.indexOf(left) - order.indexOf(right));
 }
-
 function validate(apply) {
   return validateAppliedProfiles(apply, policy, order);
 }
-
 function requiredClosure(names) {
   const selected = new Set(names);
   let changed = true;
@@ -35,22 +31,18 @@ function requiredClosure(names) {
   }
   return canonical(selected);
 }
-
 test("requires general as a separate planning invariant", () => {
   expect(validate(["application"])).toContain("explicitly apply general");
   expect(validate(["general"])).toBeNull();
   expect(validateAppliedProfiles(["general"], policy)).toBeNull();
 });
-
 test("keeps profile order separate from profile combination policy", () => {
   expect(validate(["general", "application", "cli"])).toBeNull();
   expect(validate(["general", "cli", "application"])).toContain("canonical order");
 });
-
 test("rejects unknown profiles", () => {
   expect(validate(["general", "unknown"])).toBe("Unknown convention group: unknown.");
 });
-
 test("requires every profile listed in the central policy", () => {
   const failures = [];
   for (const [profile, values] of Object.entries(policy.profiles)) {
@@ -61,18 +53,15 @@ test("requires every profile listed in the central policy", () => {
   }
   expect(failures).toEqual([]);
 });
-
 test("requires application or library with npm-published", () => {
   expect(validate(["general", "npm-published"])).toContain("at least one of: application, library");
   expect(validate(["general", "application", "npm-published"])).toBeNull();
   expect(validate(["general", "library", "npm-published"])).toBeNull();
 });
-
 test("accepts empty requiresAny lists without added requirements", () => {
   expect(validate(["general"])).toBeNull();
   expect(validate(["general", "application"])).toBeNull();
 });
-
 test("rejects every prohibited profile combination", () => {
   const failures = [];
   for (const [profile, values] of Object.entries(policy.profiles)) {
@@ -84,15 +73,12 @@ test("rejects every prohibited profile combination", () => {
   }
   expect(failures).toEqual([]);
 });
-
 test("rejects library and private in either profile order", () => {
   const libraryFirst = ["general", "library", "private", "npm-published"];
   const privateFirst = ["general", "private", "npm-published", "library"];
-
   expect(validateAppliedProfiles(libraryFirst, policy, libraryFirst)).toContain("conflict");
   expect(validateAppliedProfiles(privateFirst, policy, privateFirst)).toContain("conflict");
 });
-
 test("allows application child profiles to combine", () => {
   expect(
     validate(
@@ -100,7 +86,6 @@ test("allows application child profiles to combine", () => {
     ),
   ).toBeNull();
 });
-
 test("allows GHCR publication without application and with private", () => {
   expect(validate(["general", "ghcr-published"])).toBeNull();
   expect(validate(["general", "ghcr-published", "private"])).toBeNull();

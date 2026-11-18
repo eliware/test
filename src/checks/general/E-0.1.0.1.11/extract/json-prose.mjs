@@ -1,6 +1,5 @@
-import { isJsonProseField } from "./json-prose/prose-fields.mjs";
-
-export function extractJsonProse(source) {
+import isJsonProseField from "./json-prose/prose-fields.mjs";
+export default function extractJsonProse(source) {
   let value;
   try {
     value = JSON.parse(source);
@@ -11,7 +10,6 @@ export function extractJsonProse(source) {
   collect(value, [], blocks);
   return blocks;
 }
-
 function collect(value, path, blocks) {
   if (Array.isArray(value)) {
     for (const item of value) collect(item, path, blocks);
@@ -27,5 +25,9 @@ function collect(value, path, blocks) {
   if (typeof value !== "string") return;
   const field = path.at(-1);
   if (!isJsonProseField(field)) return;
-  blocks.push({ text: value, line: 1, kind: "prose" });
+  blocks.push({
+    text: value,
+    line: 1,
+    kind: "prose",
+  });
 }

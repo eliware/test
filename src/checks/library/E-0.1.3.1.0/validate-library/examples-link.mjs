@@ -1,8 +1,7 @@
 import { join } from "node:path";
-import { extractMarkdownLinks } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
-import { readRepositoryText } from "../../../../validation/shared/repository/read/repository-text.mjs";
-
-export async function validateLibraryExamplesLink(context) {
+import extractMarkdownLinks from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import readRepositoryText from "../../../../validation/shared/repository/read/repository-text.mjs";
+export default async function validateLibraryExamplesLink(context) {
   const readme = await readRepositoryText(
     context,
     join(context.root ?? process.cwd(), "README.md"),

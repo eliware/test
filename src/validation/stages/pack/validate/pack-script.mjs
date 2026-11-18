@@ -1,4 +1,4 @@
-export function validatePackScript(packageJson, selfHosted) {
+export default function validatePackScript(packageJson, selfHosted) {
   const expected = selfHosted ? "node bin/eliware-test.mjs --pack" : "eliware-test --pack";
   return packageJson?.scripts?.pack === expected
     ? null

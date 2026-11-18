@@ -1,9 +1,8 @@
-import { findRepositoryEntries } from "../../find-repository-files.mjs";
-import { createRepositoryDirectoryReadCache } from "../directory/read/cache.mjs";
-import { createRepositoryEntryReader } from "../entry/reader.mjs";
-import { createRepositoryScopedEntryReader } from "../scoped-entry-reader.mjs";
-
-export function createRepositoryDiscovery({
+import findRepositoryEntries from "../../find-repository-files.mjs";
+import createRepositoryDirectoryReadCache from "../directory/read/cache.mjs";
+import createRepositoryEntryReader from "../entry/reader.mjs";
+import createRepositoryScopedEntryReader from "../scoped-entry-reader.mjs";
+export default function createRepositoryDiscovery({
   root,
   findEntries = findRepositoryEntries,
   readDirectory,
@@ -35,7 +34,6 @@ export function createRepositoryDiscovery({
     includeTestResultsUnder,
     expandedDirectories,
   });
-
   return {
     entries,
     entriesUnder,

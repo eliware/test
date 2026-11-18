@@ -1,10 +1,8 @@
-import { formatConventionFailure } from "./format-convention-failure.mjs";
-
+import formatConventionFailure from "./format-convention-failure.mjs";
 function failureCode(result) {
   return Number.isInteger(result.code) ? result.code : 12;
 }
-
-export async function runConventionStage(runChecks) {
+export default async function runConventionStage(runChecks) {
   try {
     const results = await runChecks();
     const failures = results.filter(({ status }) => status === "fail");

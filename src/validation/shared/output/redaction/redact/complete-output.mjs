@@ -1,7 +1,6 @@
-import { redactProcessOutput } from "./process-output.mjs";
-import { redactMatchedSecrets } from "./secrets.mjs";
-
-export function redactCompleteOutput(
+import redactProcessOutput from "./process-output.mjs";
+import redactMatchedSecrets from "./secrets.mjs";
+export default function redactCompleteOutput(
   text,
   { suppressed, values, workLimit, findSecretEnds, trimSuffix },
 ) {
@@ -12,7 +11,6 @@ export function redactCompleteOutput(
   const redacted = redactMatchedSecrets(value, matchEnds);
   return trimSuffix(redactProcessOutput(redacted, []));
 }
-
 function hasCompleteSecretMatches(text, values, matchEnds) {
   if (!Array.isArray(matchEnds) || matchEnds.length !== text.length + 1) return false;
   for (let index = 0; index < text.length; index += 1) {

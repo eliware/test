@@ -1,8 +1,7 @@
-import { resolveFocusedTestPaths } from "../resolve/focused/test-paths.mjs";
-import { validateInformationalArguments } from "./validate/informational-arguments.mjs";
-import { validateModePlacement } from "./validate/mode-placement.mjs";
-
-export function readDiagnosticOptions(args) {
+import resolveFocusedTestPaths from "../resolve/focused/test-paths.mjs";
+import validateInformationalArguments from "./validate/informational-arguments.mjs";
+import validateModePlacement from "./validate/mode-placement.mjs";
+export default function readDiagnosticOptions(args) {
   const normalizedArgs = [...args];
   const modeFlags = ["--lint", "--format", "--format-check", "--audit", "--pack"];
   const removedFlags = ["--ignore-100x4", "--ignore-line-limits"];

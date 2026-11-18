@@ -1,7 +1,6 @@
-import { captureSmokePath } from "./entry.mjs";
-import { selectSmokePaths } from "./select-paths.mjs";
-
-export async function captureSmokePaths(
+import captureSmokePath from "./entry.mjs";
+import selectSmokePaths from "./select-paths.mjs";
+export default async function captureSmokePaths(
   root,
   packageName,
   binNames,

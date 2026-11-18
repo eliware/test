@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { runJestValidationStage } from "../../../../../../../src/validation/stages/jest/execution/run/jest/validation-stage.mjs";
-
+import runJestValidationStage from "../../../../../../../src/validation/stages/jest/execution/run/jest/validation-stage.mjs";
 test("passes clean Jest results and records aggregate counts", async () => {
   const context = {
     root: ".",
@@ -12,7 +11,11 @@ test("passes clean Jest results and records aggregate counts", async () => {
     },
     validationSummary: {},
   };
-  const runJest = jest.fn(async () => ({ ruleId: "stage:jest", status: "pass", message: "" }));
+  const runJest = jest.fn(async () => ({
+    ruleId: "stage:jest",
+    status: "pass",
+    message: "",
+  }));
   await expect(runJestValidationStage(context, runJest)).resolves.toMatchObject({
     stage: "jest",
     code: 0,
@@ -21,13 +24,17 @@ test("passes clean Jest results and records aggregate counts", async () => {
   });
   expect(runJest).toHaveBeenCalledWith(context, "stage:jest");
   expect(context.validationSummary).toMatchObject({
-    jestCounts: { testSuites: 3, tests: 17 },
+    jestCounts: {
+      testSuites: 3,
+      tests: 17,
+    },
   });
   expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
 });
-
 test("passes skipped focused runs without requiring Jest test counts", async () => {
-  const context = { root: "." };
+  const context = {
+    root: ".",
+  };
   await expect(
     runJestValidationStage(context, async () => ({
       ruleId: "stage:jest",
@@ -43,7 +50,6 @@ test("passes skipped focused runs without requiring Jest test counts", async () 
     message: "All focused Jest paths are ignored.",
   });
 });
-
 test("records Jest time when the process result has no start time", async () => {
   const context = {
     root: ".",
@@ -54,11 +60,15 @@ test("records Jest time when the process result has no start time", async () => 
     validationSummary: {},
   };
   await expect(
-    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
-  ).resolves.toMatchObject({ code: 0 });
+    runJestValidationStage(context, async () => ({
+      status: "pass",
+      message: "",
+    })),
+  ).resolves.toMatchObject({
+    code: 0,
+  });
   expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
 });
-
 test("rejects a passing Jest process without a completion event", async () => {
   const context = {
     root: ".",
@@ -70,7 +80,10 @@ test("rejects a passing Jest process without a completion event", async () => {
     validationSummary: {},
   };
   await expect(
-    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+    runJestValidationStage(context, async () => ({
+      status: "pass",
+      message: "",
+    })),
   ).resolves.toMatchObject({
     code: 2,
     status: "fail",
@@ -78,7 +91,6 @@ test("rejects a passing Jest process without a completion event", async () => {
   });
   expect(context.validationSummary.jestCounts).toBeUndefined();
 });
-
 test("accepts a completed suite that contains no tests", async () => {
   const context = {
     root: ".",
@@ -89,11 +101,19 @@ test("accepts a completed suite that contains no tests", async () => {
     validationSummary: {},
   };
   await expect(
-    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
-  ).resolves.toMatchObject({ code: 0, status: "pass" });
-  expect(context.validationSummary.jestCounts).toEqual({ testSuites: 1, tests: 0 });
+    runJestValidationStage(context, async () => ({
+      status: "pass",
+      message: "",
+    })),
+  ).resolves.toMatchObject({
+    code: 0,
+    status: "pass",
+  });
+  expect(context.validationSummary.jestCounts).toEqual({
+    testSuites: 1,
+    tests: 0,
+  });
 });
-
 test("rejects a passing Jest report without a completed suite", async () => {
   const context = {
     root: ".",
@@ -103,10 +123,15 @@ test("rejects a passing Jest report without a completed suite", async () => {
     },
   };
   await expect(
-    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
-  ).resolves.toMatchObject({ code: 2, status: "fail" });
+    runJestValidationStage(context, async () => ({
+      status: "pass",
+      message: "",
+    })),
+  ).resolves.toMatchObject({
+    code: 2,
+    status: "fail",
+  });
 });
-
 test("fails when Jest reports unexpected test console output", async () => {
   const context = {
     root: ".",
@@ -135,34 +160,50 @@ test("fails when Jest reports unexpected test console output", async () => {
     message: expect.stringContaining("Unexpected test-process output detected"),
   });
 });
-
 test("keeps Jest failures and startup errors as stage failures", async () => {
-  const context = { root: ".", env: {}, jestResult: { code: 1 } };
+  const context = {
+    root: ".",
+    env: {},
+    jestResult: {
+      code: 1,
+    },
+  };
   await expect(
     runJestValidationStage(context, async () => ({
       ruleId: "stage:jest",
       status: "fail",
       message: "Jest failed",
     })),
-  ).resolves.toMatchObject({ code: 2, status: "fail" });
+  ).resolves.toMatchObject({
+    code: 2,
+    status: "fail",
+  });
   await expect(
     runJestValidationStage(context, async () => ({
       ruleId: "stage:jest",
       status: "fail",
       message: "Jest could not be started: missing executable",
     })),
-  ).resolves.toMatchObject({ code: 1, status: "fail" });
+  ).resolves.toMatchObject({
+    code: 1,
+    status: "fail",
+  });
 });
-
 test("adds coverage details when Jest reports a coverage threshold failure", async () => {
   const context = {
     root: ".",
-    jestResult: { code: 1, coverageDirectory: "coverage" },
+    jestResult: {
+      code: 1,
+      coverageDirectory: "coverage",
+    },
   };
   await expect(
     runJestValidationStage(
       context,
-      async () => ({ status: "fail", message: "Coverage threshold was not met." }),
+      async () => ({
+        status: "fail",
+        message: "Coverage threshold was not met.",
+      }),
       async () => "{}",
     ),
   ).resolves.toMatchObject({

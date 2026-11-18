@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { lstat, open, readFile, unlink } from "node:fs/promises";
 import { join } from "node:path";
-
-export async function acquireValidationLock(root, operations = {}) {
+export default async function acquireValidationLock(root, operations = {}) {
   const lockPath = join(root, "eliware-test.lock");
   const lockId = randomUUID();
   const openFile = operations.open ?? open;
@@ -19,7 +18,11 @@ export async function acquireValidationLock(root, operations = {}) {
   let lockIdentity;
   try {
     await file.writeFile(
-      JSON.stringify({ lockId, pid: process.pid, startedAt: new Date().toISOString() }),
+      JSON.stringify({
+        lockId,
+        pid: process.pid,
+        startedAt: new Date().toISOString(),
+      }),
     );
     lockIdentity = await file.stat();
   } catch (error) {
@@ -45,7 +48,9 @@ export async function acquireValidationLock(root, operations = {}) {
       throw new AggregateError(
         [error, ...cleanupErrors],
         "Could not write lock metadata and cleanup failed." + recovery,
-        { cause: error },
+        {
+          cause: error,
+        },
       );
     }
     throw error;
@@ -59,7 +64,9 @@ export async function acquireValidationLock(root, operations = {}) {
       throw new AggregateError(
         [error, cleanupError],
         `Could not close the validation lock. A stale lock can stay at ${lockPath}.`,
-        { cause: error },
+        {
+          cause: error,
+        },
       );
     }
     throw error;

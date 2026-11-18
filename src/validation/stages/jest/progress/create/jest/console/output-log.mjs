@@ -1,17 +1,22 @@
-import { createJestOutputCapture } from "./capture-streams.mjs";
-import { createJestOutputPersistence } from "./persist-output.mjs";
-import { redactJestOutput } from "./redact-output.mjs";
-import { stripJestProgressLines } from "./strip-progress-lines.mjs";
-
+import createJestOutputCapture from "./capture-streams.mjs";
+import createJestOutputPersistence from "./persist-output.mjs";
+import redactJestOutput from "./redact-output.mjs";
+import stripJestProgressLines from "./strip-progress-lines.mjs";
 const logLimit = 1_000_000;
 const truncationMarker = "\n[eliware-test: Jest output was truncated at the configured limit.]\n";
-
-export function createJestConsoleOutputLog(path, { append, replace, maxLength = logLimit } = {}) {
-  const persistence = createJestOutputPersistence(path, { append, replace });
-  const capture = createJestOutputCapture({ maxLength });
+export default function createJestConsoleOutputLog(
+  path,
+  { append, replace, maxLength = logLimit } = {},
+) {
+  const persistence = createJestOutputPersistence(path, {
+    append,
+    replace,
+  });
+  const capture = createJestOutputCapture({
+    maxLength,
+  });
   let writeError;
   let finished = false;
-
   return {
     start() {
       finished = false;

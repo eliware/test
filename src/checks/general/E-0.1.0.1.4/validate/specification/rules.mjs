@@ -1,11 +1,9 @@
 const directiveFields = new Set(["id", "dos", "donts", "examples", "children"]);
-
-export function validateSpecificationRules(rules, label) {
+export default function validateSpecificationRules(rules, label) {
   const errors = [];
   validateRules(rules, label, errors);
   return errors;
 }
-
 function validateRules(rules, label, errors) {
   if (!Array.isArray(rules) || !rules.length) {
     errors.push(`${label} must be a nonempty array.`);

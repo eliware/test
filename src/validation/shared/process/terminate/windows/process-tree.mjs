@@ -1,10 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { isProcessRunning } from "../../is-process-running.mjs";
-import { waitForProcessExit } from "../../wait-for-process-exit.mjs";
-import { resolveWindowsPowerShellCoreExecutable } from "../../resolve-windows/powershell-core-executable.mjs";
-import { attemptWindowsProcessTreeFallbacks } from "./fallback.mjs";
-
-export function createWindowsProcessTreeKiller(
+import isProcessRunning from "../../is-process-running.mjs";
+import waitForProcessExit from "../../wait-for-process-exit.mjs";
+import resolveWindowsPowerShellCoreExecutable from "../../resolve-windows/powershell-core-executable.mjs";
+import attemptWindowsProcessTreeFallbacks from "./fallback.mjs";
+export default function createWindowsProcessTreeKiller(
   executeProcess = execFileSync,
   processIsRunning = isProcessRunning,
   waitForExit = (pid) => waitForProcessExit(pid, processIsRunning),
@@ -12,7 +11,12 @@ export function createWindowsProcessTreeKiller(
 ) {
   return function killWindowsProcessTree(pid, env = process.env, execute = executeProcess) {
     if (!processIsRunning(pid)) return;
-    const options = { windowsHide: true, stdio: "ignore", timeout: 1_000, shell: false };
+    const options = {
+      windowsHide: true,
+      stdio: "ignore",
+      timeout: 1_000,
+      shell: false,
+    };
     const fallbackError = attemptWindowsProcessTreeFallbacks(
       pid,
       env,
@@ -26,5 +30,4 @@ export function createWindowsProcessTreeKiller(
     throw new Error("Windows process remains running after process-tree termination.");
   };
 }
-
 export const killWindowsProcessTree = createWindowsProcessTreeKiller();

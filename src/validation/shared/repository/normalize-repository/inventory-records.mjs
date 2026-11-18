@@ -1,8 +1,13 @@
 import { relative, resolve, sep, win32 } from "node:path";
-
-export function normalizeRepositoryInventoryRecords(root, records) {
+export default function normalizeRepositoryInventoryRecords(root, records) {
   const windowsRoot = /^(?:[A-Za-z]:[\\/]|\\\\[?.]\\|\\\\|\/\/)/u.test(root);
-  const pathApi = windowsRoot ? win32 : { relative, resolve, sep };
+  const pathApi = windowsRoot
+    ? win32
+    : {
+        relative,
+        resolve,
+        sep,
+      };
   const repositoryRoot = pathApi.resolve(windowsRoot ? normalizeWindowsDevicePath(root) : root);
   return records.flatMap((record) => {
     if (!record || typeof record.path !== "string") return [];
@@ -15,10 +20,14 @@ export function normalizeRepositoryInventoryRecords(root, records) {
       .split(pathApi.sep)
       .join("/");
     if (path === ".." || path.startsWith("../") || path.includes(":")) return [];
-    return [{ ...record, path }];
+    return [
+      {
+        ...record,
+        path,
+      },
+    ];
   });
 }
-
 function normalizeWindowsDevicePath(path) {
   return path.replace(/^\\\\[?.]\\UNC\\/iu, "\\\\").replace(/^\\\\[?.]\\(?=[A-Za-z]:[\\/])/u, "");
 }

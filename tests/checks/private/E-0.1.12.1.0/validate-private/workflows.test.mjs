@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validatePrivateWorkflows } from "../../../../../src/checks/private/E-0.1.12.1.0/validate-private/workflows.mjs";
-
+import validatePrivateWorkflows from "../../../../../src/checks/private/E-0.1.12.1.0/validate-private/workflows.mjs";
 function inventory(files, contents) {
   return {
     files: async () => files,
@@ -10,13 +9,11 @@ function inventory(files, contents) {
     },
   };
 }
-
 test("rejects missing inventory readers", async () => {
   await expect(validatePrivateWorkflows()).resolves.toEqual([
     "GitHub workflows could not be inspected for npm publication settings.",
   ]);
 });
-
 test("accepts workflows without npm publication settings", async () => {
   await expect(
     validatePrivateWorkflows(
@@ -26,14 +23,16 @@ test("accepts workflows without npm publication settings", async () => {
     ),
   ).resolves.toEqual([]);
 });
-
 test("accepts empty workflow objects", async () => {
   const path = ".github/workflows/ci.yaml";
   await expect(
-    validatePrivateWorkflows(inventory([path], { [path]: "jobs: null\n" })),
+    validatePrivateWorkflows(
+      inventory([path], {
+        [path]: "jobs: null\n",
+      }),
+    ),
   ).resolves.toEqual([]);
 });
-
 test("rejects npm publication commands and token settings in any workflow", async () => {
   const path = ".github/workflows/npm.yaml";
   const yaml = [
@@ -45,20 +44,28 @@ test("rejects npm publication commands and token settings in any workflow", asyn
     "      - run: npm publish --provenance",
     "      - run: echo $NPM_TOKEN",
   ].join("\n");
-  await expect(validatePrivateWorkflows(inventory([path], { [path]: yaml }))).resolves.toEqual([
+  await expect(
+    validatePrivateWorkflows(
+      inventory([path], {
+        [path]: yaml,
+      }),
+    ),
+  ).resolves.toEqual([
     `${path}.jobs.publish.env.NODE_AUTH_TOKEN must not define npm publication tokens.`,
     `${path}.jobs.publish.steps.0.run must not run an npm publication command.`,
     `${path}.jobs.publish.steps.1.run must not reference npm publication tokens.`,
   ]);
 });
-
 test("rejects invalid workflow YAML", async () => {
   const path = ".github/workflows/ci.yml";
-  await expect(validatePrivateWorkflows(inventory([path], { [path]: "jobs: [" }))).resolves.toEqual(
-    [`${path} must contain one valid YAML document.`],
-  );
+  await expect(
+    validatePrivateWorkflows(
+      inventory([path], {
+        [path]: "jobs: [",
+      }),
+    ),
+  ).resolves.toEqual([`${path} must contain one valid YAML document.`]);
 });
-
 test("reports workflow inventory and read errors", async () => {
   await expect(
     validatePrivateWorkflows({

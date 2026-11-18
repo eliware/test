@@ -1,4 +1,4 @@
-export function parseUnapprovedCsv(text) {
+export default function parseUnapprovedCsv(text) {
   const rows = [];
   let row = [];
   let field = "";

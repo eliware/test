@@ -1,14 +1,21 @@
 import { expect, jest, test } from "@jest/globals";
-import { prepareValidationPlan } from "../../../../src/validation/planning/prepare-validation/plan.mjs";
-import { readProfileCombinationPolicy } from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
-
+import prepareValidationPlan from "../../../../src/validation/planning/prepare-validation/plan.mjs";
+import prepareValidationExemptions from "../../../../src/validation/planning/prepare-validation/exemptions.mjs";
+import readProfileCombinationPolicy from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
 test("prepares a focused validation plan with context and exemptions", async () => {
   const checks = ["E-0.1.4", "E-0.1.130.13", "E-0.1.130.14", "E-0.1.130.15", "E-0.1.130.10"].map(
-    (ruleId) => ({ ruleId, focusedSafe: ruleId !== "E-0.1.130.10" }),
+    (ruleId) => ({
+      ruleId,
+      focusedSafe: ruleId !== "E-0.1.130.10",
+    }),
   );
   const dependencies = {
     readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
-    loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general", "application"] } })),
+    loadValidationTarget: jest.fn(async () => ({
+      eliware: {
+        apply: ["general", "application"],
+      },
+    })),
     discoverAllChecks: jest.fn(async () => checks),
     selectConventionChecks: jest.fn(async () => checks),
     validateBundledDirectiveCompleteness: jest.fn(async () => true),
@@ -18,7 +25,10 @@ test("prepares a focused validation plan with context and exemptions", async () 
   const plan = await prepareValidationPlan(
     "/repo",
     ["E-9"],
-    { jestArgs: ["tests/a.test.mjs"], executeJest: true },
+    {
+      jestArgs: ["tests/a.test.mjs"],
+      executeJest: true,
+    },
     dependencies,
   );
   expect(plan.checks.map(({ ruleId }) => ruleId)).toEqual([
@@ -33,18 +43,28 @@ test("prepares a focused validation plan with context and exemptions", async () 
     expect.objectContaining({
       root: "/repo",
       executeJest: true,
-      focusedScope: expect.objectContaining({ sourcePath: "src/a.mjs" }),
-      repositoryInventory: expect.objectContaining({ focusedScope: expect.any(Object) }),
+      focusedScope: expect.objectContaining({
+        sourcePath: "src/a.mjs",
+      }),
+      repositoryInventory: expect.objectContaining({
+        focusedScope: expect.any(Object),
+      }),
     }),
   );
 });
-
 test("keeps the complete selected plan when no focused path is supplied", async () => {
-  const checks = [{ ruleId: "E-0.1.130.10", run() {} }];
+  const checks = [
+    {
+      ruleId: "E-0.1.130.10",
+      run() {},
+    },
+  ];
   const dependencies = {
     readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
     loadValidationTarget: jest.fn(async () => ({
-      eliware: { apply: ["general", "documentation", "private"] },
+      eliware: {
+        apply: ["general", "documentation", "private"],
+      },
     })),
     discoverAllChecks: jest.fn(async () => checks),
     selectConventionChecks: jest.fn(async () => checks),
@@ -52,16 +72,24 @@ test("keeps the complete selected plan when no focused path is supplied", async 
     prepareValidationExemptions: jest.fn(() => new Set()),
     findRepositoryEntries: jest.fn(async () => []),
   };
-  const plan = await prepareValidationPlan("/repo", [], { executeJest: true }, dependencies);
+  const plan = await prepareValidationPlan(
+    "/repo",
+    [],
+    {
+      executeJest: true,
+    },
+    dependencies,
+  );
   expect(plan.checks).toBe(checks);
   expect(plan.context.executeJest).toBe(false);
 });
-
 test("rejects invalid profile combinations before check discovery", async () => {
   const dependencies = {
     readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
     loadValidationTarget: jest.fn(async () => ({
-      eliware: { apply: ["general", "library", "application", "npm-published"] },
+      eliware: {
+        apply: ["general", "library", "application", "npm-published"],
+      },
     })),
     discoverAllChecks: jest.fn(),
     selectConventionChecks: jest.fn(),
@@ -73,12 +101,13 @@ test("rejects invalid profile combinations before check discovery", async () => 
   expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
   expect(dependencies.selectConventionChecks).not.toHaveBeenCalled();
 });
-
 test("rejects unsatisfied requiresAny before check discovery", async () => {
   const dependencies = {
     readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
     loadValidationTarget: jest.fn(async () => ({
-      eliware: { apply: ["general", "npm-published"] },
+      eliware: {
+        apply: ["general", "npm-published"],
+      },
     })),
     discoverAllChecks: jest.fn(),
     selectConventionChecks: jest.fn(),
@@ -90,4 +119,34 @@ test("rejects unsatisfied requiresAny before check discovery", async () => {
     "at least one of: application, library",
   );
   expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
+});
+test("rejects expired package exemptions before validation stages can run", async () => {
+  const dependencies = {
+    readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
+    loadValidationTarget: jest.fn(async () => ({
+      eliware: {
+        apply: ["general"],
+        exempt: [
+          {
+            ruleId: "stage:audit",
+            reason: "Temporary advisory exception.",
+            approver: "Eli",
+            approvalTimestamp: "2026-01-01T00:00:00Z",
+            expiry: "2020-01-01",
+            advisories: ["GHSA-fc5q-39xc-vjpf"],
+          },
+        ],
+      },
+    })),
+    discoverAllChecks: jest.fn(async () => []),
+    selectConventionChecks: jest.fn(async () => []),
+    validateBundledDirectiveCompleteness: jest.fn(async () => true),
+    prepareValidationExemptions,
+    findRepositoryEntries: jest.fn(async () => []),
+  };
+  await expect(prepareValidationPlan("/repo", [], {}, dependencies)).rejects.toThrow(
+    "Every exemption must identify",
+  );
+  expect(dependencies.discoverAllChecks).toHaveBeenCalled();
+  expect(dependencies.findRepositoryEntries).not.toHaveBeenCalled();
 });

@@ -1,13 +1,14 @@
 import { expect, test } from "@jest/globals";
-import { createValidationContext } from "../../../src/validation/planning/create-validation-context.mjs";
-
+import createValidationContext from "../../../src/validation/planning/create-validation-context.mjs";
 test("creates the complete execution context from validation options", () => {
   const timing = {};
   const writeOutput = () => {};
   expect(
     createValidationContext(
       "root",
-      { name: "fixture" },
+      {
+        name: "fixture",
+      },
       {
         executeJest: true,
         executeLint: true,
@@ -29,7 +30,9 @@ test("creates the complete execution context from validation options", () => {
     ),
   ).toEqual({
     root: "root",
-    packageJson: { name: "fixture" },
+    packageJson: {
+      name: "fixture",
+    },
     executeJest: true,
     executeLint: true,
     executeAudit: true,
@@ -52,7 +55,6 @@ test("creates the complete execution context from validation options", () => {
     validationSummary: {},
   });
 });
-
 test("creates default options without enabling stages", () => {
   expect(createValidationContext("root", {})).toEqual({
     root: "root",
@@ -79,18 +81,41 @@ test("creates default options without enabling stages", () => {
     validationSummary: {},
   });
 });
-
 test("preserves an invocation environment in the validation context", () => {
-  const env = { PATH: "invocation-path" };
-  expect(createValidationContext("root", {}, { env })).toEqual(expect.objectContaining({ env }));
+  const env = {
+    PATH: "invocation-path",
+  };
+  expect(
+    createValidationContext(
+      "root",
+      {},
+      {
+        env,
+      },
+    ),
+  ).toEqual(
+    expect.objectContaining({
+      env,
+    }),
+  );
 });
-
 test("preserves a shared AST parser and optional run scope data", () => {
   const parseAst = () => {};
   const repositoryFiles = ["src/index.mjs"];
-  const focusedScope = { paths: repositoryFiles };
-
-  expect(createValidationContext("root", {}, { parseAst, repositoryFiles, focusedScope })).toEqual({
+  const focusedScope = {
+    paths: repositoryFiles,
+  };
+  expect(
+    createValidationContext(
+      "root",
+      {},
+      {
+        parseAst,
+        repositoryFiles,
+        focusedScope,
+      },
+    ),
+  ).toEqual({
     root: "root",
     packageJson: {},
     executeJest: false,
@@ -109,7 +134,9 @@ test("preserves a shared AST parser and optional run scope data", () => {
     timing: undefined,
     writeOutput: undefined,
     validationSummary: {},
-    repositoryInventory: expect.objectContaining({ files: expect.any(Function) }),
+    repositoryInventory: expect.objectContaining({
+      files: expect.any(Function),
+    }),
     parseAst,
     repositoryFiles,
     focusedScope,

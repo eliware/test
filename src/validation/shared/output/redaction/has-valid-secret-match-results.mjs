@@ -1,4 +1,4 @@
-export function hasValidSecretMatchResults(found, pendingStart, pendingEnd) {
+export default function hasValidSecretMatchResults(found, pendingStart, pendingEnd) {
   return (
     found !== null &&
     typeof found === "object" &&

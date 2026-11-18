@@ -1,7 +1,10 @@
-import { isSensitivePath } from "./is/sensitive-path.mjs";
-import { readTrackedIndexEntries } from "./read-index-entries.mjs";
-
-export async function validateTrackedSensitivePaths(root, runGit, isPathExempt = () => false) {
+import isSensitivePath from "./is/sensitive-path.mjs";
+import readTrackedIndexEntries from "./read-index-entries.mjs";
+export default async function validateTrackedSensitivePaths(
+  root,
+  runGit,
+  isPathExempt = () => false,
+) {
   try {
     const paths = (await readTrackedIndexEntries(root, runGit))
       .map(({ path }) => path)

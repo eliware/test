@@ -1,11 +1,19 @@
 import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 const spawn = jest.fn();
-jest.unstable_mockModule("node:child_process", () => ({ spawn }));
-const { execute } =
-  await import("../../../../src/validation/shared/process/execute-child-process.mjs");
-const { attachChildProcessOutput, terminateChildProcess } =
-  await import("../../../../src/validation/shared/process/attach-child-process-output.mjs");
+jest.unstable_mockModule("node:child_process", () => ({
+  spawn,
+  default: spawn,
+}));
+const execute = (
+  await import("../../../../src/validation/shared/process/execute-child-process.mjs")
+).default;
+const attachChildProcessOutput = (
+    await import("../../../../src/validation/shared/process/attach-child-process-output.mjs")
+  ).default,
+  terminateChildProcess = (
+    await import("../../../../src/validation/shared/process/attach-child-process-output/terminate-child-process.mjs")
+  ).default;
 function childProcess() {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
@@ -16,7 +24,9 @@ test("captures stream data and rejects stream errors after safe termination", ()
   const child = childProcess();
   child.kill = jest.fn();
   const stream = new EventEmitter();
-  const output = { push: jest.fn() };
+  const output = {
+    push: jest.fn(),
+  };
   const reject = jest.fn();
   attachChildProcessOutput(child, stream, "stdout", output, reject, () => false);
   stream.emit("data", "captured");
@@ -25,6 +35,13 @@ test("captures stream data and rejects stream errors after safe termination", ()
   expect(output.push).toHaveBeenCalledWith("stdout", "captured");
   expect(reject).toHaveBeenCalledWith(failure);
   expect(child.kill).toHaveBeenCalledTimes(1);
+});
+test("ignores stream data after the process settles", () => {
+  const stream = new EventEmitter();
+  const output = { push: jest.fn() };
+  attachChildProcessOutput({}, stream, "stderr", output, jest.fn(), () => true);
+  stream.emit("data", "late output");
+  expect(output.push).not.toHaveBeenCalled();
 });
 test("keeps child errors when termination fails", () => {
   const child = {};
@@ -35,9 +52,25 @@ test("keeps child errors when termination fails", () => {
   });
   expect(() => terminateChildProcess(child)).not.toThrow();
 });
+test("does not try to terminate a child without a kill method", () => {
+  const stream = new EventEmitter();
+  const reject = jest.fn();
+  attachChildProcessOutput({}, stream, "stdout", { push: jest.fn() }, reject, () => false);
+  stream.emit("error", new Error("stream failed"));
+  expect(reject).toHaveBeenCalledWith(expect.objectContaining({ message: "stream failed" }));
+});
 test("redacts asynchronous child errors and captured output", async () => {
   const child = childProcess();
-  const promise = execute("node", [], { env: { SERVICE_TOKEN: "spawn-secret" } }, () => child);
+  const promise = execute(
+    "node",
+    [],
+    {
+      env: {
+        SERVICE_TOKEN: "spawn-secret",
+      },
+    },
+    () => child,
+  );
   child.stdout.emit("data", "failure detail: spawn-secret");
   child.stderr.emit("data", "stderr detail");
   const error = new Error("spawn failed with spawn-secret");
@@ -56,7 +89,14 @@ test("redacts asynchronous child errors and captured output", async () => {
 });
 test("keeps child error diagnostics visible after captured output reaches its byte limit", async () => {
   const child = childProcess();
-  const promise = execute("node", [], { env: {} }, () => child);
+  const promise = execute(
+    "node",
+    [],
+    {
+      env: {},
+    },
+    () => child,
+  );
   child.stdout.emit("data", "x".repeat(100_000));
   child.emit("error", new Error("actionable failure"));
   await expect(promise).rejects.toMatchObject({

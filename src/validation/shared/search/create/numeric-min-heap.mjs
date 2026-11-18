@@ -1,6 +1,5 @@
-export function createNumericMinHeap() {
+export default function createNumericMinHeap() {
   const values = [];
-
   function insert(value) {
     values.push(value);
     let index = values.length - 1;
@@ -12,7 +11,6 @@ export function createNumericMinHeap() {
     }
     values[index] = value;
   }
-
   function removeRoot() {
     const root = values[0];
     const last = values.pop();
@@ -29,7 +27,6 @@ export function createNumericMinHeap() {
     }
     return root;
   }
-
   return Object.freeze({
     insert,
     removeRoot,

@@ -1,10 +1,9 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { validateReadmeHeader } from "./header.mjs";
-import { validateReadmeSections } from "./sections.mjs";
-import { validateReadmeTocLinks } from "./toc-links.mjs";
-
-export function validateReadmeStructure(readme, expected, packageJson = {}) {
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+import validateReadmeHeader from "./header.mjs";
+import validateReadmeSections from "./sections.mjs";
+import validateReadmeTocLinks from "./toc-links/validate-readme-toc-links.mjs";
+export default function validateReadmeStructure(readme, expected, packageJson = {}) {
   const lines = readme.split(/\r?\n/u);
   const markdownLines = removeMarkdownCode(readme).split(/\r?\n/u);
   const order = readCanonicalOrder("readme-sections.yaml");

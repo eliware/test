@@ -1,4 +1,4 @@
-export function validateRunbookArray(value, schema, path, validateValue) {
+export default function validateRunbookArray(value, schema, path, validateValue) {
   if (!Array.isArray(value)) return [`${path} must be an array.`];
   const errors = [];
   if (schema.minItems !== undefined && value.length < schema.minItems)

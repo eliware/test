@@ -1,17 +1,18 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import {
-  isSkippedJestSuiteCall,
-  isRegisteredJestSuiteCall,
-  isRegisteredJestTestCall,
-} from "../../../../../src/checks/application/E-0.1.4.1.2/is/registered-jest-call.mjs";
-
+import isSkippedJestSuiteCall from "../../../../../src/checks/application/E-0.1.4.1.2/is/registered-jest-call/is/skipped-jest-suite-call.mjs";
+import isRegisteredJestSuiteCall from "../../../../../src/checks/application/E-0.1.4.1.2/is/registered-jest-call/is-registered-jest-suite-call.mjs";
+import isRegisteredJestTestCall from "../../../../../src/checks/application/E-0.1.4.1.2/is/registered-jest-call.mjs";
 function call(source) {
-  return parse(source, { sourceType: "module" }).program.body[0].expression;
+  return parse(source, {
+    sourceType: "module",
+  }).program.body[0].expression;
 }
-
 test("accepts active Jest test calls with functions or known callback names", () => {
-  const names = { callbacks: new Set(["test"]), namespaces: new Set() };
+  const names = {
+    callbacks: new Set(["test"]),
+    namespaces: new Set(),
+  };
   expect(
     isRegisteredJestTestCall(
       call('test("one", () => {});'),
@@ -31,9 +32,11 @@ test("accepts active Jest test calls with functions or known callback names", ()
     ),
   ).toBe(true);
 });
-
 test("rejects inactive tests and blocked suite names", () => {
-  const names = { callbacks: new Set(["test"]), namespaces: new Set() };
+  const names = {
+    callbacks: new Set(["test"]),
+    namespaces: new Set(),
+  };
   expect(
     isRegisteredJestTestCall(call('test("bad", 42);'), names, new Set(), new Set(), new Set()),
   ).toBe(false);
@@ -49,7 +52,10 @@ test("rejects inactive tests and blocked suite names", () => {
   expect(
     isRegisteredJestTestCall(
       call('test("blocked", () => {});'),
-      { callbacks: new Set(["test"]), namespaces: new Set() },
+      {
+        callbacks: new Set(["test"]),
+        namespaces: new Set(),
+      },
       new Set(),
       new Set(["test"]),
       new Set(),
@@ -72,7 +78,6 @@ test("rejects inactive tests and blocked suite names", () => {
     ),
   ).toBe(false);
 });
-
 test("accepts active suites with function callbacks", () => {
   expect(
     isRegisteredJestSuiteCall(
@@ -83,7 +88,6 @@ test("accepts active suites with function callbacks", () => {
     ),
   ).toBe(true);
 });
-
 test("accepts computed suite modifiers", () => {
   expect(
     isRegisteredJestSuiteCall(

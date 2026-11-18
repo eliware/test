@@ -1,18 +1,14 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import {
-  bundledConventionVersion,
-  readBundledProfileCatalog,
-} from "../../check-discovery/read/bundled-profile-catalog.mjs";
-import { parseBoundedYamlValue } from "../../shared/yaml/parse-bounded-yaml-documents.mjs";
-import { validateProfileCombinationPolicy } from "../validate/profile-combination-policy.mjs";
-
+import { bundledConventionVersion } from "../../check-discovery/read/bundled-profile-catalog.mjs";
+import readBundledProfileCatalog from "../../check-discovery/read/bundled-profile-catalog.mjs";
+import parseBoundedYamlValue from "../../shared/yaml/parse-bounded-yaml-documents/parse-bounded-yaml-value.mjs";
+import validateProfileCombinationPolicy from "../validate/profile-combination-policy.mjs";
 const policyUrl = new URL(
   "../../../../specs/conventions/ordering/profile-combinations.yaml",
   import.meta.url,
 );
-
-export function readProfileCombinationPolicy({ read = readFileSync } = {}) {
+export default function readProfileCombinationPolicy({ read = readFileSync } = {}) {
   const path = fileURLToPath(policyUrl);
   const policy = parseBoundedYamlValue(read(policyUrl, "utf8"), path);
   const errors = validateProfileCombinationPolicy(

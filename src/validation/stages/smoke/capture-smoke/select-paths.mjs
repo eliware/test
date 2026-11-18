@@ -1,6 +1,5 @@
 import { join } from "node:path";
-
-export function selectSmokePaths(root, packageName, binNames) {
+export default function selectSmokePaths(root, packageName, binNames) {
   const packagePath = join(root, "node_modules", ...packageName.split("/"));
   const paths = [
     join(root, "package.json"),

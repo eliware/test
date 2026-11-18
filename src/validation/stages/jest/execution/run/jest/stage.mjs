@@ -1,10 +1,10 @@
-import { fail, pass } from "../../../../../../checks/check-result.mjs";
-import { executeJestCheck } from "../../execute/jest-check.mjs";
-import { recordJestContext } from "../../record-jest-context.mjs";
-import { classifyJestResult } from "../../classify-jest-result.mjs";
-import { validateTestIsolationPolicy } from "../../../../../harness/validate-test-isolation-policy.mjs";
-
-export async function runJestStage(context, ruleId) {
+import fail from "../../../../../../checks/check-result/fail.mjs";
+import pass from "../../../../../../checks/check-result.mjs";
+import executeJestCheck from "../../execute/jest-check.mjs";
+import recordJestContext from "../../record-jest-context.mjs";
+import classifyJestResult from "../../classify-jest-result.mjs";
+import validateTestIsolationPolicy from "../../../../../harness/validate-test-isolation-policy.mjs";
+export default async function runJestStage(context, ruleId) {
   if (!context.executeJest) return pass(ruleId);
   const isolationViolations = await validateTestIsolationPolicy(context.root);
   if (isolationViolations.length) return fail(ruleId, isolationViolations.join("\n"));
@@ -19,7 +19,10 @@ export async function runJestStage(context, ruleId) {
     return fail(ruleId, `Jest could not be started: ${execution.error.message}`);
   }
   if (execution.skipped)
-    return { ...pass(ruleId, "All focused Jest paths are ignored."), skipped: true };
+    return {
+      ...pass(ruleId, "All focused Jest paths are ignored."),
+      skipped: true,
+    };
   recordJestContext(context, execution.result);
   return classifyJestResult(ruleId, context.jestResult, execution.timeoutDiagnostic);
 }

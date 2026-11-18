@@ -5,7 +5,7 @@ import {
 } from "../../../../../../../test-fixtures/repository-directory-cache-fixtures.mjs";
 import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
 import { join } from "node:path";
-import { createRepositoryDirectoryReadCache } from "../../../../../../../src/validation/shared/repository/create-repository/directory/read/cache.mjs";
+import createRepositoryDirectoryReadCache from "../../../../../../../src/validation/shared/repository/create-repository/directory/read/cache.mjs";
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];
@@ -17,7 +17,9 @@ test("deduplicates concurrent directory reads and reuses unchanged listings", as
   await expect(first).resolves.toBe(entries);
   await expect(read("src")).resolves.toBe(entries);
   expect(readDirectory).toHaveBeenCalledTimes(1);
-  expect(readDirectory).toHaveBeenCalledWith(join(root, "src"), { withFileTypes: true });
+  expect(readDirectory).toHaveBeenCalledWith(join(root, "src"), {
+    withFileTypes: true,
+  });
 });
 test("refreshes a directory listing when its on-disk version changes", async () => {
   const stat = jest
@@ -76,7 +78,6 @@ test("drops a failed listing so a later read can retry", async () => {
   expect(read.getRevision()).toBe(1);
   expect(read.getTrackedDirectories()).toEqual([]);
 });
-
 test("preserves the last successful listing when a forced refresh fails", async () => {
   const stat = jest
     .fn()
@@ -112,7 +113,6 @@ test("preserves the last successful listing when a forced refresh fails", async 
   await expect(read("src")).resolves.toEqual(["refreshed"]);
   expect(readDirectory).toHaveBeenCalledTimes(3);
 });
-
 test("waits for a pending listing before a forced refresh", async () => {
   const stat = jest
     .fn()
@@ -142,7 +142,6 @@ test("waits for a pending listing before a forced refresh", async () => {
   await expect(refresh).resolves.toEqual(["fresh"]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
-
 test("retries a forced refresh after a pending stat fails", async () => {
   const stat = jest
     .fn()
@@ -166,7 +165,6 @@ test("retries a forced refresh after a pending stat fails", async () => {
   await expect(initial).rejects.toThrow("temporary stat failure");
   await expect(refresh).resolves.toEqual(["retried"]);
 });
-
 test("refreshes a recreated directory when its birth time changes", async () => {
   const { read, readDirectory } = await verifyDirectoryCacheBirthtimeRefresh(jest);
   await expect(read("src")).resolves.toEqual(["old"]);

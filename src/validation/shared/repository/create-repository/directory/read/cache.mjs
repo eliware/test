@@ -1,9 +1,9 @@
 import { stat as statPath } from "node:fs/promises";
-import { inventoryPath } from "../../../repository-inventory/paths.mjs";
-import { getRepositoryDirectoryVersion } from "../../../get-repository-directory-version.mjs";
-import { hasDirectoryVersionChanged, isReusableDirectoryVersion } from "./version.mjs";
-
-export function createRepositoryDirectoryReadCache(
+import inventoryPath from "../../../repository-inventory/paths.mjs";
+import getRepositoryDirectoryVersion from "../../../get-repository-directory-version.mjs";
+import hasDirectoryVersionChanged from "./version/has-directory-version-changed.mjs";
+import isReusableDirectoryVersion from "./version.mjs";
+export default function createRepositoryDirectoryReadCache(
   root,
   readDirectory,
   stat = statPath,
@@ -21,12 +21,15 @@ export function createRepositoryDirectoryReadCache(
         () => readDirectoryCached(key, true),
       );
     }
-
-    const current = { pending: true };
+    const current = {
+      pending: true,
+    };
     current.promise = Promise.resolve()
       .then(async () => {
         let currentVersion = getRepositoryDirectoryVersion(
-          await stat(key, { bigint: true }),
+          await stat(key, {
+            bigint: true,
+          }),
           platform,
         );
         if (!forceRefresh && isReusableDirectoryVersion(previous?.version, currentVersion)) {
@@ -35,9 +38,13 @@ export function createRepositoryDirectoryReadCache(
           current.pending = false;
           return current.entries;
         }
-        current.entries = await readDirectory(key, { withFileTypes: true });
+        current.entries = await readDirectory(key, {
+          withFileTypes: true,
+        });
         const afterReadVersion = getRepositoryDirectoryVersion(
-          await stat(key, { bigint: true }),
+          await stat(key, {
+            bigint: true,
+          }),
           platform,
         );
         if (hasDirectoryVersionChanged(currentVersion, afterReadVersion)) {

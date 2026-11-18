@@ -1,9 +1,8 @@
-import { validateEntrypointMetadata } from "./entrypoint/metadata.mjs";
-import { validateStartCommand } from "./entrypoint/start-command.mjs";
-import { validateEntrypointTargets } from "./entrypoint/targets.mjs";
-import { collectEntrypointTargets } from "./entrypoint/collect-entrypoint-targets.mjs";
-
-export async function validateApplicationEntrypoints(context = {}, dependencies = {}) {
+import validateEntrypointMetadata from "./entrypoint/metadata.mjs";
+import validateStartCommand from "./entrypoint/start-command.mjs";
+import validateEntrypointTargets from "./entrypoint/targets.mjs";
+import collectEntrypointTargets from "./entrypoint/collect-entrypoint-targets.mjs";
+export default async function validateApplicationEntrypoints(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
   const packageJson = context.packageJson ?? {};
   const errors = validateEntrypointMetadata(packageJson);

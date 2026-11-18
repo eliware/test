@@ -1,30 +1,24 @@
 import { expect, test } from "@jest/globals";
-import {
-  focusedPathFrom,
-  focusedPathsFrom,
-  parseFocusedArguments,
-} from "../../../src/cli/parse/focused-arguments.mjs";
-
+import focusedPathFrom from "../../../src/cli/parse/focused-arguments/focused/path-from.mjs";
+import focusedPathsFrom from "../../../src/cli/parse/focused-arguments/focused/paths-from.mjs";
+import parseFocusedArguments from "../../../src/cli/parse/focused-arguments.mjs";
 test("separates option values from focused positional paths", () => {
   expect(
     parseFocusedArguments(["--moduleNameMapper", "tests/value.test.mjs", "tests/example.test.mjs"])
       .positional,
   ).toEqual(["tests/example.test.mjs"]);
 });
-
 test("preserves separator semantics for delegated option-looking arguments", () => {
   expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional).toEqual(
     [],
   );
 });
-
 test("treats equals-form option values as delegated values", () => {
   expect(
     parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"])
       .positional,
   ).toEqual(["tests/example.test.mjs"]);
 });
-
 test("handles empty and non-string argument values", () => {
   expect(parseFocusedArguments()).toEqual({
     positional: [],

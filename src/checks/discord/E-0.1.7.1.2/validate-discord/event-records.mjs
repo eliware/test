@@ -1,9 +1,7 @@
-import { validateDiscordHandlerFiles } from "./handler-files.mjs";
-
+import validateDiscordHandlerFiles from "./handler-files.mjs";
 const eventDirectory = "events";
 const requiredEvents = ["clientReady", "interactionCreate"];
-
-export async function validateDiscordEventRecords(files, inventory) {
+export default async function validateDiscordEventRecords(files, inventory) {
   const errors = files
     .filter((path) => path.startsWith(`${eventDirectory}/`) && path.endsWith(".mjs"))
     .filter((path) => path.slice(eventDirectory.length + 1).includes("/"))

@@ -1,26 +1,48 @@
 import { expect, jest, test } from "@jest/globals";
-import { terminateChildAfterSetupFailure } from "../../../../../src/validation/shared/process/terminate/child-after-setup-failure.mjs";
-
+import terminateChildAfterSetupFailure from "../../../../../src/validation/shared/process/terminate/child-after-setup-failure.mjs";
 test("uses the default terminator with the injected process killer", () => {
-  const child = { pid: 42, kill: jest.fn() };
+  const child = {
+    pid: 42,
+    kill: jest.fn(),
+  };
   const killProcess = jest.fn();
-  terminateChildAfterSetupFailure(child, { terminationPlatform: "linux", killProcess }, {});
+  terminateChildAfterSetupFailure(
+    child,
+    {
+      terminationPlatform: "linux",
+      killProcess,
+    },
+    {},
+  );
   expect(killProcess).toHaveBeenCalledWith(-42, "SIGTERM");
   expect(child.kill).not.toHaveBeenCalled();
 });
-
 test("uses the default terminator when none is injected", () => {
-  const child = { kill: jest.fn() };
-  terminateChildAfterSetupFailure(child, { terminationPlatform: "win32" }, {});
+  const child = {
+    kill: jest.fn(),
+  };
+  terminateChildAfterSetupFailure(
+    child,
+    {
+      terminationPlatform: "win32",
+    },
+    {},
+  );
   expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
-
 test("falls back to child kill when the configured terminator fails", () => {
-  const child = { kill: jest.fn() };
-  terminateChildAfterSetupFailure(child, { terminateChild: () => false }, {});
+  const child = {
+    kill: jest.fn(),
+  };
+  terminateChildAfterSetupFailure(
+    child,
+    {
+      terminateChild: () => false,
+    },
+    {},
+  );
   expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
-
 test("contains termination and fallback failures", () => {
   const child = {
     kill: () => {

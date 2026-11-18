@@ -1,7 +1,6 @@
-import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import { validateRunbookSchemaValue } from "./schema-value.mjs";
-
-export function validateRunbookDocument(content, path, schema) {
+import parseBoundedYamlDocuments from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import validateRunbookSchemaValue from "./schema-value.mjs";
+export default function validateRunbookDocument(content, path, schema) {
   let documents;
   try {
     documents = parseBoundedYamlDocuments(content, path);

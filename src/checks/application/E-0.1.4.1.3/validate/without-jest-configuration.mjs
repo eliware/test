@@ -1,4 +1,4 @@
-export function withoutJestConfiguration(content) {
+export default function withoutJestConfiguration(content) {
   try {
     const manifest = JSON.parse(content);
     delete manifest.jest;

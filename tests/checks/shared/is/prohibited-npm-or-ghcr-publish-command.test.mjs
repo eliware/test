@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isProhibitedNpmOrGhcrPublishCommand } from "../../../../src/checks/shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
-
+import isProhibitedNpmOrGhcrPublishCommand from "../../../../src/checks/shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
 test.each([
   "npm publish",
   "pnpm publish",
@@ -14,7 +13,6 @@ test.each([
 ])("rejects npm and GHCR publication command %s", (command) => {
   expect(isProhibitedNpmOrGhcrPublishCommand(command)).toBe(true);
 });
-
 test.each([
   "npm test",
   "gh release create v1.0.0",

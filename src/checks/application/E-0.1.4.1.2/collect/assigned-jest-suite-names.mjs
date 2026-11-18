@@ -1,4 +1,4 @@
-export function collectAssignedJestSuiteNames(node, describeNames, describes = new Set()) {
+export default function collectAssignedJestSuiteNames(node, describeNames, describes = new Set()) {
   if (!node || typeof node !== "object" || typeof node.type !== "string") return describes;
   if (
     node.type === "AssignmentExpression" &&

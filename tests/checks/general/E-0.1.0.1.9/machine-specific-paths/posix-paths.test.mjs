@@ -1,10 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { hasPosixMachineSpecificPath } from "../../../../../src/checks/general/E-0.1.0.1.9/machine-specific-paths/posix-paths.mjs";
-
+import hasPosixMachineSpecificPath from "../../../../../src/checks/general/E-0.1.0.1.9/machine-specific-paths/posix-paths.mjs";
 function posixPath(...parts) {
   return ["", ...parts].join("/");
 }
-
 test("detects machine-specific POSIX paths", () => {
   expect(
     hasPosixMachineSpecificPath(
@@ -16,7 +14,6 @@ test("detects machine-specific POSIX paths", () => {
     ),
   ).toBe(true);
 });
-
 test("allows the approved container account and mount paths", () => {
   expect(
     hasPosixMachineSpecificPath(
@@ -30,7 +27,6 @@ test("allows the approved container account and mount paths", () => {
     ),
   ).toBe(false);
 });
-
 test("does not treat routes or other POSIX paths as machine paths", () => {
   expect(
     hasPosixMachineSpecificPath(

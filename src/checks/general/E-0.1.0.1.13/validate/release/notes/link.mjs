@@ -1,7 +1,6 @@
-import { extractMarkdownLinks } from "../../../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
-import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-
-export function validateReleaseNotesLink(readme) {
+import extractMarkdownLinks from "../../../../E-0.1.0.1.4/extract-markdown/links.mjs";
+import removeMarkdownCode from "../../../../E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+export default function validateReleaseNotesLink(readme) {
   const lines = removeMarkdownCode(readme).split(/\r?\n/u);
   const sectionHeading = lines.findIndex((line) => line === "## Usage");
   if (sectionHeading < 0) return ["README.md Usage must link RELEASE_NOTES.md."];

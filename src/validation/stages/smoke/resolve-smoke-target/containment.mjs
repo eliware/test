@@ -1,6 +1,5 @@
 import { isAbsolute, relative, sep } from "node:path";
-
-export function containsOrMatches(parent, path) {
+export default function containsOrMatches(parent, path) {
   const relativePath = relative(parent, path);
   return (
     relativePath === "" ||

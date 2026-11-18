@@ -1,18 +1,14 @@
+import isRelatedPrefix from "./plan-source-prefix-moves/prefix-group/is-related-prefix.mjs";
+import makeTarget from "./plan-source-prefix-moves/prefix-group/make-target.mjs";
+import repeatedPrefixes from "./plan-source-prefix-moves/prefix-group.mjs";
 const SOURCE_PREFIX = /^src\//u;
-import {
-  isRelatedPrefix,
-  makeTarget,
-  repeatedPrefixes,
-} from "./plan-source-prefix-moves/prefix-group.mjs";
-
-export function planSourcePrefixMoves(files) {
+export default function planSourcePrefixMoves(files) {
   const paths = new Map(
     files.filter(isSourceModule).map((path) => {
       const normalized = path.replaceAll("\\", "/");
       return [normalized, normalized];
     }),
   );
-
   for (let pass = 0; pass < paths.size; pass++) {
     const groups = groupByDirectory(paths);
     const changes = [];
@@ -40,7 +36,6 @@ export function planSourcePrefixMoves(files) {
       paths.set(original, target);
     }
   }
-
   for (const [original, current] of paths) {
     const entry = parsePath(current);
     const parent = entry?.directory.split("/").at(-1);
@@ -49,28 +44,33 @@ export function planSourcePrefixMoves(files) {
       paths.set(original, `${entry.directory}/${filename}`);
     }
   }
-
   return [...paths]
     .filter(([from, to]) => from !== to)
-    .map(([from, to]) => ({ from, to }))
+    .map(([from, to]) => ({
+      from,
+      to,
+    }))
     .sort((left, right) => left.from.localeCompare(right.from));
 }
-
 function isSourceModule(path) {
   const normalized = path.replaceAll("\\", "/");
   return SOURCE_PREFIX.test(normalized) && normalized.endsWith(".mjs");
 }
-
 function groupByDirectory(paths) {
   const groups = new Map();
   for (const [original, current] of paths) {
     const entry = parsePath(current);
     if (!entry || entry.stem === "E" || entry.stem.startsWith("E-")) continue;
-    groups.set(entry.directory, [...(groups.get(entry.directory) ?? []), { ...entry, original }]);
+    groups.set(entry.directory, [
+      ...(groups.get(entry.directory) ?? []),
+      {
+        ...entry,
+        original,
+      },
+    ]);
   }
   return groups;
 }
-
 function parsePath(path) {
   const normalized = path.replaceAll("\\", "/");
   const separator = normalized.lastIndexOf("/");

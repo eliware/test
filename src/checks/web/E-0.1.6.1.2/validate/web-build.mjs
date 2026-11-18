@@ -1,10 +1,7 @@
-import {
-  getImportedLocalName,
-  parseWebpackConfig,
-  readProperties,
-} from "../parse-webpack-config.mjs";
-import { hasRepositoryRoot } from "../has-repository-root.mjs";
-
+import getImportedLocalName from "../parse-webpack-config/get-imported-local-name.mjs";
+import parseWebpackConfig from "../parse-webpack-config.mjs";
+import readProperties from "../parse-webpack-config/read-properties.mjs";
+import hasRepositoryRoot from "../has-repository-root.mjs";
 const expectedBuildCommand = "webpack --config webpack.config.mjs";
 const dependencySections = [
   "dependencies",
@@ -12,8 +9,7 @@ const dependencySections = [
   "optionalDependencies",
   "peerDependencies",
 ];
-
-export function validateWebBuild(packageJson = {}, configText = "") {
+export default function validateWebBuild(packageJson = {}, configText = "") {
   const errors = [];
   for (const name of ["webpack", "webpack-cli"]) {
     const found = dependencySections.some((section) => {
@@ -22,12 +18,10 @@ export function validateWebBuild(packageJson = {}, configText = "") {
     });
     if (!found) errors.push(`Web applications must directly declare ${name}.`);
   }
-
   if (packageJson.scripts?.build !== expectedBuildCommand)
     errors.push(
       "Web applications must define scripts.build as webpack --config webpack.config.mjs.",
     );
-
   const parsed = parseWebpackConfig(configText);
   if (!parsed) {
     errors.push("Web applications must define a valid root webpack.config.mjs.");
@@ -44,7 +38,6 @@ export function validateWebBuild(packageJson = {}, configText = "") {
   if (properties.get("target")?.value !== "web") errors.push("Webpack target must be web.");
   const entries = readProperties(properties.get("entry"));
   if (!entries?.size) errors.push("Webpack entry must define one or more named bundles.");
-
   const output = readProperties(properties.get("output"));
   const path = output?.get("path");
   const resolve = getImportedLocalName(program, "node:path", "resolve");

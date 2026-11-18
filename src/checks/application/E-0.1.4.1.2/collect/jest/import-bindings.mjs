@@ -1,4 +1,4 @@
-export function collectImportedJestTestBindings(program, names) {
+export default function collectImportedJestTestBindings(program, names) {
   for (const node of program.body) {
     if (node.type !== "ImportDeclaration" || node.source.value !== "@jest/globals") continue;
     for (const specifier of node.specifiers)

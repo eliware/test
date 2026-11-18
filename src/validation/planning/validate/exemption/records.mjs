@@ -1,4 +1,4 @@
-export function validateExemptionRecords(records, knownRuleIds) {
+export default function validateExemptionRecords(records, knownRuleIds) {
   if (
     !Array.isArray(records) ||
     records.some((entry) => {
@@ -33,7 +33,6 @@ export function validateExemptionRecords(records, knownRuleIds) {
   if (knownRuleIds && ids.some((id) => !knownRuleIds.includes(id)))
     throw new Error("Every convention exemption must identify a known rule ID.");
 }
-
 function isValidAdvisoryExemption(entry) {
   if (entry.ruleId !== "stage:audit") return entry.advisories === undefined;
   return (
@@ -46,7 +45,6 @@ function isValidAdvisoryExemption(entry) {
     entry.paths === undefined
   );
 }
-
 function isValidRepositoryPath(value) {
   return (
     typeof value === "string" &&
@@ -57,13 +55,11 @@ function isValidRepositoryPath(value) {
     !/^[A-Za-z]:/u.test(value)
   );
 }
-
 function isValidDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().startsWith(`${value}T`);
 }
-
 function isValidTimestamp(value) {
   if (
     typeof value !== "string" ||
@@ -76,7 +72,6 @@ function isValidTimestamp(value) {
   const calendarDate = new Date(`${datePart}T00:00:00.000Z`);
   return !Number.isNaN(date.valueOf()) && calendarDate.toISOString().slice(0, 10) === datePart;
 }
-
 function isExpired(value) {
   return Date.parse(`${value}T23:59:59.999Z`) < Date.now();
 }

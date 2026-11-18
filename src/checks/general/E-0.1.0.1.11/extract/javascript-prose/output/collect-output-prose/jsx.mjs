@@ -1,7 +1,6 @@
-import { isUserFacingAttribute } from "../attributes.mjs";
-import { addOutputProseBlocks } from "./blocks.mjs";
-
-export function collectJsxProse(value, blocks) {
+import isUserFacingAttribute from "../attributes.mjs";
+import addOutputProseBlocks from "./blocks.mjs";
+export default function collectJsxProse(value, blocks) {
   if (value.type === "JSXText") {
     addOutputProseBlocks(value.value, value.loc.start.line, blocks);
     return false;

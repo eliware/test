@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateLibrarySourcePlacement } from "../../../../../src/checks/library/E-0.1.3.1.2/validate-library/source-placement.mjs";
-
+import validateLibrarySourcePlacement from "../../../../../src/checks/library/E-0.1.3.1.2/validate-library/source-placement.mjs";
 test("allows maintained library, test, and example modules", () => {
   expect(
     validateLibrarySourcePlacement([
@@ -12,7 +11,6 @@ test("allows maintained library, test, and example modules", () => {
     ]),
   ).toEqual([]);
 });
-
 test("rejects implementation modules outside library roots", () => {
   expect(validateLibrarySourcePlacement(["bin/cli.mjs", "scripts/build.js", "notes.txt"])).toEqual([
     "bin/cli.mjs is outside the allowed library source and test directories.",

@@ -1,4 +1,4 @@
-export function readConventionConfig(packageJson) {
+export default function readConventionConfig(packageJson) {
   const apply = packageJson?.eliware?.apply;
   if (!Array.isArray(apply) || apply.length === 0) {
     throw new Error("package.json must define eliware.apply.");
@@ -9,5 +9,7 @@ export function readConventionConfig(packageJson) {
   if (new Set(apply).size !== apply.length) {
     throw new Error("eliware.apply must not contain duplicate profile names.");
   }
-  return { apply };
+  return {
+    apply,
+  };
 }

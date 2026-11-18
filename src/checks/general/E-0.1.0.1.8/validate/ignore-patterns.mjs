@@ -1,6 +1,5 @@
-import { isUniversalIgnoreRule } from "./ignore-patterns/is-universal-ignore-rule.mjs";
-import { validateProtectedIgnoreNegations } from "./ignore-patterns/validate-protected-negations.mjs";
-
+import isUniversalIgnoreRule from "./ignore-patterns/is-universal-ignore-rule.mjs";
+import validateProtectedIgnoreNegations from "./ignore-patterns/validate-protected-negations.mjs";
 const ignoredDirectories = [
   "node_modules",
   ".git",
@@ -12,7 +11,6 @@ const ignoredDirectories = [
   "test-results",
 ];
 const nestedRoots = ["nested", "nested/deep", "nested/deep/layer", "nested/deep/layer/four"];
-
 export const requiredIgnoreCases = [
   ["package.json", false],
   [".env", true],
@@ -26,8 +24,7 @@ export const requiredIgnoreCases = [
   ["nested/.DS_Store", true],
   ["nested/Thumbs.db", true],
 ];
-
-export function validateRequiredIgnoreRules(content) {
+export default function validateRequiredIgnoreRules(content) {
   const rules = content
     .split(/\r?\n/u)
     .map((line) => line.trim())

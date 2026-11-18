@@ -1,6 +1,5 @@
 import { win32 } from "node:path";
-
-export function resolveWindowsNpmCliFromPath(searchPath, fileExists) {
+export default function resolveWindowsNpmCliFromPath(searchPath, fileExists) {
   if (typeof searchPath !== "string" || typeof fileExists !== "function") return undefined;
   for (const directory of windowsPathDirectories(searchPath)) {
     if (!directory) continue;
@@ -10,14 +9,6 @@ export function resolveWindowsNpmCliFromPath(searchPath, fileExists) {
   }
   return undefined;
 }
-
-export function hasWindowsNpmCommandOnPath(searchPath, fileExists) {
-  if (typeof searchPath !== "string" || typeof fileExists !== "function") return false;
-  return [...windowsPathDirectories(searchPath)].some((directory) =>
-    fileExists(win32.join(directory, "npm.cmd")),
-  );
-}
-
 function* windowsPathDirectories(searchPath) {
   for (const entry of searchPath.split(win32.delimiter)) {
     yield entry

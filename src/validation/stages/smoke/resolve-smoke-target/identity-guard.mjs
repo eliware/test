@@ -3,8 +3,7 @@ function createUntrustedTargetError() {
     "Smoke target directory changed during validation. Refusing access to an untrusted target.",
   );
 }
-
-export function createSmokeTargetIdentityGuard(targetRoot, identity, inspect) {
+export default function createSmokeTargetIdentityGuard(targetRoot, identity, inspect) {
   return async () => {
     let current;
     try {

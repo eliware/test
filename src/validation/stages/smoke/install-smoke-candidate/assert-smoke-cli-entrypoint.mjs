@@ -1,8 +1,7 @@
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
-import { selectSmokeCliBin } from "./select-smoke-cli-bin.mjs";
-
-export function assertSmokeCliEntrypoint({
+import selectSmokeCliBin from "./select-smoke-cli-bin.mjs";
+export default function assertSmokeCliEntrypoint({
   targetRoot,
   packageJson,
   resolveModule = (specifier, parent) => createRequire(parent).resolve(specifier),

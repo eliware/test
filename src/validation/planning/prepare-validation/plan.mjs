@@ -1,19 +1,21 @@
-import { readConventionConfig } from "../read/convention-config.mjs";
-import { createValidationContext } from "../create-validation-context.mjs";
-import { resolveFocusedScope } from "../../../cli/resolve/focused/scope.mjs";
-import { selectExecutionChecks } from "../select-execution-checks.mjs";
-import { collectValidationInventoryOptions } from "../collect-validation-inventory-options.mjs";
-import { shouldExecuteJest } from "../should-execute-jest.mjs";
-import { validateAppliedProfiles } from "../validate/applied-profiles.mjs";
-
-export async function prepareValidationPlan(root, ignoredRuleIds, options, dependencies) {
+import readConventionConfig from "../read/convention-config.mjs";
+import createValidationContext from "../create-validation-context.mjs";
+import resolveFocusedScope from "../../../cli/resolve/focused/scope.mjs";
+import selectExecutionChecks from "../select-execution-checks.mjs";
+import collectValidationInventoryOptions from "../collect-validation-inventory-options.mjs";
+import shouldExecuteJest from "../should-execute-jest.mjs";
+import validateAppliedProfiles from "../validate/applied-profiles.mjs";
+export default async function prepareValidationPlan(root, ignoredRuleIds, options, dependencies) {
   const packageJson = await dependencies.loadValidationTarget(root);
   const conventions = readConventionConfig(packageJson);
   const policy = await dependencies.readProfileCombinationPolicy();
   const profileFailure = validateAppliedProfiles(conventions.apply, policy);
   if (profileFailure) throw new Error(profileFailure);
   const executeJest = shouldExecuteJest(options.executeJest, conventions.apply);
-  options = { ...options, executeJest };
+  options = {
+    ...options,
+    executeJest,
+  };
   const allChecks = await dependencies.discoverAllChecks();
   const checks = await dependencies.selectConventionChecks(conventions, allChecks);
   const focusedScope = resolveFocusedScope(options.jestArgs ?? []);

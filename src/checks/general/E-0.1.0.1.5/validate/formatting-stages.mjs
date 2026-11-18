@@ -1,6 +1,5 @@
 const requiredStages = ["lint", "format"];
-
-export function validateFormattingStages(stageResults) {
+export default function validateFormattingStages(stageResults) {
   if (!stageResults || typeof stageResults !== "object")
     return ["Cached lint and format-check results are required."];
   return requiredStages.flatMap((stage) => {

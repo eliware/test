@@ -1,4 +1,4 @@
-export function extractMarkdownShellCommands(content) {
+export default function extractMarkdownShellCommands(content) {
   const lines = content.split(/\r?\n/u);
   const commands = [];
   let fence = null;

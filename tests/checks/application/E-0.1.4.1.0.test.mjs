@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/application/E-0.1.4.1.0.mjs";
-
+import { ruleId } from "../../../src/checks/application/E-0.1.4.1.0.mjs";
+import run from "../../../src/checks/application/E-0.1.4.1.0.mjs";
 test("E-0.1.4.1.0 passes when application guidance is present", async () => {
   await expect(run(context())).resolves.toEqual({
     ruleId,
@@ -8,7 +8,6 @@ test("E-0.1.4.1.0 passes when application guidance is present", async () => {
     message: "",
   });
 });
-
 test("E-0.1.4.1.0 reports missing example indexes", async () => {
   const target = context(["demo.mjs"]);
   await expect(run(target)).resolves.toMatchObject({
@@ -17,11 +16,12 @@ test("E-0.1.4.1.0 reports missing example indexes", async () => {
     message: expect.stringContaining("examples/README.md is required"),
   });
 });
-
 test("E-0.1.4.1.0 uses its default context", async () => {
-  await expect(run(undefined)).resolves.toMatchObject({ ruleId, status: "fail" });
+  await expect(run(undefined)).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+  });
 });
-
 function context(examples = []) {
   return {
     root: "repo",

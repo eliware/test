@@ -1,13 +1,16 @@
 import { expect, jest, test } from "@jest/globals";
-import { cleanupFailedSmokeCapture } from "../../../../../src/validation/stages/smoke/capture-smoke/cleanup-failed-capture.mjs";
-
+import cleanupFailedSmokeCapture from "../../../../../src/validation/stages/smoke/capture-smoke/cleanup-failed-capture.mjs";
 test("removes the partial backup and rethrows the capture error", async () => {
   const error = new Error("copy denied");
-  const fs = { rm: jest.fn(async () => {}) };
+  const fs = {
+    rm: jest.fn(async () => {}),
+  };
   await expect(cleanupFailedSmokeCapture("C:/smoke/backup", fs, error)).rejects.toBe(error);
-  expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", { recursive: true, force: true });
+  expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", {
+    recursive: true,
+    force: true,
+  });
 });
-
 test("reports the backup path when cleanup fails", async () => {
   const error = new Error("copy denied");
   const fs = {

@@ -1,18 +1,30 @@
 import { expect, test } from "@jest/globals";
-import { runConventionStage } from "../../../src/validation/check-execution/run-convention-stage.mjs";
-import { formatConventionFailure } from "../../../src/validation/check-execution/format-convention-failure.mjs";
-
+import runConventionStage from "../../../src/validation/check-execution/run-convention-stage.mjs";
+import formatConventionFailure from "../../../src/validation/check-execution/format-convention-failure.mjs";
 test("returns a passing convention stage", async () => {
   const result = await runConventionStage(async () => [
-    { ruleId: "E-0.1.0.0.0", status: "pass", message: "" },
+    {
+      ruleId: "E-0.1.0.0.0",
+      status: "pass",
+      message: "",
+    },
   ]);
-  expect(result).toEqual({ code: 0, category: "conventions", diagnostics: [] });
+  expect(result).toEqual({
+    code: 0,
+    category: "conventions",
+    diagnostics: [],
+  });
 });
-
 test("reports cached stage failures without convention directives", async () => {
   await expect(
     runConventionStage(async () => [
-      { ruleId: "stage:lint", stage: "lint", code: 5, status: "fail", message: "lint output" },
+      {
+        ruleId: "stage:lint",
+        stage: "lint",
+        code: 5,
+        status: "fail",
+        message: "lint output",
+      },
     ]),
   ).resolves.toEqual({
     code: 5,
@@ -20,7 +32,6 @@ test("reports cached stage failures without convention directives", async () => 
     diagnostics: ["lint stage failed: lint output"],
   });
 });
-
 test("reports stage warnings while keeping the validation code clear", async () => {
   await expect(
     runConventionStage(async () => [
@@ -38,9 +49,12 @@ test("reports stage warnings while keeping the validation code clear", async () 
     diagnostics: ["WARNING: Audit stage timed out after 30 seconds. Validation will continue."],
   });
 });
-
 test("includes the complete failed directive in each check diagnostic", async () => {
-  const failure = { ruleId: "E-0.1.0.0.0", status: "fail", message: "missing file" };
+  const failure = {
+    ruleId: "E-0.1.0.0.0",
+    status: "fail",
+    message: "missing file",
+  };
   const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
     code: 12,
@@ -51,26 +65,34 @@ test("includes the complete failed directive in each check diagnostic", async ()
   expect(result.diagnostics[0]).toContain('"donts":');
   expect(result.diagnostics[0]).toContain('"id": "E-0.1.0.0.0"');
 });
-
 test("uses the convention code for check failures", async () => {
   const failures = [
-    { ruleId: "E-0.1.0.0.0", status: "fail", message: "first" },
-    { ruleId: "E-0.1.130.14", status: "fail", message: "coverage" },
+    {
+      ruleId: "E-0.1.0.0.0",
+      status: "fail",
+      message: "first",
+    },
+    {
+      ruleId: "E-0.1.130.14",
+      status: "fail",
+      message: "coverage",
+    },
   ];
   const result = await runConventionStage(async () => failures);
   expect(result.code).toBe(12);
   expect(result.diagnostics).toEqual(failures.map((failure) => formatConventionFailure(failure)));
 });
-
 test("provides remediation even when a check omitted its message", async () => {
-  const failure = { ruleId: "E-0.1.0.0.0", status: "fail" };
+  const failure = {
+    ruleId: "E-0.1.0.0.0",
+    status: "fail",
+  };
   await expect(runConventionStage(async () => [failure])).resolves.toEqual({
     code: 12,
     category: "conventions",
     diagnostics: [formatConventionFailure(failure)],
   });
 });
-
 test("uses the convention code for each failed convention check", async () => {
   const failure = {
     ruleId: "E-0.1.130.13",
@@ -83,7 +105,6 @@ test("uses the convention code for each failed convention check", async () => {
     diagnostics: [formatConventionFailure(failure)],
   });
 });
-
 test("normalizes convention-runner errors as convention failures", async () => {
   const result = await runConventionStage(async () => {
     throw new Error("invalid config");

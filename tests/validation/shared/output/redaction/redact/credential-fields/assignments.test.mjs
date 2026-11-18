@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { redactCredentialAssignments } from "../../../../../../../src/validation/shared/output/redaction/redact/credential-fields/assignments.mjs";
-
+import redactCredentialAssignments from "../../../../../../../src/validation/shared/output/redaction/redact/credential-fields/assignments.mjs";
 test("redacts key-value, quoted, and whitespace-delimited credentials", () => {
   expect(redactCredentialAssignments('apiKey="secret value" refreshToken:token-value')).toBe(
     "apiKey=[REDACTED] refreshToken:[REDACTED]",
@@ -12,7 +11,6 @@ test("redacts key-value, quoted, and whitespace-delimited credentials", () => {
     "application log: token [REDACTED]",
   );
 });
-
 test("redacts sensitive key names and multiline values", () => {
   const keys = [
     "cookie",
@@ -31,7 +29,6 @@ test("redacts sensitive key names and multiline values", () => {
     "password [REDACTED]",
   );
 });
-
 test("preserves prose, coverage paths, and package names", () => {
   const prose = "redacts a secret ending exactly at the emitted boundary";
   expect(redactCredentialAssignments(prose)).toBe(prose);
@@ -42,7 +39,14 @@ test("preserves prose, coverage paths, and package names", () => {
     "src/app/routes/token | 100 | 90",
   );
   const manifest = JSON.stringify([
-    { name: "@eliware/discord-webhook", files: [{ path: "package.json" }] },
+    {
+      name: "@eliware/discord-webhook",
+      files: [
+        {
+          path: "package.json",
+        },
+      ],
+    },
   ]);
   expect(redactCredentialAssignments(manifest)).toBe(manifest);
 });

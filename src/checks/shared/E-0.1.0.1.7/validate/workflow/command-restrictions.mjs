@@ -1,10 +1,9 @@
-import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is/prohibited-npm-or-ghcr-publish-command.mjs";
-import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { isSafeReportingCommand } from "./is-safe-reporting-command.mjs";
-import { validateNpmRunCommand } from "../../../package-scripts/validate/npm-run-command.mjs";
-import { hasDuplicateAggregateStage } from "../../has/duplicate-aggregate-stage.mjs";
-
-export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
+import isProhibitedNpmOrGhcrPublishCommand from "../../../is/prohibited-npm-or-ghcr-publish-command.mjs";
+import readCanonicalOrder from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import isSafeReportingCommand from "./is-safe-reporting-command.mjs";
+import validateNpmRunCommand from "../../../package-scripts/validate/npm-run-command.mjs";
+import hasDuplicateAggregateStage from "../../has/duplicate-aggregate-stage.mjs";
+export default function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
   const indexes = validationSteps.map((name, index) =>
     steps.findIndex((step) => (index < 2 ? step.uses : step.run) === stepValues[name]),
@@ -56,7 +55,6 @@ export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
     }
   return errors;
 }
-
 function isApprovedPreInstallStep(step) {
   if (step?.uses === "actions/checkout@v7" || step?.uses === "actions/setup-node@v7")
     return step.run === undefined;

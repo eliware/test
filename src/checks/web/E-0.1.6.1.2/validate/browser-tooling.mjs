@@ -1,4 +1,4 @@
-export function validateBrowserTooling(packageJson = {}) {
+export default function validateBrowserTooling(packageJson = {}) {
   const errors = [];
   const dependencySections = [
     "dependencies",

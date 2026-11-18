@@ -1,4 +1,4 @@
-export function collectNestedStringValues(value, values = []) {
+export default function collectNestedStringValues(value, values = []) {
   if (typeof value === "string") values.push(value);
   else if (Array.isArray(value)) value.forEach((entry) => collectNestedStringValues(entry, values));
   else if (value && typeof value === "object")

@@ -1,11 +1,16 @@
 import { expect, jest, test } from "@jest/globals";
-import { createJestCheckOptions } from "../../../../../../src/validation/stages/jest/configuration/create-jest/check-options.mjs";
-
+import createJestCheckOptions from "../../../../../../src/validation/stages/jest/configuration/create-jest/check-options.mjs";
 test("creates the execution options for a Jest check", () => {
   const onTimeout = () => {};
-  const env = { TOKEN: "configured" };
-
-  const options = createJestCheckOptions({ env }, onTimeout);
+  const env = {
+    TOKEN: "configured",
+  };
+  const options = createJestCheckOptions(
+    {
+      env,
+    },
+    onTimeout,
+  );
   expect(options).toEqual({
     onTimeout,
     env,
@@ -16,11 +21,9 @@ test("creates the execution options for a Jest check", () => {
   expect(() => options.beginNestedOutput()).not.toThrow();
   expect(options.elapsed()).toBe("0.000");
 });
-
 test("defaults the Jest environment to the current process environment", () => {
   expect(createJestCheckOptions({}, () => {}).env).toBe(process.env);
 });
-
 test("passes the timing output writer into Jest progress handling", () => {
   const writeOutput = () => {};
   const writeNestedOutput = jest.fn();
@@ -28,7 +31,10 @@ test("passes the timing output writer into Jest progress handling", () => {
   const options = createJestCheckOptions(
     {
       writeOutput,
-      timing: { beginNestedOutput, writeNestedOutput },
+      timing: {
+        beginNestedOutput,
+        writeNestedOutput,
+      },
     },
     () => {},
   );
@@ -37,17 +43,26 @@ test("passes the timing output writer into Jest progress handling", () => {
   expect(options.elapsed()).toBe("0.000");
   expect(beginNestedOutput).toHaveBeenCalledTimes(1);
 });
-
 test("uses the timing elapsed value when it is available", () => {
   const elapsed = jest.fn(() => "1.250");
-  const options = createJestCheckOptions({ timing: { elapsed } }, () => {});
-
+  const options = createJestCheckOptions(
+    {
+      timing: {
+        elapsed,
+      },
+    },
+    () => {},
+  );
   expect(options.elapsed()).toBe("1.250");
   expect(elapsed).toHaveBeenCalledTimes(1);
 });
-
 test("uses the context writer when timing helpers are unavailable", () => {
   const writeOutput = () => {};
-  const options = createJestCheckOptions({ writeOutput }, () => {});
+  const options = createJestCheckOptions(
+    {
+      writeOutput,
+    },
+    () => {},
+  );
   expect(options.writeOutput).toBe(writeOutput);
 });

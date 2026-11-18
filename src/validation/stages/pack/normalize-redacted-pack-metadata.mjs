@@ -1,4 +1,4 @@
-export function normalizeRedactedPackMetadata(stdout) {
+export default function normalizeRedactedPackMetadata(stdout) {
   return stdout.replace(
     /("(?:size|unpackedSize|entryCount|mode)"\s*:\s*)(?:\d|\[REDACTED\])+/gu,
     (_match, property) => `${property}0`,

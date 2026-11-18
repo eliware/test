@@ -1,6 +1,9 @@
-import { validatePrettierIgnorePolicy } from "./prettier/ignore-policy.mjs";
-
-export async function validateStandalonePrettierConfiguration(repositoryInventory, root, runGit) {
+import validatePrettierIgnorePolicy from "./prettier/ignore-policy.mjs";
+export default async function validateStandalonePrettierConfiguration(
+  repositoryInventory,
+  root,
+  runGit,
+) {
   if (!repositoryInventory?.files) return [];
   try {
     const files = await repositoryInventory.files("all");

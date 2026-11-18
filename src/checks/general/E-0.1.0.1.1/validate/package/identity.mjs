@@ -1,4 +1,4 @@
-export function validatePackageIdentity(packageJson) {
+export default function validatePackageIdentity(packageJson) {
   const errors = [];
   const name = packageJson?.name;
   const match = typeof name === "string" ? /^@eliware\/([^/\s]+)$/u.exec(name) : null;

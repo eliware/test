@@ -1,10 +1,9 @@
 import { stat as statPath } from "node:fs/promises";
-import { readStableFileContent, repositoryFileVersion } from "../read/stable-file-content.mjs";
-import { inventoryPath } from "../repository-inventory/paths.mjs";
-
+import readStableFileContent from "../read/stable-file-content/read-stable-file-content.mjs";
+import repositoryFileVersion from "../read/stable-file-content.mjs";
+import inventoryPath from "../repository-inventory/paths.mjs";
 const MAX_CACHED_FILE_BYTES = 8 * 1024 * 1024;
-
-export function createRepositoryFileContentCache(
+export default function createRepositoryFileContentCache(
   root,
   read,
   stat = statPath,
@@ -12,7 +11,6 @@ export function createRepositoryFileContentCache(
 ) {
   const fileReads = new Map();
   let cachedBytes = 0;
-
   function readBytes(filePath) {
     const key = inventoryPath(root, filePath);
     const previous = fileReads.get(key);
@@ -21,13 +19,22 @@ export function createRepositoryFileContentCache(
       fileReads.delete(key);
       fileReads.set(key, previous);
     }
-
-    const current = { pending: true };
+    const current = {
+      pending: true,
+    };
     current.promise = Promise.resolve()
       .then(async () => {
-        const currentVersion = repositoryFileVersion(await stat(key, { bigint: true }));
+        const currentVersion = repositoryFileVersion(
+          await stat(key, {
+            bigint: true,
+          }),
+        );
         if (previous?.version === currentVersion) {
-          const confirmedVersion = repositoryFileVersion(await stat(key, { bigint: true }));
+          const confirmedVersion = repositoryFileVersion(
+            await stat(key, {
+              bigint: true,
+            }),
+          );
           if (confirmedVersion === currentVersion) {
             current.version = confirmedVersion;
             current.content = previous.content;
@@ -56,11 +63,9 @@ export function createRepositoryFileContentCache(
     fileReads.set(key, current);
     return current.promise;
   }
-
   function readText(filePath) {
     return readBytes(filePath).then((content) => content.toString("utf8"));
   }
-
   function evictOldContent() {
     for (const [path, entry] of fileReads) {
       if (cachedBytes <= maxCachedFileBytes) break;
@@ -69,6 +74,8 @@ export function createRepositoryFileContentCache(
       cachedBytes -= entry.content.byteLength;
     }
   }
-
-  return { readText, readBytes };
+  return {
+    readText,
+    readBytes,
+  };
 }

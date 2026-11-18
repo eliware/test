@@ -1,9 +1,8 @@
 import { basename } from "node:path";
-import { matchesDocumentationFilename } from "../../../match-documentation-filename.mjs";
-import { assertDocumentationFileLimit } from "../../../validate/documentation-traversal-limits.mjs";
-import { shouldSkipDocumentationPath } from "./path-policy.mjs";
-
-export function createDocumentationTraversalFileTracker({
+import matchesDocumentationFilename from "../../../match-documentation-filename.mjs";
+import assertDocumentationFileLimit from "../../../validate/documentation-traversal-limits.mjs";
+import shouldSkipDocumentationPath from "./path-policy/should-skip-documentation-path.mjs";
+export default function createDocumentationTraversalFileTracker({
   prefix,
   predicate,
   maxFiles,

@@ -28,15 +28,23 @@ function collectDirectives(directives, profile, source, catalog) {
       id: directive.id,
       dos: directive.dos,
       donts: directive.donts,
-      ...(directive.examples === undefined ? {} : { examples: directive.examples }),
-      ...(directive.children === undefined ? {} : { children: directive.children }),
+      ...(directive.examples === undefined
+        ? {}
+        : {
+            examples: directive.examples,
+          }),
+      ...(directive.children === undefined
+        ? {}
+        : {
+            children: directive.children,
+          }),
     };
     if (directive.children !== undefined) {
       collectDirectives(directive.children, profile, source, catalog);
     }
   }
 }
-export function buildProfileCatalog(documents, expectedVersion) {
+export default function buildProfileCatalog(documents, expectedVersion) {
   if (!Array.isArray(documents) || documents.length === 0) {
     throw new Error("Bundled convention profile catalog cannot be empty.");
   }
@@ -66,7 +74,9 @@ export function buildProfileCatalog(documents, expectedVersion) {
       );
     }
     collectDirectives(document.directives, profile, source, catalog);
-    catalog.profiles[profile] = { profile };
+    catalog.profiles[profile] = {
+      profile,
+    };
   }
   return catalog;
 }

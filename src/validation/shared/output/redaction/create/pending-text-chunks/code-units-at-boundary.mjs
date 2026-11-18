@@ -1,8 +1,15 @@
-export function readPendingCodeUnitsAtBoundary(chunks, head, consumed, written, index) {
+export default function readPendingCodeUnitsAtBoundary(chunks, head, consumed, written, index) {
   const length = written - consumed;
   if (!Number.isInteger(index) || index < 0 || index > length)
-    return { previous: Number.NaN, next: Number.NaN };
-  if (length === 0) return { previous: Number.NaN, next: Number.NaN };
+    return {
+      previous: Number.NaN,
+      next: Number.NaN,
+    };
+  if (length === 0)
+    return {
+      previous: Number.NaN,
+      next: Number.NaN,
+    };
   const previousPosition = index > 0 ? consumed + index - 1 : -1;
   const nextPosition = index < length ? consumed + index : -1;
   const position = nextPosition === -1 ? previousPosition : nextPosition;
@@ -23,5 +30,8 @@ export function readPendingCodeUnitsAtBoundary(chunks, head, consumed, written, 
         ? chunk.text.charCodeAt(previousPosition - chunk.start)
         : chunks[chunkIndex - 1].text.at(-1).charCodeAt(0);
   const next = nextPosition === -1 ? Number.NaN : chunk.text.charCodeAt(nextPosition - chunk.start);
-  return { previous, next };
+  return {
+    previous,
+    next,
+  };
 }

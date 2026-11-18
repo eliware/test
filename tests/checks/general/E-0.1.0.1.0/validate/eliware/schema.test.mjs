@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateEliwareSchema } from "../../../../../../src/checks/general/E-0.1.0.1.0/validate/eliware/schema.mjs";
-
+import validateEliwareSchema from "../../../../../../src/checks/general/E-0.1.0.1.0/validate/eliware/schema.mjs";
 const metadata = (approvalTimestamp, expiry) => ({
   id: "E-1",
   apply: ["general"],
@@ -14,35 +13,29 @@ const metadata = (approvalTimestamp, expiry) => ({
     },
   ],
 });
-
 test("accepts valid timestamps, timezone offsets, dates, and null expiry", () => {
   expect(validateEliwareSchema(metadata("2026-10-16T15:30:45Z", "2026-10-31"))).toEqual([]);
   expect(validateEliwareSchema(metadata("2026-10-16T15:30:45.123+05:30", null))).toEqual([]);
 });
-
 test("accepts an audit exemption with a GitHub Advisory ID", () => {
   const value = metadata("2026-10-16T15:30:45Z", "2026-10-31");
   value.exempt[0].ruleId = "stage:audit";
   value.exempt[0].advisories = ["GHSA-fc5q-39xc-vjpf"];
   expect(validateEliwareSchema(value)).toEqual([]);
 });
-
 test("rejects malformed GitHub Advisory IDs", () => {
   const value = metadata("2026-10-16T15:30:45Z", "2026-10-31");
   value.exempt[0].advisories = ["CVE-2026-1234"];
   expect(validateEliwareSchema(value)).not.toEqual([]);
 });
-
 test("rejects undeclared exemption fields", () => {
   const value = metadata("2026-10-16T15:30:45Z", null);
   value.exempt[0].unexpected = true;
   expect(validateEliwareSchema(value)).not.toEqual([]);
 });
-
 test("formats schema errors that point to the metadata root", () => {
   expect(validateEliwareSchema(null)).not.toEqual([]);
 });
-
 test.each([
   ["2026-99-77T99:99:99Z", null],
   ["2026-10-16T25:30:45Z", null],

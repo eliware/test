@@ -1,17 +1,15 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-
 const access = jest.fn();
-
-jest.unstable_mockModule("node:fs/promises", () => ({ access }));
-
-const { resolveFocusedCoverage } =
-  await import("../../../../../../src/validation/stages/jest/configuration/resolve/focused-coverage.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  access,
+  default: access,
+}));
+const resolveFocusedCoverage = (
+  await import("../../../../../../src/validation/stages/jest/configuration/resolve/focused-coverage.mjs")
+).default;
 const root = "C:/repo";
-
 beforeEach(() => access.mockReset().mockResolvedValue(undefined));
-
 test("maps mirrored tests across root, case, and separator variants", async () => {
   for (const focusedPath of [
     "tests/sample.test.mjs",
@@ -28,7 +26,6 @@ test("maps mirrored tests across root, case, and separator variants", async () =
   }
   expect(access).toHaveBeenCalledWith(join(root, "src", "sample.mjs"));
 });
-
 test("selects coverage for each focused test source", async () => {
   await expect(
     resolveFocusedCoverage(root, ["tests/one.test.mjs", "tests/nested/two.spec.mjs"]),
@@ -41,7 +38,6 @@ test("selects coverage for each focused test source", async () => {
     '{"./src/one.mjs":{"branches":100,"functions":100,"lines":100,"statements":100},"./src/nested/two.mjs":{"branches":100,"functions":100,"lines":100,"statements":100}}',
   ]);
 });
-
 test("maps typed tests to native ESM sources and preserves other extensions", async () => {
   const focusedPaths = ["tests/sample.test.mts", "tests/sample.test.cts"];
   await expect(resolveFocusedCoverage(root, focusedPaths)).resolves.toEqual([
@@ -59,7 +55,6 @@ test("maps typed tests to native ESM sources and preserves other extensions", as
     ]);
   }
 });
-
 test("ignores aggregate and non-test arguments", async () => {
   await expect(resolveFocusedCoverage(root, null)).resolves.toEqual([]);
   await expect(resolveFocusedCoverage(root, "README.md")).resolves.toEqual([]);
@@ -67,10 +62,8 @@ test("ignores aggregate and non-test arguments", async () => {
   await expect(resolveFocusedCoverage(root, "specs/sample.spec.mjs")).resolves.toEqual([]);
   expect(access).not.toHaveBeenCalled();
 });
-
 test("rejects focused tests without a mirrored source file", async () => {
   access.mockRejectedValue(new Error("missing source"));
-
   await expect(resolveFocusedCoverage(root, "tests/missing.test.mjs")).rejects.toThrow(
     "Focused test has no mirrored source file: src/missing.mjs.",
   );

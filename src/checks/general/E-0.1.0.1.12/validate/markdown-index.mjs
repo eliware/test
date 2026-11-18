@@ -1,6 +1,5 @@
-import { extractMarkdownLinks } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
-
-export function validateMarkdownIndex(content, expectedPaths, indexPath) {
+import extractMarkdownLinks from "../../E-0.1.0.1.4/extract-markdown/links.mjs";
+export default function validateMarkdownIndex(content, expectedPaths, indexPath) {
   const links = extractMarkdownLinks(content).map(({ reference }) => reference);
   const actual = links.map((reference) => reference?.replace(/^\.\//u, ""));
   const errors = [];

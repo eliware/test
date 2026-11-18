@@ -1,7 +1,6 @@
-import { validateSpecificationDocument } from "../../specification/document.mjs";
-import { validateSpecificationIds } from "../../specification/ids.mjs";
-
-export function validateBundledConventionDocuments(documents, namespace) {
+import validateSpecificationDocument from "../../specification/document.mjs";
+import validateSpecificationIds from "../../specification/ids.mjs";
+export default function validateBundledConventionDocuments(documents, namespace) {
   const errors = [];
   const ids = new Map();
   for (const { path, value } of documents) {
@@ -13,7 +12,10 @@ export function validateBundledConventionDocuments(documents, namespace) {
   }
   errors.push(
     ...validateSpecificationIds(
-      [...ids].map(([path, directives]) => ({ path, directives })),
+      [...ids].map(([path, directives]) => ({
+        path,
+        directives,
+      })),
       namespace,
     ),
   );

@@ -1,6 +1,5 @@
 import { terminateChild } from "./child.mjs";
-
-export function terminateChildAfterSetupFailure(child, options, environment) {
+export default function terminateChildAfterSetupFailure(child, options, environment) {
   try {
     const terminate = options.terminateChild ?? terminateChild;
     const terminated = terminate(

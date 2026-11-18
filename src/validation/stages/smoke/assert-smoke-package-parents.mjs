@@ -1,7 +1,6 @@
 import { lstat } from "node:fs/promises";
 import { join } from "node:path";
-
-export async function assertSmokePackageParents(targetRoot, packageName, inspect = lstat) {
+export default async function assertSmokePackageParents(targetRoot, packageName, inspect = lstat) {
   const modules = join(targetRoot, "node_modules");
   const parents = [modules, join(modules, ".bin")];
   const segments = packageName.split("/");

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { extractJsonProse } from "../../../../../src/checks/general/E-0.1.0.1.11/extract/json-prose.mjs";
-
+import extractJsonProse from "../../../../../src/checks/general/E-0.1.0.1.11/extract/json-prose.mjs";
 test("extracts every documented prose field from nested objects and arrays", () => {
   const fields = [
     "description",
@@ -21,10 +20,17 @@ test("extracts every documented prose field from nested objects and arrays", () 
   const nested = Object.fromEntries(fields.map((field) => [field, `${field} text.`]));
   nested.steps = ["First action.", "Second action."];
   nested.TITLE = "Uppercase field.";
-  nested.examples = { description: "Nested record text." };
+  nested.examples = {
+    description: "Nested record text.",
+  };
   nested.runner = "Inert value.";
   const result = extractJsonProse(
-    JSON.stringify({ nested, examples: { description: "Hidden sample." } }),
+    JSON.stringify({
+      nested,
+      examples: {
+        description: "Hidden sample.",
+      },
+    }),
   );
   expect(result.map(({ text }) => text)).toEqual([
     "description text.",
@@ -47,9 +53,15 @@ test("extracts every documented prose field from nested objects and arrays", () 
   ]);
   expect(result.every((block) => block.line === 1 && block.kind === "prose")).toBe(true);
 });
-
 test("skips invalid JSON and non-prose values", () => {
   expect(extractJsonProse("{")).toEqual([]);
-  expect(extractJsonProse(JSON.stringify({ version: 13, name: "internal" }))).toEqual([]);
+  expect(
+    extractJsonProse(
+      JSON.stringify({
+        version: 13,
+        name: "internal",
+      }),
+    ),
+  ).toEqual([]);
   expect(extractJsonProse(JSON.stringify("plain root text"))).toEqual([]);
 });

@@ -1,12 +1,15 @@
 import { parse } from "@babel/parser";
-import { inspectJestTestModule as inspectJestTestProgram } from "./inspect-jest-test-module.mjs";
-
-export function inspectJestTestModule(content) {
+import inspectJestTestProgram from "./inspect-jest-test-module.mjs";
+export default function inspectJestTestModule(content) {
   let ast;
   try {
-    ast = parse(content, { sourceType: "module" });
+    ast = parse(content, {
+      sourceType: "module",
+    });
   } catch {
-    return { hasExecutableTest: false };
+    return {
+      hasExecutableTest: false,
+    };
   }
   return inspectJestTestProgram(ast.program);
 }

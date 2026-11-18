@@ -1,7 +1,6 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validateReadmeLinks(readme, packageJson = {}) {
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validateReadmeLinks(readme, packageJson = {}) {
   const markdown = removeMarkdownCode(readme);
   const order = readCanonicalOrder("readme-sections.yaml");
   const repository = getRepository(packageJson);
@@ -32,7 +31,6 @@ export function validateReadmeLinks(readme, packageJson = {}) {
     return "README.md Support must contain the exact support section.";
   return null;
 }
-
 function getRepository(packageJson) {
   const value =
     typeof packageJson?.repository === "string"
@@ -45,7 +43,6 @@ function getRepository(packageJson) {
     .replace(/\/$/u, "");
   return /^https:\/\/github\.com\/eliware\/[\w.-]+$/u.test(repository) ? repository : "";
 }
-
 function readSection(readme, heading) {
   const lines = readme.split(/\r?\n/u);
   const start = lines.findIndex((line) => line === `## ${heading}`);

@@ -1,4 +1,4 @@
-export function stripJestProgressLines(text) {
+export default function stripJestProgressLines(text) {
   const parts = text.split(/(\r\n|\r|\n)/u);
   const output = [];
   for (let index = 0; index < parts.length; index += 2) {

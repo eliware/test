@@ -1,11 +1,13 @@
-import { parseGitNulPaths } from "../../../parse-git-index/paths.mjs";
-
-export async function readNestedGitignorePaths(root, runGit) {
+import parseGitNulPaths from "../../../parse-git-index/paths.mjs";
+export default async function readNestedGitignorePaths(root, runGit) {
   try {
     const tracked = await runGit(
       "git",
       ["-C", root, "ls-files", "--cached", "-z", "--", ":(glob)**/.gitignore"],
-      { windowsHide: true, encoding: "buffer" },
+      {
+        windowsHide: true,
+        encoding: "buffer",
+      },
     );
     const untracked = await runGit(
       "git",
@@ -19,7 +21,10 @@ export async function readNestedGitignorePaths(root, runGit) {
         "--",
         ":(glob)**/.gitignore",
       ],
-      { windowsHide: true, encoding: "buffer" },
+      {
+        windowsHide: true,
+        encoding: "buffer",
+      },
     );
     const ignored = await runGit(
       "git",
@@ -34,7 +39,10 @@ export async function readNestedGitignorePaths(root, runGit) {
         "--",
         ":(glob)**/.gitignore",
       ],
-      { windowsHide: true, encoding: "buffer" },
+      {
+        windowsHide: true,
+        encoding: "buffer",
+      },
     );
     return {
       paths: [
@@ -46,6 +54,8 @@ export async function readNestedGitignorePaths(root, runGit) {
       ],
     };
   } catch {
-    return { error: "Repository ignore files could not be listed. Nested overrides are unknown." };
+    return {
+      error: "Repository ignore files could not be listed. Nested overrides are unknown.",
+    };
   }
 }

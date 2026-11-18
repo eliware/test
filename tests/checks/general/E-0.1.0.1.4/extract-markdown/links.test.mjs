@@ -1,61 +1,78 @@
 import { expect, test } from "@jest/globals";
-import { extractMarkdownLinks } from "../../../../../src/checks/general/E-0.1.0.1.4/extract-markdown/links.mjs";
-
+import extractMarkdownLinks from "../../../../../src/checks/general/E-0.1.0.1.4/extract-markdown/links.mjs";
 test("extracts inline, reference, HTML, and angle links", () => {
   expect(
     extractMarkdownLinks(
       "[inline](one.md) [ref][id]\n[id]: two.md\n<a href='three.md'> <https://example.org>",
     ),
   ).toEqual([
-    { reference: "one.md" },
-    { reference: "two.md" },
-    { reference: "three.md" },
-    { reference: "https://example.org" },
+    {
+      reference: "one.md",
+    },
+    {
+      reference: "two.md",
+    },
+    {
+      reference: "three.md",
+    },
+    {
+      reference: "https://example.org",
+    },
   ]);
 });
-
 test("does not treat Markdown images or HTML image sources as links", () => {
   expect(extractMarkdownLinks('![image](image.png) <img src="image.png">')).toEqual([]);
 });
-
 test("only treats anchor href values as HTML links", () => {
   expect(extractMarkdownLinks('<div href="bad.md">bad</div> <a href="good.md">good</a>')).toEqual([
-    { reference: "good.md" },
+    {
+      reference: "good.md",
+    },
   ]);
 });
-
 test("ignores links inside fenced and inline code", () => {
   expect(extractMarkdownLinks("`[inline](bad)`\n```md\n[block](bad)\n```\n[good](ok.md)")).toEqual([
-    { reference: "ok.md" },
+    {
+      reference: "ok.md",
+    },
   ]);
 });
-
 test("ignores links inside indented code", () => {
   expect(extractMarkdownLinks("    [code](bad.md)\n[good](ok.md)")).toEqual([
-    { reference: "ok.md" },
+    {
+      reference: "ok.md",
+    },
   ]);
 });
-
 test("ignores links inside blockquoted indented and fenced code", () => {
   expect(
     extractMarkdownLinks(
       ">     [indented](bad.md)\n> ```md\n> [fenced](bad.md)\n> ```\n[real](good.md)",
     ),
-  ).toEqual([{ reference: "good.md" }]);
-});
-
-test("extracts ordinary links inside Markdown blockquotes", () => {
-  expect(extractMarkdownLinks("> [quoted guide](guide.md)")).toEqual([{ reference: "guide.md" }]);
-});
-
-test("keeps nested list items out of indented code", () => {
-  expect(extractMarkdownLinks("- item\n    - [nested](valid.md)")).toEqual([
-    { reference: "valid.md" },
+  ).toEqual([
+    {
+      reference: "good.md",
+    },
   ]);
 });
-
+test("extracts ordinary links inside Markdown blockquotes", () => {
+  expect(extractMarkdownLinks("> [quoted guide](guide.md)")).toEqual([
+    {
+      reference: "guide.md",
+    },
+  ]);
+});
+test("keeps nested list items out of indented code", () => {
+  expect(extractMarkdownLinks("- item\n    - [nested](valid.md)")).toEqual([
+    {
+      reference: "valid.md",
+    },
+  ]);
+});
 test("ignores links inside HTML comments", () => {
   expect(extractMarkdownLinks("<!-- [hidden](missing.md) --> [shown](valid.md)")).toEqual([
-    { reference: "valid.md" },
+    {
+      reference: "valid.md",
+    },
   ]);
 });

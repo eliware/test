@@ -1,10 +1,13 @@
 import { expect, jest, test } from "@jest/globals";
-import { createChildProcessOutputCapture } from "../../../../../../src/validation/shared/process/create/child/process-output-capture.mjs";
-import { createSecretTextMatcher } from "../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
-
+import createChildProcessOutputCapture from "../../../../../../src/validation/shared/process/create/child/process-output-capture.mjs";
+import createSecretTextMatcher from "../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
 test("captures both streams and redacts diagnostics using the effective environment", () => {
   const capture = createChildProcessOutputCapture(
-    { env: { SERVICE_TOKEN: "capture-secret-value" } },
+    {
+      env: {
+        SERVICE_TOKEN: "capture-secret-value",
+      },
+    },
     ["explicit-secret-value"],
     100,
   );
@@ -17,44 +20,51 @@ test("captures both streams and redacts diagnostics using the effective environm
     stderr: "err [REDACTED]",
   });
 });
-
 test("redacts an environment secret split across interleaved output chunks", () => {
   const capture = createChildProcessOutputCapture(
-    { env: { SERVICE_TOKEN: "opaque-value-123" } },
+    {
+      env: {
+        SERVICE_TOKEN: "opaque-value-123",
+      },
+    },
     [],
     100,
   );
   capture.push("stderr", "diagnostic opaque-value-");
   capture.push("stdout", "ordinary output");
   capture.push("stderr", "123 tail");
-
   expect(capture.finish()).toEqual({
     stdout: "ordinary output",
     stderr: "diagnostic [REDACTED] tail",
   });
 });
-
 test("builds a separate secret matcher for each output stream", () => {
   const makeSecretMatcher = jest.fn(createSecretTextMatcher);
   const capture = createChildProcessOutputCapture(
-    { env: { SERVICE_TOKEN: "shared-secret" } },
+    {
+      env: {
+        SERVICE_TOKEN: "shared-secret",
+      },
+    },
     [],
     100,
     makeSecretMatcher,
   );
   capture.push("stdout", "stdout shared-secret");
   capture.push("stderr", "stderr shared-secret");
-
   expect(capture.finish()).toEqual({
     stdout: "stdout [REDACTED]",
     stderr: "stderr [REDACTED]",
   });
   expect(makeSecretMatcher).toHaveBeenCalledTimes(2);
 });
-
 test("keeps incremental redaction state separate across interleaved streams", () => {
   const capture = createChildProcessOutputCapture(
-    { env: { SERVICE_TOKEN: "shared-secret" } },
+    {
+      env: {
+        SERVICE_TOKEN: "shared-secret",
+      },
+    },
     [],
     1_000,
   );
@@ -62,26 +72,47 @@ test("keeps incremental redaction state separate across interleaved streams", ()
   capture.push("stderr", "shared-secret");
   expect(capture.finish().stderr).toBe("[REDACTED]");
 });
-
 test("uses inherited environment by default and accepts binary chunks", () => {
-  const capture = createChildProcessOutputCapture({ env: {} }, undefined, 4);
+  const capture = createChildProcessOutputCapture(
+    {
+      env: {},
+    },
+    undefined,
+    4,
+  );
   capture.push("stdout", Buffer.from("okay"));
   capture.push("stderr", Buffer.from("later"));
-  expect(capture.finish()).toEqual({ stdout: "okay", stderr: "" });
+  expect(capture.finish()).toEqual({
+    stdout: "okay",
+    stderr: "",
+  });
 });
-
 test("avoids creating redaction matchers when a child produces no output", () => {
   const makeSecretMatcher = jest.fn(createSecretTextMatcher);
-  const capture = createChildProcessOutputCapture({ env: {} }, [], 100, makeSecretMatcher);
-
+  const capture = createChildProcessOutputCapture(
+    {
+      env: {},
+    },
+    [],
+    100,
+    makeSecretMatcher,
+  );
   capture.push("stdout", "");
-  expect(capture.finish()).toEqual({ stdout: "", stderr: "" });
+  expect(capture.finish()).toEqual({
+    stdout: "",
+    stderr: "",
+  });
   expect(makeSecretMatcher).not.toHaveBeenCalled();
 });
-
 test("ignores later chunks without encoding after the capture budget is exhausted", () => {
   let encoded = false;
-  const capture = createChildProcessOutputCapture({ env: {} }, [], 1);
+  const capture = createChildProcessOutputCapture(
+    {
+      env: {},
+    },
+    [],
+    1,
+  );
   capture.push("stdout", "x");
   capture.push("stderr", {
     toString() {
@@ -89,22 +120,39 @@ test("ignores later chunks without encoding after the capture budget is exhauste
       return "oversized";
     },
   });
-
   expect(encoded).toBe(false);
-  expect(capture.finish()).toEqual({ stdout: "x", stderr: "" });
+  expect(capture.finish()).toEqual({
+    stdout: "x",
+    stderr: "",
+  });
 });
-
 test("uses the process environment when no child environment is provided", () => {
-  expect(createChildProcessOutputCapture({ env: null }, [], 0).finish()).toEqual({
+  expect(
+    createChildProcessOutputCapture(
+      {
+        env: null,
+      },
+      [],
+      0,
+    ).finish(),
+  ).toEqual({
     stdout: "",
     stderr: "",
   });
 });
-
 test("retains long secrets while respecting the shared output budget", () => {
   const secret = "s".repeat(51);
-  const capture = createChildProcessOutputCapture({ env: {} }, [secret], 100);
+  const capture = createChildProcessOutputCapture(
+    {
+      env: {},
+    },
+    [secret],
+    100,
+  );
   capture.push("stdout", "x".repeat(60));
   capture.push("stderr", "y".repeat(60));
-  expect(capture.finish()).toEqual({ stdout: "x".repeat(60), stderr: "y".repeat(40) });
+  expect(capture.finish()).toEqual({
+    stdout: "x".repeat(60),
+    stderr: "y".repeat(40),
+  });
 });

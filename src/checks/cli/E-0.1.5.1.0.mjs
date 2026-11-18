@@ -1,12 +1,11 @@
-import { fail, pass } from "../check-result.mjs";
-import { execute } from "../../validation/shared/process/execute-child-process.mjs";
-import { collectCliEntrypoints } from "./E-0.1.5.1.0/collect-cli-entrypoints.mjs";
-import { runCliInformationCommands } from "./E-0.1.5.1.0/run-cli-information-commands.mjs";
-import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import execute from "../../validation/shared/process/execute-child-process.mjs";
+import collectCliEntrypoints from "./E-0.1.5.1.0/collect-cli-entrypoints.mjs";
+import runCliInformationCommands from "./E-0.1.5.1.0/run-cli-information-commands.mjs";
+import validateProfileDocumentation from "../../validation/shared/conventions/validate/profile/documentation.mjs";
 export const ruleId = "E-0.1.5.1.0";
-
-export async function run(context = {}, dependencies = {}) {
+export default async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
   const entrypoints = collectCliEntrypoints(context.packageJson);
   const errors = await validateProfileDocumentation("cli", context.repositoryInventory);

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createOrderedMatchStartIndex } from "../../../../../src/validation/shared/search/create/ordered-match-start-index.mjs";
-
+import createOrderedMatchStartIndex from "../../../../../src/validation/shared/search/create/ordered-match-start-index.mjs";
 test("inserts starts in sorted order and locates the first start at a boundary", () => {
   const index = createOrderedMatchStartIndex(() => true);
   index.insert(8);
@@ -11,7 +10,6 @@ test("inserts starts in sorted order and locates the first start at a boundary",
   expect(index.lowerBound(9)).toBe(3);
   expect(index.range(3, 8)).toEqual([5, 8]);
 });
-
 test("handles large unordered batches, duplicate starts, and prefix removal", () => {
   const active = new Set([1, 2048]);
   const index = createOrderedMatchStartIndex((start) => active.has(start));
@@ -26,7 +24,6 @@ test("handles large unordered batches, duplicate starts, and prefix removal", ()
   index.discardInactive();
   expect(index.values).toHaveLength(2048);
 });
-
 test("keeps balanced order for each single and double rotation", () => {
   for (const starts of [
     [1, 2, 3],
@@ -39,7 +36,6 @@ test("keeps balanced order for each single and double rotation", () => {
     expect(index.values).toEqual([1, 2, 3]);
   }
 });
-
 test("discards inactive starts and compacts a long inactive prefix", () => {
   const active = new Set([2048]);
   const index = createOrderedMatchStartIndex((start) => active.has(start));
@@ -48,7 +44,6 @@ test("discards inactive starts and compacts a long inactive prefix", () => {
   expect(index.values).toEqual([2048]);
   expect(index.lowerBound(2048)).toBe(0);
 });
-
 test("retains active starts while removing expired gaps", () => {
   const active = new Set([3, 8]);
   const index = createOrderedMatchStartIndex((start) => active.has(start));
@@ -56,7 +51,6 @@ test("retains active starts while removing expired gaps", () => {
   index.discardInactive();
   expect(index.values.slice(index.lowerBound(0))).toEqual([3, 5, 8]);
 });
-
 test("handles empty and fully discarded indexes", () => {
   const index = createOrderedMatchStartIndex(() => false);
   expect(index.lowerBound(0)).toBe(0);

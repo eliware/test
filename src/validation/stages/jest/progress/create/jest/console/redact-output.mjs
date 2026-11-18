@@ -1,7 +1,6 @@
-import { redactProcessOutput } from "../../../../../../shared/output/redaction/redact/process-output.mjs";
-import { findJestOutputRedactionKinds } from "./redaction-kinds.mjs";
-
-export function redactJestOutput(output, captured, secrets) {
+import redactProcessOutput from "../../../../../../shared/output/redaction/redact/process-output.mjs";
+import findJestOutputRedactionKinds from "./redaction-kinds.mjs";
+export default function redactJestOutput(output, captured, secrets) {
   const safeStreams = Object.fromEntries(
     Object.entries(output).map(([stream, chunks]) => {
       const source = chunks.join("");
@@ -16,6 +15,11 @@ export function redactJestOutput(output, captured, secrets) {
     captured,
     safeCaptured,
     redacted,
-    redactionKinds: findJestOutputRedactionKinds({ stdout: [captured] }, secrets),
+    redactionKinds: findJestOutputRedactionKinds(
+      {
+        stdout: [captured],
+      },
+      secrets,
+    ),
   };
 }

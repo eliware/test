@@ -1,6 +1,5 @@
-import { validateSiblingSequences } from "./ids/sibling-sequences.mjs";
-
-export function validateSpecificationIds(documents, namespace) {
+import validateSiblingSequences from "./ids/sibling-sequences.mjs";
+export default function validateSpecificationIds(documents, namespace) {
   const errors = [];
   const ids = new Set();
   const ruleIds = [];
@@ -9,7 +8,6 @@ export function validateSpecificationIds(documents, namespace) {
   errors.push(...validateSiblingSequences(ruleIds));
   return errors;
 }
-
 function checkSiblings(rules, path, namespace, ids, ruleIds, errors, parentId) {
   if (!Array.isArray(rules)) return;
   for (const rule of rules) {

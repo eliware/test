@@ -1,7 +1,6 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validateReadmeCompositionOrder(readme, expected) {
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validateReadmeCompositionOrder(readme, expected) {
   const order = readCanonicalOrder("readme-sections.yaml");
   const headings = removeMarkdownCode(readme)
     .split(/\r?\n/u)
@@ -13,7 +12,6 @@ export function validateReadmeCompositionOrder(readme, expected) {
     ? null
     : `README.md sections must use the complete order from ${order.tableOfContentsHeading}.`;
 }
-
 function isSameOrder(actual, expected) {
   return actual.every((heading, index) => heading === expected[index]);
 }

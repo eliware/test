@@ -1,6 +1,5 @@
 import { appendFileSync, writeFileSync } from "node:fs";
-
-export function createJestOutputPersistence(
+export default function createJestOutputPersistence(
   path,
   { append = appendFileSync, replace = writeFileSync } = {},
 ) {

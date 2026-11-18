@@ -1,11 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { readPackManifest } from "../pack/read-pack-manifest.mjs";
-import { validatePackManifest } from "../pack/validate/pack/manifest.mjs";
-import { smokeCommandFailure } from "./install-smoke-candidate/command-failure.mjs";
-
-export async function packSmokeCandidate({
+import readPackManifest from "../pack/read-pack-manifest.mjs";
+import validatePackManifest from "../pack/validate/pack/manifest.mjs";
+import smokeCommandFailure from "./install-smoke-candidate/command-failure.mjs";
+export default async function packSmokeCandidate({
   root,
   packageJson,
   run,
@@ -17,7 +16,11 @@ export async function packSmokeCandidate({
   const packed = await run(
     command,
     [...prefix, "pack", "--ignore-scripts", "--json", "--pack-destination", packDirectory],
-    { cwd: root, env, maxOutputLength: 1_000_000 },
+    {
+      cwd: root,
+      env,
+      maxOutputLength: 1_000_000,
+    },
   );
   if (packed.code !== 0) throw new Error(smokeCommandFailure(packed, "npm pack failed"));
   const manifestText = packed.stdout ?? "";
@@ -38,5 +41,8 @@ export async function packSmokeCandidate({
   const digest = createHash("sha256")
     .update(await readFile(tarball))
     .digest("hex");
-  return { tarball, digest };
+  return {
+    tarball,
+    digest,
+  };
 }

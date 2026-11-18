@@ -1,4 +1,4 @@
-export function validateSpecificationTreeRequirements(entries) {
+export default function validateSpecificationTreeRequirements(entries) {
   const errors = entries
     .filter((entry) => entry.type === "unsupported")
     .map(({ path }) => `${path} is an unsupported filesystem entry under specs/.`);

@@ -1,6 +1,5 @@
 import { join } from "node:path";
-
-export async function validateLayoutLineLimits(files, readText, root, tests) {
+export default async function validateLayoutLineLimits(files, readText, root, tests) {
   const targets = files.filter((path) => /^src\/.*\.mjs$/u.test(path));
   const errors = [];
   for (const path of targets) {
@@ -24,7 +23,6 @@ export async function validateLayoutLineLimits(files, readText, root, tests) {
   }
   return errors;
 }
-
 function countPhysicalLines(content) {
   if (!content) return 0;
   const lines = content.split(/\r\n|\n|\r/u);

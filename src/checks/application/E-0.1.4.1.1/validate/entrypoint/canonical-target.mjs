@@ -1,13 +1,14 @@
 import { isAbsolute, win32 } from "node:path";
-
-export function inspectEntrypointTarget(target) {
+export default function inspectEntrypointTarget(target) {
   if (
     typeof target !== "string" ||
     !target.trim() ||
     isAbsolute(target) ||
     win32.isAbsolute(target)
   )
-    return { error: "relative" };
+    return {
+      error: "relative",
+    };
   const path = target.replaceAll("\\", "/").replace(/^\.\//u, "");
   const segments = path.split("/");
   if (
@@ -16,6 +17,10 @@ export function inspectEntrypointTarget(target) {
       (segment) => !segment || segment === "." || segment === ".." || segment.includes(":"),
     )
   )
-    return { error: "canonical" };
-  return { path };
+    return {
+      error: "canonical",
+    };
+  return {
+    path,
+  };
 }

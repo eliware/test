@@ -1,4 +1,4 @@
-export function writeStageDiagnostics(result, write) {
+export default function writeStageDiagnostics(result, write) {
   for (const diagnostic of result.diagnostics ?? []) {
     write(diagnostic);
   }

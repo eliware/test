@@ -1,4 +1,4 @@
-export function isAlternativeTestOrCoverageTool(name, version) {
+export default function isAlternativeTestOrCoverageTool(name, version) {
   return (
     name === "jest" ||
     name.startsWith("jest-") ||

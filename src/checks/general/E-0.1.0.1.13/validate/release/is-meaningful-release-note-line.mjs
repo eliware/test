@@ -1,4 +1,4 @@
-export function isMeaningfulReleaseNoteLine(line) {
+export default function isMeaningfulReleaseNoteLine(line) {
   return (
     !/^\s{0,3}#{1,6}(?:\s|$)/u.test(line) &&
     !/^\s*(?:tbd|todo|n\/?a|none|no changes?)\s*\.?\s*$/iu.test(line) &&

@@ -1,8 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { assertSmokeCliEntrypoint } from "./assert-smoke-cli-entrypoint.mjs";
-
-export async function validateInstalledSmokePackage({
+import assertSmokeCliEntrypoint from "./assert-smoke-cli-entrypoint.mjs";
+export default async function validateInstalledSmokePackage({
   targetRoot,
   packageJson,
   resolveModule,
@@ -21,5 +20,9 @@ export async function validateInstalledSmokePackage({
     throw new Error(
       `Installed package version ${installed.version} does not match ${packageJson.version}.`,
     );
-  assertSmokeCliEntrypoint({ targetRoot, packageJson, resolveModule });
+  assertSmokeCliEntrypoint({
+    targetRoot,
+    packageJson,
+    resolveModule,
+  });
 }

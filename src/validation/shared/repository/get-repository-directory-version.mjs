@@ -1,11 +1,10 @@
-export function getRepositoryDirectoryVersion(metadata, platform) {
+export default function getRepositoryDirectoryVersion(metadata, platform) {
   const nanosecondTimestamps =
     typeof metadata.mtimeNs === "bigint" &&
     typeof metadata.ctimeNs === "bigint" &&
     typeof metadata.birthtimeNs === "bigint";
   return {
     cacheable: platform !== "win32" && nanosecondTimestamps,
-
     key: [
       metadata.dev,
       metadata.ino,

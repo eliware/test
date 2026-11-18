@@ -2,9 +2,8 @@ import {
   bundledConventionVersion,
   bundledProfileCatalog,
 } from "../../check-discovery/read/bundled-profile-catalog.mjs";
-import { createBundledCheckManifest } from "../../check-discovery/create-bundled-check-manifest.mjs";
-
-export function validateBundledDirectiveCompleteness(
+import createBundledCheckManifest from "../../check-discovery/create-bundled-check-manifest.mjs";
+export default function validateBundledDirectiveCompleteness(
   checks,
   groups,
   catalog = bundledProfileCatalog,

@@ -1,12 +1,10 @@
 import { expect, test } from "@jest/globals";
-import { validateAdapterHandlerPair } from "../../../../src/checks/application/shared/validate-adapter-handler-pair.mjs";
-
+import validateAdapterHandlerPair from "../../../../src/checks/application/shared/validate-adapter-handler-pair.mjs";
 function inventory(adapterSource, handlerSource) {
   return {
     readText: async (path) => (path === "adapter.mjs" ? adapterSource : handlerSource),
   };
 }
-
 test("accepts an adapter that re-exports a default handler function", async () => {
   await expect(
     validateAdapterHandlerPair(
@@ -17,7 +15,6 @@ test("accepts an adapter that re-exports a default handler function", async () =
     ),
   ).resolves.toEqual([]);
 });
-
 test("reports an adapter mismatch and a non-function handler", async () => {
   await expect(
     validateAdapterHandlerPair(
@@ -31,7 +28,6 @@ test("reports an adapter mismatch and a non-function handler", async () => {
     "handler.mjs must default-export a function.",
   ]);
 });
-
 test.each([
   "export default 1;",
   'export { default } from "../src/handler.mjs"; export const extra = 1;',
@@ -46,7 +42,6 @@ test.each([
     ),
   ).resolves.toContain("adapter.mjs must re-export its matching source handler.");
 });
-
 test("reports syntax errors for both files", async () => {
   await expect(
     validateAdapterHandlerPair(

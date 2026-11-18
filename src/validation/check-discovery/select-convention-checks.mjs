@@ -1,6 +1,5 @@
-import { discoverChecks } from "./discover/checks.mjs";
-
-export async function selectConventionChecks(conventions, availableChecks = null) {
+import discoverChecks from "./discover/checks.mjs";
+export default async function selectConventionChecks(conventions, availableChecks = null) {
   const profiles = conventions.apply;
   const selected = new Set(profiles);
   const applicable = ({ modulePath, requiredProfiles = [] }) =>

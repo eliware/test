@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createValidationRunOptions } from "../../src/cli/create-validation-run-options.mjs";
-
+import createValidationRunOptions from "../../src/cli/create-validation-run-options.mjs";
 test("creates validation options from diagnostics and CLI settings", () => {
   const timing = {};
   const write = () => {};
@@ -8,8 +7,13 @@ test("creates validation options from diagnostics and CLI settings", () => {
   expect(
     createValidationRunOptions(
       ["--debug-timing"],
-      { mode: null, jestArgs: [] },
-      { writeCliOutput },
+      {
+        mode: null,
+        jestArgs: [],
+      },
+      {
+        writeCliOutput,
+      },
       timing,
       write,
     ),
@@ -27,47 +31,81 @@ test("creates validation options from diagnostics and CLI settings", () => {
     }),
   );
 });
-
 test("disables Jest for a package-validation mode", () => {
   expect(
     createValidationRunOptions(
       [],
-      { mode: "audit", jestArgs: ["--audit"] },
-      { executeJest: true },
+      {
+        mode: "audit",
+        jestArgs: ["--audit"],
+      },
+      {
+        executeJest: true,
+      },
       {},
       undefined,
     ),
   ).toEqual(
-    expect.objectContaining({ executeJest: false, mode: "audit", modeRuleId: "E-0.1.20.19" }),
+    expect.objectContaining({
+      executeJest: false,
+      mode: "audit",
+      modeRuleId: "E-0.1.20.19",
+    }),
   );
 });
-
 test("preserves an invocation environment for validation checks", () => {
-  const env = { PATH: "invocation-path" };
+  const env = {
+    PATH: "invocation-path",
+  };
   expect(
-    createValidationRunOptions([], { mode: null, jestArgs: [] }, { env }, {}, undefined),
-  ).toEqual(expect.objectContaining({ env }));
+    createValidationRunOptions(
+      [],
+      {
+        mode: null,
+        jestArgs: [],
+      },
+      {
+        env,
+      },
+      {},
+      undefined,
+    ),
+  ).toEqual(
+    expect.objectContaining({
+      env,
+    }),
+  );
 });
-
 test("keeps aggregate package stages enabled when Jest execution is independently disabled", () => {
   expect(
     createValidationRunOptions(
       [],
-      { mode: null, jestArgs: [] },
-      { executeJest: false },
+      {
+        mode: null,
+        jestArgs: [],
+      },
+      {
+        executeJest: false,
+      },
       {},
       undefined,
     ),
   ).toEqual(
-    expect.objectContaining({ executeJest: false, executePackageChecks: true, mode: null }),
+    expect.objectContaining({
+      executeJest: false,
+      executePackageChecks: true,
+      mode: null,
+    }),
   );
 });
-
 test("keeps focused lint and formatting while disabling unrelated stages", () => {
   expect(
     createValidationRunOptions(
       [],
-      { mode: null, jestArgs: ["tests/example.test.mjs"] },
+      {
+        mode: null,
+        jestArgs: ["tests/example.test.mjs"],
+      },
       {},
       {},
       undefined,
@@ -83,9 +121,21 @@ test("keeps focused lint and formatting while disabling unrelated stages", () =>
     }),
   );
 });
-
 test("handles diagnostic options without Jest arguments", () => {
-  expect(createValidationRunOptions([], { mode: null }, {}, {}, undefined)).toEqual(
-    expect.objectContaining({ executeJest: true, jestArgs: undefined }),
+  expect(
+    createValidationRunOptions(
+      [],
+      {
+        mode: null,
+      },
+      {},
+      {},
+      undefined,
+    ),
+  ).toEqual(
+    expect.objectContaining({
+      executeJest: true,
+      jestArgs: undefined,
+    }),
   );
 });

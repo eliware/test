@@ -1,4 +1,4 @@
-export function readStaticString(node, strings = new Map()) {
+export default function readStaticString(node, strings = new Map()) {
   if (node?.type === "StringLiteral") return node.value;
   if (node?.type === "BinaryExpression" && node.operator === "+") {
     const left = readStaticString(node.left, strings);

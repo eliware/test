@@ -1,11 +1,8 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, resolve, win32 } from "node:path";
-import {
-  hasWindowsNpmCommandOnPath,
-  resolveWindowsNpmCliFromPath,
-} from "./resolve-windows/npm-cli-from-path.mjs";
-
-export function npmCommand(
+import hasWindowsNpmCommandOnPath from "./resolve-windows/npm-cli-from-path/has-windows-npm-command-on-path.mjs";
+import resolveWindowsNpmCliFromPath from "./resolve-windows/npm-cli-from-path.mjs";
+export default function npmCommand(
   platform = process.platform,
   npmExecPath = process.env.npm_execpath,
   execPath = process.execPath,
@@ -45,7 +42,6 @@ export function npmCommand(
   }
   return ["npm", []];
 }
-
 function isAbsoluteWindowsNpmPath(path) {
   if (typeof path !== "string" || !win32.isAbsolute(path)) return false;
   const normalized = path.replaceAll("\\", "/");
@@ -53,7 +49,6 @@ function isAbsoluteWindowsNpmPath(path) {
     /^[A-Za-z]:\//u.test(normalized) || /^\/\/(?![.?]\/)[^/]+\/[^/]+(?:\/|$)/u.test(normalized)
   );
 }
-
 function isPosixAbsolutePath(path) {
   return typeof path === "string" && path.startsWith("/") && !path.startsWith("//");
 }

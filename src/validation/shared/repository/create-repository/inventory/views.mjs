@@ -1,13 +1,10 @@
-import {
-  isIgnoredRepositoryPath,
-  isGeneratedRepositoryPath,
-  isRepositoryIgnoredPath,
-} from "../../repository-inventory/path-filters.mjs";
-import { findIgnoredRepositoryPaths } from "../../find-repository-files.mjs";
-import { selectRepositoryDocumentationView } from "../../select-repository/documentation-view.mjs";
-import { selectRepositorySourceView } from "../../select-repository/source-view.mjs";
-
-export function createRepositoryFileViews(entries, focusedScope, root) {
+import isIgnoredRepositoryPath from "../../repository-inventory/path-filters/is/ignored-repository-path.mjs";
+import isGeneratedRepositoryPath from "../../repository-inventory/path-filters/is/generated-repository-path.mjs";
+import isRepositoryIgnoredPath from "../../repository-inventory/path-filters.mjs";
+import findIgnoredRepositoryPaths from "../../find-repository-files/find/ignored-repository-paths.mjs";
+import selectRepositoryDocumentationView from "../../select-repository/documentation-view.mjs";
+import selectRepositorySourceView from "../../select-repository/source-view.mjs";
+export default function createRepositoryFileViews(entries, focusedScope, root) {
   const views = new Map();
   async function files(view = "repository") {
     if (view === "focused") {

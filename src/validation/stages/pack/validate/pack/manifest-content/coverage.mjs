@@ -1,6 +1,5 @@
 const required = new Set(["package.json", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"]);
-
-export function validatePackManifestCoverage(packed) {
+export default function validatePackManifestCoverage(packed) {
   const packedPaths = new Set(packed.map(({ path }) => path));
   const missing = [...required].filter((path) => !packedPaths.has(path));
   if (missing.length > 0) return `npm pack omitted required files: ${missing.join(", ")}.`;

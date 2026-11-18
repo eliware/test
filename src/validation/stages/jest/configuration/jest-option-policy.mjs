@@ -25,8 +25,7 @@ const wrapperOwnedOptionAliases = new Set(
   }),
 );
 wrapperOwnedOptionAliases.add("-c");
-
-export function validateJestOptionPolicy(args) {
+export default function validateJestOptionPolicy(args) {
   for (const argument of args)
     if (typeof argument === "string" && wrapperOwnedOptionAliases.has(argument.split("=", 1)[0]))
       throw new Error(`Jest option ${argument.split("=", 1)[0]} is controlled by eliware-test.`);

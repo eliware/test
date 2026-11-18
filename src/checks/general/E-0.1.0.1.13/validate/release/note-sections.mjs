@@ -1,6 +1,5 @@
-import { validateMeaningfulSectionContent } from "./meaningful-section-content.mjs";
-import { parseReleaseNoteSections } from "./section-parser.mjs";
-
+import validateMeaningfulSectionContent from "./meaningful-section-content.mjs";
+import parseReleaseNoteSections from "./section-parser.mjs";
 const allowedSections = new Set([
   "Added",
   "Changed",
@@ -9,8 +8,7 @@ const allowedSections = new Set([
   "Migration",
   "Security",
 ]);
-
-export function validateReleaseNoteSections(lines) {
+export default function validateReleaseNoteSections(lines) {
   const parsed = parseReleaseNoteSections(lines);
   const errors = [...parsed.errors];
   for (const section of parsed.unscopedSections) {
@@ -24,7 +22,6 @@ export function validateReleaseNoteSections(lines) {
   }
   return errors;
 }
-
 function validateSection(section, entry, seen, errors) {
   const { name, content } = section;
   if (!allowedSections.has(name)) {
@@ -38,7 +35,6 @@ function validateSection(section, entry, seen, errors) {
     errors.push(...validateMeaningfulSectionContent(entry, name, content));
   }
 }
-
 function addOutsideSectionErrors(content, errors) {
   errors.push(
     ...content.map(() => "RELEASE_NOTES.md must not contain text outside a release subsection."),

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findTestWritePolicyViolations } from "../../../../../src/validation/harness/test-write-policy/scan/source.mjs";
-
+import findTestWritePolicyViolations from "../../../../../src/validation/harness/test-write-policy/scan/source.mjs";
 test("finds named write and temporary directory imports", () => {
   const source =
     'import { writeFile as save, mkdtemp } from "node:fs/promises";\nimport { tmpdir } from "node:os";';
@@ -10,7 +9,6 @@ test("finds named write and temporary directory imports", () => {
     "tests/example.test.mjs:2 uses a test API that creates files or temporary directories: import of tmpdir.",
   ]);
 });
-
 test("finds writes through namespace imports and dynamic module access", () => {
   const source = [
     'import * as fs from "node:fs/promises";',
@@ -33,7 +31,6 @@ test("finds writes through namespace imports and dynamic module access", () => {
     "tests/example.test.mjs:10 uses a test API that creates files or temporary directories: use of writeFile.",
   ]);
 });
-
 test("allows read-only APIs and ignores strings and comments", () => {
   const source = [
     'import { readFile, readdir } from "node:fs/promises";',
@@ -44,7 +41,6 @@ test("allows read-only APIs and ignores strings and comments", () => {
   ].join("\n");
   expect(findTestWritePolicyViolations(source, "tests/example.test.mjs")).toEqual([]);
 });
-
 test("finds computed temporary bindings and ignores computed read bindings", () => {
   const source = [
     "const { ['tmpdir']: getTemp } = await import('node:os');",
@@ -56,13 +52,11 @@ test("finds computed temporary bindings and ignores computed read bindings", () 
     "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: binding of tmpdir.",
   ]);
 });
-
 test("ignores member calls without a namespace identifier", () => {
   expect(
     findTestWritePolicyViolations("this.writeFile('file', 'text');", "tests/example.test.mjs"),
   ).toEqual([]);
 });
-
 test("finds writes through injected file handles and allows explicit mocks", () => {
   const writes =
     "async function save(fileHandle) { await fileHandle.writeFile('data'); fileHandle.write('data'); }";
@@ -99,7 +93,6 @@ test("finds writes through injected file handles and allows explicit mocks", () 
     ),
   ).toEqual([]);
 });
-
 test("does not accept a late or actual-module mock as proof that writes are isolated", () => {
   expect(
     findTestWritePolicyViolations(

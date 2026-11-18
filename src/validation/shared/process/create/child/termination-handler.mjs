@@ -1,8 +1,7 @@
 import { terminateChild } from "../../terminate/child.mjs";
-import { scheduleChildTermination } from "../../schedule-child-termination.mjs";
-import { createUnconfirmedTerminationSettlement } from "./termination/settle-unconfirmed.mjs";
-
-export function createChildTerminationHandler({
+import scheduleChildTermination from "../../schedule-child-termination.mjs";
+import createUnconfirmedTerminationSettlement from "./termination/settle-unconfirmed.mjs";
+export default function createChildTerminationHandler({
   child,
   options,
   environment,

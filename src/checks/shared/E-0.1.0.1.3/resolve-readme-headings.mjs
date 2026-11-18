@@ -1,6 +1,5 @@
-import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function resolveReadmeHeadings(packageJson = {}) {
+import readCanonicalOrder from "../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function resolveReadmeHeadings(packageJson = {}) {
   const applied = new Set(packageJson?.eliware?.apply ?? []);
   const order = readCanonicalOrder("readme-sections.yaml");
   const sections = [...order.generalSections];

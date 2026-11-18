@@ -1,7 +1,6 @@
-import { readRunbookSchema } from "../read-runbook-schema.mjs";
-import { validateRunbookDocument } from "./document.mjs";
-
-export async function validateRunbookDocuments(runbooks, inventory, dependencies = {}) {
+import readRunbookSchema from "../read-runbook-schema.mjs";
+import validateRunbookDocument from "./document.mjs";
+export default async function validateRunbookDocuments(runbooks, inventory, dependencies = {}) {
   let schema;
   try {
     schema = await (dependencies.readSchema ?? readRunbookSchema)();

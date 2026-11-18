@@ -1,13 +1,11 @@
 import { parseAllDocuments } from "yaml";
-
 export const yamlLimits = Object.freeze({
   bytes: 100000,
   lines: 1000,
   lineCharacters: 100,
   aliases: 100,
 });
-
-export function parseBoundedYamlDocuments(
+export default function parseBoundedYamlDocuments(
   source,
   path,
   { lineCharacters = yamlLimits.lineCharacters } = {},
@@ -19,7 +17,9 @@ export function parseBoundedYamlDocuments(
   for (const document of documents) {
     if (document.errors.length) continue;
     try {
-      document.toJS({ maxAliasCount: yamlLimits.aliases });
+      document.toJS({
+        maxAliasCount: yamlLimits.aliases,
+      });
     } catch (error) {
       if (/excessive alias count/iu.test(error.message))
         throw new Error(
@@ -30,16 +30,6 @@ export function parseBoundedYamlDocuments(
   }
   return documents;
 }
-
-export function parseBoundedYamlValue(source, path) {
-  const [document, ...remaining] = parseBoundedYamlDocuments(source, path);
-  if (remaining.length) throw new Error(`${path} must contain one YAML document.`);
-  if (!document) return null;
-  const parseError = document?.errors[0];
-  if (parseError) throw parseError;
-  return document?.toJS({ maxAliasCount: yamlLimits.aliases });
-}
-
 function findYamlLimitErrors(source, path, lineCharacters) {
   const errors = [];
   const bytes = Buffer.byteLength(source, "utf8");

@@ -1,8 +1,6 @@
-import { isValidBinTarget } from "./target.mjs";
-
+import isValidBinTarget from "./target.mjs";
 const validCommandName = /^[A-Za-z0-9_.-]+$/u;
-
-export function validateBinEntries(bin) {
+export default function validateBinEntries(bin) {
   if (!bin || typeof bin !== "object" || Array.isArray(bin)) return [];
   const errors = [];
   for (const name of Object.keys(bin)) {

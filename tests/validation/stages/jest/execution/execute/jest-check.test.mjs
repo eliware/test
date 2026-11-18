@@ -1,67 +1,108 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-
 const runJest = jest.fn();
 const sanitizeJestLog = jest.fn();
 jest.unstable_mockModule(
   "../../../../../../src/validation/stages/jest/execution/run/jest.mjs",
   () => ({
     runJest,
+    default: runJest,
   }),
 );
 jest.unstable_mockModule(
   "../../../../../../src/validation/stages/jest/progress/sanitize-jest-log.mjs",
-  () => ({ sanitizeJestLog }),
+  () => ({
+    sanitizeJestLog,
+    default: sanitizeJestLog,
+  }),
 );
-const { executeJestCheck } =
-  await import("../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs");
-
+const executeJestCheck = (
+  await import("../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs")
+).default;
 beforeEach(() => {
   sanitizeJestLog.mockReset().mockResolvedValue(undefined);
   runJest.mockReset();
 });
-
 test("executes Jest and records its start time", async () => {
   const writeCliOutput = jest.fn();
-  const sanitizeLogFs = { read: jest.fn(), write: jest.fn() };
+  const sanitizeLogFs = {
+    read: jest.fn(),
+    write: jest.fn(),
+  };
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
-    return { code: 0, stdout: "ok", stderr: "" };
+    return {
+      code: 0,
+      stdout: "ok",
+      stderr: "",
+    };
   });
-  const result = await executeJestCheck({ root: ".", jestArgs: [], writeCliOutput, sanitizeLogFs });
+  const result = await executeJestCheck({
+    root: ".",
+    jestArgs: [],
+    writeCliOutput,
+    sanitizeLogFs,
+  });
   expect(result.result).toEqual(
-    expect.objectContaining({ code: 0, startedAt: expect.any(Number) }),
+    expect.objectContaining({
+      code: 0,
+      startedAt: expect.any(Number),
+    }),
   );
   expect(result.timeoutDiagnostic).toBeUndefined();
   expect(writeCliOutput).toHaveBeenCalledWith("Logging to ./coverage/jest.log...");
   expect(sanitizeJestLog).toHaveBeenCalledWith(join(".", "coverage", "jest.log"), sanitizeLogFs);
 });
-
 test("preserves stderr diagnostics when stdout contains ordinary output", async () => {
-  const result = { code: 0, stdout: "ordinary Jest output", stderr: "Jest diagnostic" };
+  const result = {
+    code: 0,
+    stdout: "ordinary Jest output",
+    stderr: "Jest diagnostic",
+  };
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
     return result;
   });
   await expect(
-    executeJestCheck({ root: ".", jestArgs: ["--debug-timing"] }),
-  ).resolves.toMatchObject({ result: { stdout: result.stdout, stderr: result.stderr } });
-});
-
-test("rejects Jest results if execution never reached its start callback", async () => {
-  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
-
-  await expect(executeJestCheck({ root: "." })).resolves.toMatchObject({
-    error: { message: "Jest did not start before the results were returned." },
+    executeJestCheck({
+      root: ".",
+      jestArgs: ["--debug-timing"],
+    }),
+  ).resolves.toMatchObject({
+    result: {
+      stdout: result.stdout,
+      stderr: result.stderr,
+    },
   });
 });
-
+test("rejects Jest results if execution never reached its start callback", async () => {
+  runJest.mockResolvedValueOnce({
+    code: 0,
+    stdout: "ok",
+    stderr: "",
+  });
+  await expect(
+    executeJestCheck({
+      root: ".",
+    }),
+  ).resolves.toMatchObject({
+    error: {
+      message: "Jest did not start before the results were returned.",
+    },
+  });
+});
 test("defaults omitted Jest arguments to an empty list", async () => {
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
-    return { code: 0, stdout: "ok", stderr: "" };
+    return {
+      code: 0,
+      stdout: "ok",
+      stderr: "",
+    };
   });
-  await executeJestCheck({ root: "." });
+  await executeJestCheck({
+    root: ".",
+  });
   expect(runJest).toHaveBeenCalledWith(
     ".",
     [],
@@ -71,35 +112,56 @@ test("defaults omitted Jest arguments to an empty list", async () => {
     }),
   );
 });
-
 test("skips Jest when every focused test path is ignored", async () => {
   await expect(
-    executeJestCheck({ root: ".", jestArgs: ["tests/artifacts/generated.test.mjs"] }),
-  ).resolves.toMatchObject({ skipped: true, result: { code: 0 } });
+    executeJestCheck({
+      root: ".",
+      jestArgs: ["tests/artifacts/generated.test.mjs"],
+    }),
+  ).resolves.toMatchObject({
+    skipped: true,
+    result: {
+      code: 0,
+    },
+  });
   expect(runJest).not.toHaveBeenCalled();
 });
-
 test("keeps focused test paths that are not ignored", async () => {
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
-    return { code: 0, stdout: "ok", stderr: "" };
+    return {
+      code: 0,
+      stdout: "ok",
+      stderr: "",
+    };
   });
-  await executeJestCheck({ root: process.cwd(), jestArgs: ["tests/ordinary.test.mjs"] });
+  await executeJestCheck({
+    root: process.cwd(),
+    jestArgs: ["tests/ordinary.test.mjs"],
+  });
   expect(runJest).toHaveBeenCalledWith(
     process.cwd(),
     ["tests/ordinary.test.mjs"],
     expect.any(Function),
-    expect.objectContaining({ onTimeout: expect.any(Function) }),
+    expect.objectContaining({
+      onTimeout: expect.any(Function),
+    }),
   );
 });
-
 test("forwards the selected output writer for Jest suite progress", async () => {
   const writeOutput = jest.fn();
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
-    return { code: 0, stdout: "captured output", stderr: "timing output" };
+    return {
+      code: 0,
+      stdout: "captured output",
+      stderr: "timing output",
+    };
   });
-  await executeJestCheck({ root: ".", writeOutput });
+  await executeJestCheck({
+    root: ".",
+    writeOutput,
+  });
   expect(runJest).toHaveBeenCalledWith(
     ".",
     [],
@@ -109,36 +171,67 @@ test("forwards the selected output writer for Jest suite progress", async () => 
     }),
   );
 });
-
 test("forwards the invocation environment to the Jest process builder", async () => {
-  const env = { PATH: "consumer-path", TOKEN: "consumer-token" };
+  const env = {
+    PATH: "consumer-path",
+    TOKEN: "consumer-token",
+  };
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
-    return { code: 0, stdout: "ok", stderr: "" };
+    return {
+      code: 0,
+      stdout: "ok",
+      stderr: "",
+    };
   });
-  await executeJestCheck({ root: ".", env });
+  await executeJestCheck({
+    root: ".",
+    env,
+  });
   expect(runJest).toHaveBeenCalledWith(
     ".",
     [],
     expect.any(Function),
-    expect.objectContaining({ env }),
+    expect.objectContaining({
+      env,
+    }),
   );
 });
-
 test("captures timeout diagnostics and launch errors", async () => {
   runJest.mockImplementationOnce(async (root, args, execute, options) => {
     options.onStart();
     options.onTimeout("timeout diagnostic");
-    return { code: null, timedOut: true, terminationConfirmed: false, stdout: "", stderr: "" };
+    return {
+      code: null,
+      timedOut: true,
+      terminationConfirmed: false,
+      stdout: "",
+      stderr: "",
+    };
   });
   await expect(
-    executeJestCheck({ root: ".", jestArgs: [], writeOutput: jest.fn() }),
-  ).resolves.toEqual(expect.objectContaining({ timeoutDiagnostic: "timeout diagnostic" }));
+    executeJestCheck({
+      root: ".",
+      jestArgs: [],
+      writeOutput: jest.fn(),
+    }),
+  ).resolves.toEqual(
+    expect.objectContaining({
+      timeoutDiagnostic: "timeout diagnostic",
+    }),
+  );
   expect(sanitizeJestLog).not.toHaveBeenCalled();
   runJest.mockImplementationOnce(() => {
     throw new Error("spawn failed");
   });
-  await expect(executeJestCheck({ root: ".", jestArgs: [] })).resolves.toEqual({
-    error: expect.objectContaining({ message: "spawn failed" }),
+  await expect(
+    executeJestCheck({
+      root: ".",
+      jestArgs: [],
+    }),
+  ).resolves.toEqual({
+    error: expect.objectContaining({
+      message: "spawn failed",
+    }),
   });
 });

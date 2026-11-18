@@ -1,4 +1,4 @@
-export function extractPackageScriptCommands(content) {
+export default function extractPackageScriptCommands(content) {
   let manifest;
   try {
     manifest = JSON.parse(content);

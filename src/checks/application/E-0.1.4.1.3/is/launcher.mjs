@@ -1,4 +1,4 @@
-export function isLauncher(callee, names) {
+export default function isLauncher(callee, names) {
   const property = callee?.computed ? callee.property?.value : callee?.property?.name;
   return (
     (callee?.type === "Identifier" && names.has(callee.name)) ||

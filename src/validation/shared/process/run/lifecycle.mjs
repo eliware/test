@@ -1,9 +1,8 @@
-import { createChildTerminationHandler } from "../create/child/termination-handler.mjs";
-import { createChildProgress } from "../create-child/progress.mjs";
-import { createChildCloseHandler } from "../handle-child/close.mjs";
-import { wireChildOutput } from "../wire-child-output.mjs";
-
-export function registerChildLifecycle(
+import createChildTerminationHandler from "../create/child/termination-handler.mjs";
+import createChildProgress from "../create-child/progress.mjs";
+import createChildCloseHandler from "../handle-child/close.mjs";
+import wireChildOutput from "../wire-child-output.mjs";
+export default function registerChildLifecycle(
   child,
   {
     options,
@@ -31,7 +30,10 @@ export function registerChildLifecycle(
   });
   setTermination(termination);
   const progress = createChildProgress(
-    { ...options, isSettled },
+    {
+      ...options,
+      isSettled,
+    },
     timeoutController,
     timeout,
     output,

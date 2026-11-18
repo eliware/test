@@ -1,13 +1,11 @@
 import { basename } from "node:path";
-import { matchesDocumentationFilename } from "../../../match-documentation-filename.mjs";
-import {
-  assertDocumentationFileLimit,
-  validateDocumentationTraversalLimits,
-} from "../../../validate/documentation-traversal-limits.mjs";
-import { generatedDocumentationPath, shouldSkipDocumentationPath } from "./path-policy.mjs";
-import { createDocumentationTraversalFileTracker } from "./track-traversal-files.mjs";
-
-export function createDocumentationTraversalSelection({
+import matchesDocumentationFilename from "../../../match-documentation-filename.mjs";
+import assertDocumentationFileLimit from "../../../validate/documentation-traversal-limits.mjs";
+import validateDocumentationTraversalLimits from "../../../validate/documentation-traversal-limits/validate-documentation-traversal-limits.mjs";
+import { generatedDocumentationPath } from "./path-policy.mjs";
+import shouldSkipDocumentationPath from "./path-policy/should-skip-documentation-path.mjs";
+import createDocumentationTraversalFileTracker from "./track-traversal-files.mjs";
+export default function createDocumentationTraversalSelection({
   base,
   prefix,
   predicate,

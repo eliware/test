@@ -1,21 +1,42 @@
 import { expect, test } from "@jest/globals";
-import { validateCiWorkflowJob } from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/ci-workflow/job.mjs";
-
+import validateCiWorkflowJob from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/ci-workflow/job.mjs";
 test("selects the single supported validation job", () => {
-  const job = { "runs-on": "ubuntu-latest", steps: [] };
-  expect(validateCiWorkflowJob({ jobs: { test: job } })).toEqual({ job, errors: [] });
+  const job = {
+    "runs-on": "ubuntu-latest",
+    steps: [],
+  };
+  expect(
+    validateCiWorkflowJob({
+      jobs: {
+        test: job,
+      },
+    }),
+  ).toEqual({
+    job,
+    errors: [],
+  });
 });
-
 test("rejects unsupported Ubuntu runner labels", () => {
   const result = validateCiWorkflowJob({
-    jobs: { test: { "runs-on": "ubuntu-nonexistent", steps: [] } },
+    jobs: {
+      test: {
+        "runs-on": "ubuntu-nonexistent",
+        steps: [],
+      },
+    },
   });
   expect(result.errors).toContain("ci.yaml validation job must run on Ubuntu.");
 });
-
 test("reports invalid job keys, runners, and failure overrides", () => {
   const result = validateCiWorkflowJob({
-    jobs: { other: { "runs-on": "windows-latest", if: "always()", steps: [], env: {} } },
+    jobs: {
+      other: {
+        "runs-on": "windows-latest",
+        if: "always()",
+        steps: [],
+        env: {},
+      },
+    },
   });
   expect(result.errors).toEqual(
     expect.arrayContaining([
@@ -25,12 +46,20 @@ test("reports invalid job keys, runners, and failure overrides", () => {
       "ci.yaml validation job has unsupported keys: if, env.",
     ]),
   );
-  expect(validateCiWorkflowJob({ jobs: {} }).errors).toContain(
-    "ci.yaml must define a validation job with steps.",
-  );
   expect(
     validateCiWorkflowJob({
-      jobs: { test: { "runs-on": "ubuntu-latest", "continue-on-error": true, steps: [] } },
+      jobs: {},
+    }).errors,
+  ).toContain("ci.yaml must define a validation job with steps.");
+  expect(
+    validateCiWorkflowJob({
+      jobs: {
+        test: {
+          "runs-on": "ubuntu-latest",
+          "continue-on-error": true,
+          steps: [],
+        },
+      },
     }).errors,
   ).toContain("ci.yaml validation job must run unconditionally without continue-on-error.");
 });

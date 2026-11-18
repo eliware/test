@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findUnexpectedJestOutput } from "../../../../../src/validation/stages/jest/progress/inspect-jest-output.mjs";
-
+import findUnexpectedJestOutput from "../../../../../src/validation/stages/jest/progress/inspect-jest-output.mjs";
 test("allows Jest summaries and harness progress lines", () => {
   expect(
     findUnexpectedJestOutput({
@@ -10,7 +9,6 @@ test("allows Jest summaries and harness progress lines", () => {
     }),
   ).toEqual([]);
 });
-
 test("ignores coverage rows that contain credential labels in file paths", () => {
   expect(
     findUnexpectedJestOutput(
@@ -26,18 +24,25 @@ test("ignores coverage rows that contain credential labels in file paths", () =>
     ),
   ).toEqual([]);
 });
-
 test("detects and redacts unexpected output", () => {
-  expect(findUnexpectedJestOutput({ stdout: "application log: token leaked-value\n" })).toEqual([
-    "Unexpected output from unknown test suite: application log: token [REDACTED]",
-  ]);
+  expect(
+    findUnexpectedJestOutput({
+      stdout: "application log: token leaked-value\n",
+    }),
+  ).toEqual(["Unexpected output from unknown test suite: application log: token [REDACTED]"]);
 });
-
 test("allows harness diagnostics and truncated progress output", () => {
-  expect(findUnexpectedJestOutput({ stderr: "E-0.1.20: Jest failed: diagnostic\n" })).toEqual([]);
-  expect(findUnexpectedJestOutput({ stderr: "[eliware-test-progr…\n" })).toEqual([]);
+  expect(
+    findUnexpectedJestOutput({
+      stderr: "E-0.1.20: Jest failed: diagnostic\n",
+    }),
+  ).toEqual([]);
+  expect(
+    findUnexpectedJestOutput({
+      stderr: "[eliware-test-progr…\n",
+    }),
+  ).toEqual([]);
 });
-
 test("attributes unexpected output to the active suite", () => {
   expect(
     findUnexpectedJestOutput({
@@ -46,18 +51,20 @@ test("attributes unexpected output to the active suite", () => {
     }),
   ).toContain("Unexpected output from tests/first.test.mjs: unexpected output");
 });
-
 test("reports console output from reporter records against its test file", () => {
   expect(
     findUnexpectedJestOutput({
       stdout: "PASS tests/quiet.test.mjs\n",
       consoleOutput: [
-        { testFilePath: "tests/noisy.test.mjs", type: "log", message: "actual output" },
+        {
+          testFilePath: "tests/noisy.test.mjs",
+          type: "log",
+          message: "actual output",
+        },
       ],
     }),
   ).toEqual(["console.log in tests/noisy.test.mjs: actual output"]);
 });
-
 test("reports missing console output reports", () => {
   expect(
     findUnexpectedJestOutput({
@@ -65,29 +72,36 @@ test("reports missing console output reports", () => {
     }),
   ).toEqual(["Could not read Jest's console output report."]);
 });
-
 test("deduplicates findings and detects unexpected JSON output as ordinary output", () => {
   expect(findUnexpectedJestOutput()).toEqual([]);
-  expect(findUnexpectedJestOutput({ stdout: "noise\nnoise\n" })).toEqual([
-    "Unexpected output from unknown test suite: noise",
-  ]);
-  expect(findUnexpectedJestOutput({ stdout: '{"consumer data":true}' })).toEqual([
-    'Unexpected output from unknown test suite: {"consumer data":true}',
-  ]);
+  expect(
+    findUnexpectedJestOutput({
+      stdout: "noise\nnoise\n",
+    }),
+  ).toEqual(["Unexpected output from unknown test suite: noise"]);
+  expect(
+    findUnexpectedJestOutput({
+      stdout: '{"consumer data":true}',
+    }),
+  ).toEqual(['Unexpected output from unknown test suite: {"consumer data":true}']);
 });
-
 test("redacts configured secrets from output and parsed console records", () => {
   const secret = "jest-output-secret-value";
   const findings = findUnexpectedJestOutput(
     {
       stdout: `unexpected ${secret}\n`,
       stderr: `trace ${secret}\n`,
-      consoleOutput: [{ testFilePath: "tests/example.test.mjs", type: "log", message: secret }],
+      consoleOutput: [
+        {
+          testFilePath: "tests/example.test.mjs",
+          type: "log",
+          message: secret,
+        },
+      ],
     },
     [secret],
     process.cwd(),
   );
-
   expect(findings).toEqual([
     "Unexpected output from unknown test suite: unexpected [REDACTED]",
     "console.log in tests/example.test.mjs: [REDACTED]",

@@ -1,11 +1,13 @@
 import { expect, jest, test } from "@jest/globals";
-
 const readFile = jest.fn();
 const stat = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile, stat }));
-const { validateRequiredPackageFiles } =
-  await import("../../../../../src/checks/general/E-0.1.0.1.1/validate/required-package-files.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  readFile,
+  stat,
+}));
+const validateRequiredPackageFiles = (
+  await import("../../../../../src/checks/general/E-0.1.0.1.1/validate/required-package-files.mjs")
+).default;
 const approvedLicense = `MIT License
 
 Copyright (c) 2026 Eliware
@@ -27,25 +29,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`;
-const successStat = async () => ({ isFile: () => true });
+const successStat = async () => ({
+  isFile: () => true,
+});
 const successRead = async () => approvedLicense;
-
 test("uses mocked filesystem defaults", async () => {
-  stat.mockResolvedValue({ isFile: () => true });
+  stat.mockResolvedValue({
+    isFile: () => true,
+  });
   readFile.mockResolvedValue(approvedLicense);
   await expect(validateRequiredPackageFiles("/repo")).resolves.toEqual([]);
 });
-
 test("accepts all required files and the approved license", async () => {
   await expect(
-    validateRequiredPackageFiles("/repo", { getStat: successStat, read: successRead }),
+    validateRequiredPackageFiles("/repo", {
+      getStat: successStat,
+      read: successRead,
+    }),
   ).resolves.toEqual([]);
 });
-
 test("reports missing, non-file, and malformed license paths", async () => {
   const getStat = async (path) => {
     if (path.endsWith("README.md")) throw new Error("missing");
-    return { isFile: () => !path.endsWith("LICENSE") };
+    return {
+      isFile: () => !path.endsWith("LICENSE"),
+    };
   };
   const errors = await validateRequiredPackageFiles("/repo", {
     getStat,
@@ -55,7 +63,6 @@ test("reports missing, non-file, and malformed license paths", async () => {
   expect(errors.join("\n")).toContain("LICENSE must be a file");
   expect(errors.join("\n")).toContain("LICENSE must contain the complete approved MIT text");
 });
-
 test("rejects altered license text that keeps the old marker fragments", async () => {
   const errors = await validateRequiredPackageFiles("/repo", {
     getStat: successStat,
@@ -63,7 +70,6 @@ test("rejects altered license text that keeps the old marker fragments", async (
   });
   expect(errors).toContain("LICENSE must contain the complete approved MIT text.");
 });
-
 test("reports required files when the stat call fails", async () => {
   const errors = await validateRequiredPackageFiles("/repo", {
     getStat: async () => {

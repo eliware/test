@@ -1,6 +1,5 @@
-import { createValidationStageRunners } from "./registry/create/validation-stage-runners.mjs";
-
-export async function runValidationStages(context, stages, runners) {
+import createValidationStageRunners from "./registry/create/validation-stage-runners.mjs";
+export default async function runValidationStages(context, stages, runners) {
   context.stageResults ??= {};
   const selectedRunners = runners ?? createValidationStageRunners();
   return (
@@ -28,7 +27,6 @@ export async function runValidationStages(context, stages, runners) {
     )
   ).filter(Boolean);
 }
-
 function capitalize(value) {
   return value[0].toUpperCase() + value.slice(1);
 }

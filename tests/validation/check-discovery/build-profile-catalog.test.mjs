@@ -4,8 +4,7 @@ import {
   otherConventionVersion,
   profileDocument,
 } from "../../../test-fixtures/profile-catalog-test-fixtures.mjs";
-import { buildProfileCatalog } from "../../../src/validation/check-discovery/build-profile-catalog.mjs";
-
+import buildProfileCatalog from "../../../src/validation/check-discovery/build-profile-catalog.mjs";
 test("builds profile applicability and complete directive records", () => {
   const catalog = buildProfileCatalog(
     [
@@ -18,8 +17,18 @@ test("builds profile applicability and complete directive records", () => {
               id: "E-0.1",
               dos: ["Do this."],
               donts: ["Do not do that."],
-              examples: [{ markdown: "example" }],
-              children: [{ id: "E-0.1.1", dos: ["Nested."], donts: ["Do not skip it."] }],
+              examples: [
+                {
+                  markdown: "example",
+                },
+              ],
+              children: [
+                {
+                  id: "E-0.1.1",
+                  dos: ["Nested."],
+                  donts: ["Do not skip it."],
+                },
+              ],
             },
           ],
         },
@@ -27,13 +36,25 @@ test("builds profile applicability and complete directive records", () => {
     ],
     conventionVersion,
   );
-  expect(catalog.profiles.general).toEqual({ profile: "general" });
+  expect(catalog.profiles.general).toEqual({
+    profile: "general",
+  });
   expect(catalog.rules["E-0.1"]).toEqual({
     id: "E-0.1",
     dos: ["Do this."],
     donts: ["Do not do that."],
-    examples: [{ markdown: "example" }],
-    children: [{ id: "E-0.1.1", dos: ["Nested."], donts: ["Do not skip it."] }],
+    examples: [
+      {
+        markdown: "example",
+      },
+    ],
+    children: [
+      {
+        id: "E-0.1.1",
+        dos: ["Nested."],
+        donts: ["Do not skip it."],
+      },
+    ],
   });
   expect(catalog.rules["E-0.1.1"].dos).toEqual(["Nested."]);
   const withDependency = buildProfileCatalog(
@@ -44,42 +65,83 @@ test("builds profile applicability and complete directive records", () => {
     ],
     conventionVersion,
   );
-  expect(withDependency.profiles.cli).toEqual({ profile: "cli" });
+  expect(withDependency.profiles.cli).toEqual({
+    profile: "cli",
+  });
 });
-
 test("rejects profile documents without directives", () => {
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.yaml", document: { version: conventionVersion } }],
+      [
+        {
+          source: "general.yaml",
+          document: {
+            version: conventionVersion,
+          },
+        },
+      ],
       conventionVersion,
     ),
   ).toThrow("no directive list");
 });
-
 test("rejects invalid names, versions, duplicate identifiers, and malformed directives", () => {
-  const directive = { id: "E-0.1", dos: ["rule"], donts: ["bad"] };
+  const directive = {
+    id: "E-0.1",
+    dos: ["rule"],
+    donts: ["bad"],
+  };
   const document = {
     version: conventionVersion,
     directives: [directive],
   };
   expect(() => buildProfileCatalog([], conventionVersion)).toThrow("cannot be empty");
   expect(() =>
-    buildProfileCatalog([{ source: "../general.yaml", document }], conventionVersion),
-  ).toThrow("invalid name");
-  expect(() =>
-    buildProfileCatalog([{ source: "Invalid Name.yaml", document }], conventionVersion),
+    buildProfileCatalog(
+      [
+        {
+          source: "../general.yaml",
+          document,
+        },
+      ],
+      conventionVersion,
+    ),
   ).toThrow("invalid name");
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.yaml", document: { ...document, version: otherConventionVersion } }],
+      [
+        {
+          source: "Invalid Name.yaml",
+          document,
+        },
+      ],
+      conventionVersion,
+    ),
+  ).toThrow("invalid name");
+  expect(() =>
+    buildProfileCatalog(
+      [
+        {
+          source: "general.yaml",
+          document: {
+            ...document,
+            version: otherConventionVersion,
+          },
+        },
+      ],
       conventionVersion,
     ),
   ).toThrow(`must match Convention v${conventionVersion}`);
   expect(() =>
     buildProfileCatalog(
       [
-        { source: "general.yaml", document },
-        { source: "general.yaml", document },
+        {
+          source: "general.yaml",
+          document,
+        },
+        {
+          source: "general.yaml",
+          document,
+        },
       ],
       conventionVersion,
     ),
@@ -87,8 +149,14 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
   expect(() =>
     buildProfileCatalog(
       [
-        { source: "general.yaml", document },
-        { source: "application.yaml", document },
+        {
+          source: "general.yaml",
+          document,
+        },
+        {
+          source: "application.yaml",
+          document,
+        },
       ],
       conventionVersion,
     ),
@@ -98,7 +166,15 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
       [
         {
           source: "general.yaml",
-          document: { version: conventionVersion, directives: [{ ...directive, examples: {} }] },
+          document: {
+            version: conventionVersion,
+            directives: [
+              {
+                ...directive,
+                examples: {},
+              },
+            ],
+          },
         },
       ],
       conventionVersion,

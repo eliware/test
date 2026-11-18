@@ -1,6 +1,5 @@
-import { createRepositoryInventory } from "../shared/repository/create-repository/inventory.mjs";
-
-export function createValidationContext(root, packageJson, options = {}) {
+import createRepositoryInventory from "../shared/repository/create-repository/inventory.mjs";
+export default function createValidationContext(root, packageJson, options = {}) {
   const repositoryInventory =
     options.repositoryInventory ??
     createRepositoryInventory(root, {
@@ -13,7 +12,11 @@ export function createValidationContext(root, packageJson, options = {}) {
   return {
     root,
     packageJson,
-    ...(options.env ? { env: options.env } : {}),
+    ...(options.env
+      ? {
+          env: options.env,
+        }
+      : {}),
     executeJest: options.executeJest === true,
     executeLint: options.executeLint === true,
     executeAudit: options.executeAudit === true,
@@ -33,7 +36,15 @@ export function createValidationContext(root, packageJson, options = {}) {
     writeCliOutput: options.writeCliOutput,
     repositoryInventory,
     parseAst: options.parseAst ?? repositoryInventory.parseAst,
-    ...(options.repositoryFiles ? { repositoryFiles: options.repositoryFiles } : {}),
-    ...(options.focusedScope ? { focusedScope: options.focusedScope } : {}),
+    ...(options.repositoryFiles
+      ? {
+          repositoryFiles: options.repositoryFiles,
+        }
+      : {}),
+    ...(options.focusedScope
+      ? {
+          focusedScope: options.focusedScope,
+        }
+      : {}),
   };
 }

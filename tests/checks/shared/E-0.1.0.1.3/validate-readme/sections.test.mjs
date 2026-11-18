@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReadmeSections } from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/sections.mjs";
-
+import validateReadmeSections from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/sections.mjs";
 const titleIndex = 2;
 const tocIndex = 6;
 const expected = ["Features", "License"];
@@ -18,11 +17,9 @@ const lines = [
   "## License",
   "License text",
 ];
-
 test("accepts each required section with content", () => {
   expect(validateReadmeSections(lines, expected, titleIndex, tocIndex).error).toBeNull();
 });
-
 test("reports missing, duplicate, and unlisted sections", () => {
   const result = validateReadmeSections(
     [...lines.slice(0, 8), "## Features", "Content", "## Other", "Content"],
@@ -32,7 +29,6 @@ test("reports missing, duplicate, and unlisted sections", () => {
   );
   expect(result.error).toContain("every required section once");
 });
-
 test("reports sections without body content", () => {
   const result = validateReadmeSections(
     [...lines.slice(0, 8), "## Features", "### Nested", "## License", ""],

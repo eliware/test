@@ -1,9 +1,8 @@
-import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
-import { derivePackageFilesAllowlist } from "../../../validation/stages/pack/derive-package-files-allowlist.mjs";
-import { validateOrderedPackageFiles } from "../../../validation/stages/pack/validate/ordered-package-files.mjs";
-import { isSafeRelativePosixPath } from "../../../validation/shared/path/is-safe-relative-posix-path.mjs";
-
-export function validateNpmPackageFiles(packageJson = {}) {
+import readCanonicalOrder from "../../../validation/shared/conventions/read-canonical-order.mjs";
+import derivePackageFilesAllowlist from "../../../validation/stages/pack/derive-package-files-allowlist.mjs";
+import validateOrderedPackageFiles from "../../../validation/stages/pack/validate/ordered-package-files.mjs";
+import isSafeRelativePosixPath from "../../../validation/shared/path/is-safe-relative-posix-path.mjs";
+export default function validateNpmPackageFiles(packageJson = {}) {
   const files = packageJson.files;
   if (!Array.isArray(files) || files.length === 0)
     return ["package.json.files must be a nonempty array for npm publication."];

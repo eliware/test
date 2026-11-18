@@ -1,10 +1,13 @@
 import { expect, test } from "@jest/globals";
-import { readExemptions } from "../../../../src/validation/planning/read/exemptions.mjs";
-
+import readExemptions from "../../../../src/validation/planning/read/exemptions.mjs";
 test("returns validated exemption rule scopes", () => {
   expect(readExemptions()).toEqual(new Map());
   expect(readExemptions({})).toEqual(new Map());
-  expect(readExemptions({ eliware: {} })).toEqual(new Map());
+  expect(
+    readExemptions({
+      eliware: {},
+    }),
+  ).toEqual(new Map());
   expect(
     readExemptions({
       eliware: {
@@ -40,7 +43,13 @@ test("returns validated exemption rule scopes", () => {
     readExemptions({
       eliware: {
         exempt: [
-          { ruleId: "E-0.1", reason: "", approver: "Eli", approvalTimestamp: "x", expiry: null },
+          {
+            ruleId: "E-0.1",
+            reason: "",
+            approver: "Eli",
+            approvalTimestamp: "x",
+            expiry: null,
+          },
         ],
       },
     }),

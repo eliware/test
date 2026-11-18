@@ -1,7 +1,6 @@
 import { lstat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-
-export async function inspectEntrypointTargetFilesystem(path, root, checkPath = lstat) {
+export default async function inspectEntrypointTargetFilesystem(path, root, checkPath = lstat) {
   try {
     if ((await checkPath(resolve(root))).isSymbolicLink()) return "symlink";
     const segments = path.split("/");

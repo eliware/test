@@ -1,13 +1,11 @@
 const loginAction = "docker/login-action@v3";
 const imageAction = "docker/build-push-action@v7";
-
-export function validateGhcrAuthentication(workflow, path = "specs/workflows/ghcr.yaml") {
+export default function validateGhcrAuthentication(workflow, path = "specs/workflows/ghcr.yaml") {
   const errors = [];
   const publish = workflow?.jobs?.publish;
   const steps = publish?.steps ?? [];
   const loginIndices = steps.flatMap((step, index) => (step?.uses === loginAction ? [index] : []));
   const imageIndex = steps.findIndex((step) => step?.uses === imageAction);
-
   if (publish?.permissions?.packages !== "write") {
     errors.push(`${path} publish job must grant packages: write.`);
   }
@@ -15,7 +13,6 @@ export function validateGhcrAuthentication(workflow, path = "specs/workflows/ghc
     errors.push(`${path} publish job must log in with ${loginAction}.`);
     return errors;
   }
-
   const loginsBeforeImage = loginIndices.filter((index) => imageIndex < 0 || index < imageIndex);
   const effectiveLoginIndex = loginsBeforeImage
     .filter((index) => steps[index]?.with?.registry === "ghcr.io")

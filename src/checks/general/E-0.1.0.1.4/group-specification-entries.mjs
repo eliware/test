@@ -1,6 +1,5 @@
 import { dirname } from "node:path";
-
-export function groupSpecificationEntries(entries) {
+export default function groupSpecificationEntries(entries) {
   const filesByDirectory = new Map();
   const childrenByDirectory = new Map();
   for (const entry of entries) {
@@ -12,5 +11,8 @@ export function groupSpecificationEntries(entries) {
     values.push(entry.type === "file" ? entry : path);
     groups.set(parent, values);
   }
-  return { filesByDirectory, childrenByDirectory };
+  return {
+    filesByDirectory,
+    childrenByDirectory,
+  };
 }

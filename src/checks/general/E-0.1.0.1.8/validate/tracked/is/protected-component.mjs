@@ -7,8 +7,7 @@ const protectedNames = new Set([
   "token",
   "tokens",
 ]);
-
-export function isProtectedComponent(component) {
+export default function isProtectedComponent(component) {
   const name = component.toLowerCase();
   return protectedNames.has(name) || /\.(?:pem|key|p12|pfx)$/u.test(name);
 }

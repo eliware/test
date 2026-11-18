@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 import { win32 } from "node:path";
-
-export function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsSync) {
+export default function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsSync) {
   const environmentEntries = new Map(
     Object.entries(process.env).map(([key, value]) => [key.toLowerCase(), [key, value]]),
   );

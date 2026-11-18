@@ -1,6 +1,18 @@
-export function validateReadmeSections(markdownLines, expectedSections, titleIndex, tocIndex) {
+export default function validateReadmeSections(
+  markdownLines,
+  expectedSections,
+  titleIndex,
+  tocIndex,
+) {
   const headings = markdownLines.flatMap((line, index) =>
-    index !== titleIndex && /^##\s+/u.test(line) ? [{ index, heading: line.slice(3).trim() }] : [],
+    index !== titleIndex && /^##\s+/u.test(line)
+      ? [
+          {
+            index,
+            heading: line.slice(3).trim(),
+          },
+        ]
+      : [],
   );
   const actualSections = headings
     .filter(({ index }) => index !== tocIndex)
@@ -27,5 +39,8 @@ export function validateReadmeSections(markdownLines, expectedSections, titleInd
         .join("\n"),
       headings,
     };
-  return { headings, error: null };
+  return {
+    headings,
+    error: null,
+  };
 }

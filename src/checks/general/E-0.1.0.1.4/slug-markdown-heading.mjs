@@ -1,4 +1,4 @@
-export function slugMarkdownHeading(value) {
+export default function slugMarkdownHeading(value) {
   return value
     .replace(/!?\[([^\]]+)\]\([^)]*\)/gu, "$1")
     .replace(/<[^>]+>/gu, "")

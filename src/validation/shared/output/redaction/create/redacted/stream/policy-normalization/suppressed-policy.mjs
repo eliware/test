@@ -1,4 +1,4 @@
-export function createSuppressedPolicy(values, outputLimit, workLimit, maxPendingLength) {
+export default function createSuppressedPolicy(values, outputLimit, workLimit, maxPendingLength) {
   if (values) return null;
   return {
     outputLimit,

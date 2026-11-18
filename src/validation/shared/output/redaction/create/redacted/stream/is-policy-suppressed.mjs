@@ -1,4 +1,4 @@
-export function isRedactedStreamPolicySuppressed(
+export default function isRedactedStreamPolicySuppressed(
   maximumSecretLength,
   outputLimit,
   trimSuffix,

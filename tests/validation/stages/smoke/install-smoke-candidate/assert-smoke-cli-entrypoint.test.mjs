@@ -1,40 +1,54 @@
 import { expect, test, jest } from "@jest/globals";
 import { join } from "node:path";
-
 const resolve = jest.fn();
-const createRequire = jest.fn(() => ({ resolve }));
-jest.unstable_mockModule("node:module", () => ({ createRequire }));
-const { assertSmokeCliEntrypoint } =
-  await import("../../../../../src/validation/stages/smoke/install-smoke-candidate/assert-smoke-cli-entrypoint.mjs");
-
+const createRequire = jest.fn(() => ({
+  resolve,
+}));
+jest.unstable_mockModule("node:module", () => ({
+  createRequire,
+  default: createRequire,
+}));
+const assertSmokeCliEntrypoint = (
+  await import("../../../../../src/validation/stages/smoke/install-smoke-candidate/assert-smoke-cli-entrypoint.mjs")
+).default;
 const targetRoot = "C:/consumer";
-const packageJson = { name: "@eliware/test", bin: "bin/eliware-test.mjs" };
+const packageJson = {
+  name: "@eliware/test",
+  bin: "bin/eliware-test.mjs",
+};
 const expected = join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs");
-
 test("resolves the package CLI entrypoint", () => {
   const resolveModule = jest.fn(() => expected);
-  expect(() => assertSmokeCliEntrypoint({ targetRoot, packageJson, resolveModule })).not.toThrow();
+  expect(() =>
+    assertSmokeCliEntrypoint({
+      targetRoot,
+      packageJson,
+      resolveModule,
+    }),
+  ).not.toThrow();
   expect(resolveModule).toHaveBeenCalledWith(expected, join(targetRoot, "package.json"));
 });
-
 test("does not resolve packages without a bin entry", () => {
   const resolveModule = jest.fn();
   assertSmokeCliEntrypoint({
     targetRoot,
-    packageJson: { ...packageJson, bin: undefined },
+    packageJson: {
+      ...packageJson,
+      bin: undefined,
+    },
     resolveModule,
   });
   expect(resolveModule).not.toHaveBeenCalled();
 });
-
 test("uses the default module resolver", () => {
   resolve.mockReturnValue(expected);
-  assertSmokeCliEntrypoint({ targetRoot, packageJson });
-
+  assertSmokeCliEntrypoint({
+    targetRoot,
+    packageJson,
+  });
   expect(createRequire).toHaveBeenCalledWith(join(targetRoot, "package.json"));
   expect(resolve).toHaveBeenCalledWith(expected);
 });
-
 test("rejects a CLI entrypoint outside the installed package", () => {
   expect(() =>
     assertSmokeCliEntrypoint({

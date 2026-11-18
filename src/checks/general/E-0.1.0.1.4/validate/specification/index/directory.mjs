@@ -1,8 +1,7 @@
 import { basename, join } from "node:path";
-import { validateSpecificationIndexContent } from "./content.mjs";
-import { inspectSpecificationIndexFiles } from "./files.mjs";
-
-export async function validateSpecificationIndex(
+import validateSpecificationIndexContent from "./content.mjs";
+import inspectSpecificationIndexFiles from "./files.mjs";
+export default async function validateSpecificationIndex(
   root,
   directory,
   { files, children, order, read },

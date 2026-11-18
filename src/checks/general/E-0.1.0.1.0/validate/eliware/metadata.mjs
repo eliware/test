@@ -1,8 +1,7 @@
-import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { validateEliwareExemptions } from "./exemptions.mjs";
-import { validateEliwareSchema } from "./schema.mjs";
-
-export function validateEliwareMetadata(packageJson) {
+import readCanonicalOrder from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import validateEliwareExemptions from "./exemptions.mjs";
+import validateEliwareSchema from "./schema.mjs";
+export default function validateEliwareMetadata(packageJson) {
   const eliware = packageJson?.eliware;
   const errors = [];
   const canonicalKeys = readCanonicalOrder("package-json.yaml").eliwareKeys;

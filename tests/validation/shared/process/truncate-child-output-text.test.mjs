@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { truncateChildOutputText } from "../../../../src/validation/shared/process/truncate-child-output-text.mjs";
-
+import truncateChildOutputText from "../../../../src/validation/shared/process/truncate-child-output-text.mjs";
 test.each([
   ["ordinary text", 3, "ord"],
   ["A😀B", 2, "A"],

@@ -5,8 +5,7 @@ const requiredKeys = [
   "testEnvironment",
   "testMatch",
 ];
-
-export function validateJestSettings(jest) {
+export default function validateJestSettings(jest) {
   const errors = [];
   if (JSON.stringify(Object.keys(jest).sort()) !== JSON.stringify(requiredKeys))
     errors.push("package.json Jest settings must use only the required configuration keys.");
@@ -19,7 +18,6 @@ export function validateJestSettings(jest) {
     errors.push('Jest coverageReporters must be ["text", "json-summary"].');
   return errors;
 }
-
 function sameArray(actual, expected) {
   return (
     Array.isArray(actual) &&

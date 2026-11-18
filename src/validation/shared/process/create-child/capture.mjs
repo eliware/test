@@ -1,11 +1,9 @@
-import { truncateChildOutputText } from "../truncate-child-output-text.mjs";
-
-export function createChildOutputCaptureBuffer(outputLimit) {
+import truncateChildOutputText from "../truncate-child-output-text.mjs";
+export default function createChildOutputCaptureBuffer(outputLimit) {
   const stdoutChunks = [];
   const stderrChunks = [];
   let capturedLength = 0;
   let lastCapturedChunks;
-
   function markTruncatedOutput() {
     const lastIndex = lastCapturedChunks?.length - 1;
     const lastChunk = lastCapturedChunks?.[lastIndex];
@@ -13,7 +11,6 @@ export function createChildOutputCaptureBuffer(outputLimit) {
       lastCapturedChunks[lastIndex] =
         `${truncateChildOutputText(lastChunk, lastChunk.length - 1)}…`;
   }
-
   function append(chunks, text) {
     if (!text) return;
     const remaining = Math.max(0, outputLimit - capturedLength);
@@ -29,7 +26,6 @@ export function createChildOutputCaptureBuffer(outputLimit) {
     lastCapturedChunks = chunks;
     capturedLength += bounded.length;
   }
-
   return {
     appendStdout(text) {
       append(stdoutChunks, text);
@@ -38,7 +34,10 @@ export function createChildOutputCaptureBuffer(outputLimit) {
       append(stderrChunks, text);
     },
     result() {
-      return { stdout: stdoutChunks.join(""), stderr: stderrChunks.join("") };
+      return {
+        stdout: stdoutChunks.join(""),
+        stderr: stderrChunks.join(""),
+      };
     },
   };
 }

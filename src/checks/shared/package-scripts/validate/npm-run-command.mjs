@@ -1,6 +1,5 @@
 const npmRunCommand = /^npm run ([a-z0-9:_-]+)(?: --(?: .*)?)?$/iu;
-
-export function validateNpmRunCommand(command, packageJson, label) {
+export default function validateNpmRunCommand(command, packageJson, label) {
   const match = command.match(npmRunCommand);
   if (!match) return [`${label} must call a declared package script with npm run <name>.`];
   const scripts = packageJson?.scripts;

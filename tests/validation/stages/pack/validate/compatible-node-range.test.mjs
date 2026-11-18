@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { compatibleWithNode26 } from "../../../../../src/validation/stages/pack/validate/compatible-node-range.mjs";
-
+import compatibleWithNode26 from "../../../../../src/validation/stages/pack/validate/compatible-node-range.mjs";
 test("accepts semantically equivalent Node 26 engine ranges", () => {
   for (const range of [
     ">=26.0.0 <27.0.0",

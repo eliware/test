@@ -1,10 +1,9 @@
-import { extractJavaScriptProse } from "./javascript-prose.mjs";
-import { extractJsonProse } from "./json-prose.mjs";
-import { extractMarkdownProse } from "./markdown-prose.mjs";
-import { extractPlainTextProse } from "./plain-text-prose.mjs";
-import { extractYamlProse } from "./yaml-prose.mjs";
-
-export function extractProse(path, source) {
+import extractJavaScriptProse from "./javascript-prose.mjs";
+import extractJsonProse from "./json-prose.mjs";
+import extractMarkdownProse from "./markdown-prose.mjs";
+import extractPlainTextProse from "./plain-text-prose.mjs";
+import extractYamlProse from "./yaml-prose.mjs";
+export default function extractProse(path, source) {
   const extension = path.toLowerCase().split(".").at(-1);
   if (extension === "md") return extractMarkdownProse(source);
   if (extension === "txt") return extractPlainTextProse(source);

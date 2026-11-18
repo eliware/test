@@ -1,6 +1,5 @@
-import { validateLockfileDependencyReferences } from "./dependency-references.mjs";
-
-export function validateLockfilePackageEntries(packages, overrides = {}) {
+import validateLockfileDependencyReferences from "./dependency-references.mjs";
+export default function validateLockfilePackageEntries(packages, overrides = {}) {
   const errors = [];
   for (const [path, entry] of Object.entries(packages)) {
     if (path === "") continue;

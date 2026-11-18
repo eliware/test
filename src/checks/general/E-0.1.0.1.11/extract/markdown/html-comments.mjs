@@ -1,4 +1,4 @@
-export function removeMarkdownHtmlComments(line, htmlComment) {
+export default function removeMarkdownHtmlComments(line, htmlComment) {
   let output = "";
   let cursor = 0;
   let inComment = htmlComment;
@@ -22,5 +22,8 @@ export function removeMarkdownHtmlComments(line, htmlComment) {
       inComment = false;
     }
   }
-  return { text: output, htmlComment: inComment };
+  return {
+    text: output,
+    htmlComment: inComment,
+  };
 }

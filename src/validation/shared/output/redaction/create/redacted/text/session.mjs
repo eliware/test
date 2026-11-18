@@ -1,6 +1,5 @@
-import { createRedactedStreamBuffer } from "../stream/buffer.mjs";
-
-export function createRedactedTextStreamSession(
+import createRedactedStreamBuffer from "../stream/buffer.mjs";
+export default function createRedactedTextStreamSession(
   policy,
   decoder,
   output,
@@ -21,7 +20,6 @@ export function createRedactedTextStreamSession(
       suppressed = true;
     },
   });
-
   return {
     push(chunk) {
       if (finished || suppressed) return "";

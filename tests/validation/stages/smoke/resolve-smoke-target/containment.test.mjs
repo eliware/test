@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { containsOrMatches } from "../../../../../src/validation/stages/smoke/resolve-smoke-target/containment.mjs";
-
+import containsOrMatches from "../../../../../src/validation/stages/smoke/resolve-smoke-target/containment.mjs";
 test.each([
   ["/source", "/source", true],
   ["/source", "/source/nested", true],

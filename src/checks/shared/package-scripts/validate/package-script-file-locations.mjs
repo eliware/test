@@ -1,9 +1,7 @@
 import { posix } from "node:path";
-
 const directScriptInvocation =
   /^(?:(?:node(?:\.exe)?|bun(?:\.exe)?|deno(?:\.exe)?|tsx|ts-node|python3?|py|bash|sh|pwsh|powershell)\s+)?["']?((?:\.{1,2}[\\/])?[\w.-]+(?:[\\/][\w.-]+)*\.(?:mjs|cjs|js|mts|cts|ts|py|sh|ps1|bat|cmd))["']?(?:\s|$)/iu;
-
-export function validatePackageScriptFileLocations(packageJson = {}) {
+export default function validatePackageScriptFileLocations(packageJson = {}) {
   const scripts = packageJson?.scripts;
   if (!scripts || typeof scripts !== "object" || Array.isArray(scripts)) return [];
   return Object.entries(scripts).flatMap(([name, command]) => {
@@ -13,15 +11,6 @@ export function validatePackageScriptFileLocations(packageJson = {}) {
     return [`package.json.scripts.${name} must keep local validator files under scripts/.`];
   });
 }
-
-export function findPackageScriptValidatorPaths(packageJson = {}) {
-  const scripts = packageJson?.scripts;
-  if (!scripts || typeof scripts !== "object" || Array.isArray(scripts)) return [];
-  return Object.values(scripts)
-    .map(findValidatorPath)
-    .filter((path) => path?.startsWith("scripts/"));
-}
-
 function findValidatorPath(command) {
   if (typeof command !== "string") return "";
   const match = command.match(directScriptInvocation);

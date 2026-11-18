@@ -1,7 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { verifySmokeTargetInstallation } from "../../../../../src/validation/stages/smoke/load-smoke-target/installed-state.mjs";
-
+import verifySmokeTargetInstallation from "../../../../../src/validation/stages/smoke/load-smoke-target/installed-state.mjs";
 test("checks the installed dependency tree and package", async () => {
   const read = jest.fn().mockResolvedValue("installed");
   await expect(
@@ -12,7 +11,6 @@ test("checks the installed dependency tree and package", async () => {
     [join("C:/consumer", "node_modules", "@eliware", "test", "package.json")],
   ]);
 });
-
 test("reports missing installed dependency files", async () => {
   await expect(
     verifySmokeTargetInstallation(

@@ -1,7 +1,6 @@
-import { formatEntrypointFilesystemDiagnostic } from "../filesystem-diagnostic.mjs";
-import { inspectEntrypointTargetFilesystem } from "../inspect-target-filesystem.mjs";
-
-export async function validateEntrypointTargetFilesystem(
+import formatEntrypointFilesystemDiagnostic from "../filesystem-diagnostic.mjs";
+import inspectEntrypointTargetFilesystem from "../inspect-target-filesystem.mjs";
+export default async function validateEntrypointTargetFilesystem(
   path,
   target,
   root,

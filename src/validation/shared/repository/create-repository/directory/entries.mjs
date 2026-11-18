@@ -1,11 +1,10 @@
 import { stat as statPath } from "node:fs/promises";
-import { inventoryDirectory } from "../../repository-inventory/paths.mjs";
-import { createRepositoryEntryIndex } from "../entry/index.mjs";
-import { projectRepositoryDirectoryRecords } from "../../project-repository-directory-records.mjs";
-import { projectScopedDirectoryEntries } from "./project-scoped-entries.mjs";
-import { readGeneratedDirectoryEntries } from "./read/generated-entries.mjs";
-
-export function createRepositoryDirectoryEntries({
+import inventoryDirectory from "../../repository-inventory/paths/inventory-directory.mjs";
+import createRepositoryEntryIndex from "../entry/index.mjs";
+import projectRepositoryDirectoryRecords from "../../project-repository-directory-records.mjs";
+import projectScopedDirectoryEntries from "./project-scoped-entries.mjs";
+import readGeneratedDirectoryEntries from "./read/generated-entries.mjs";
+export default function createRepositoryDirectoryEntries({
   root,
   entries,
   entriesUnder,
@@ -59,7 +58,10 @@ export function createRepositoryDirectoryEntries({
     const cached = projectedEntries.get(key);
     if (cached?.records === children) return cached.entries;
     const projected = projectRepositoryDirectoryRecords(children);
-    projectedEntries.set(key, { records: children, entries: projected });
+    projectedEntries.set(key, {
+      records: children,
+      entries: projected,
+    });
     return projected;
   };
 }

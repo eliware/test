@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findMachineSpecificPaths } from "../../../../../src/checks/general/E-0.1.0.1.9/machine-specific-paths/findings.mjs";
-
+import findMachineSpecificPaths from "../../../../../src/checks/general/E-0.1.0.1.9/machine-specific-paths/findings.mjs";
 test("scans all supplied paths and ignores labels, hosts, and file URLs", async () => {
   const contents = new Map([
     [
@@ -13,7 +12,6 @@ test("scans all supplied paths and ignores labels, hosts, and file URLs", async 
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
   ).resolves.toEqual(["path.txt"]);
 });
-
 test("skips invalid UTF-8 and NUL bytes but scans other valid UTF-8 control characters", async () => {
   const contents = new Map([
     ["invalid.txt", Buffer.from([0xff, 0xfe])],
@@ -27,14 +25,12 @@ test("skips invalid UTF-8 and NUL bytes but scans other valid UTF-8 control char
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
   ).resolves.toEqual(["control.txt"]);
 });
-
 test("does not treat application routes as machine paths", async () => {
   const contents = new Map([["routes.txt", Buffer.from("/admin/app/users/:id /api/users/me")]]);
   await expect(
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
   ).resolves.toEqual([]);
 });
-
 test("allows standard Linux container accounts and mount paths", async () => {
   const contents = new Map([
     [

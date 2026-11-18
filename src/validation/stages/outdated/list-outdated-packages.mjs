@@ -1,4 +1,4 @@
-export function listOutdatedPackages(dependencies, ignoredPackage) {
+export default function listOutdatedPackages(dependencies, ignoredPackage) {
   return Object.keys(dependencies)
     .filter((name) => name !== ignoredPackage)
     .sort()

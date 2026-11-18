@@ -1,16 +1,15 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fail, pass } from "../check-result.mjs";
-import { readSpecificationHeadings } from "./E-0.1.0.1.2/read-specification-headings.mjs";
-import { validateAgentsStructure } from "./E-0.1.0.1.2/validate-agents/structure.mjs";
-import { validateAgentsContent } from "./E-0.1.0.1.2/validate-agents/content.mjs";
-import { validateAgentsCompositionOrder } from "./E-0.1.0.1.2/validate-agents/composition-order.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import readSpecificationHeadings from "./E-0.1.0.1.2/read-specification-headings.mjs";
+import validateAgentsStructure from "./E-0.1.0.1.2/validate-agents/structure.mjs";
+import validateAgentsContent from "./E-0.1.0.1.2/validate-agents/content.mjs";
+import validateAgentsCompositionOrder from "./E-0.1.0.1.2/validate-agents/composition-order.mjs";
 export const ruleId = "E-0.1.0.1.2";
 export const ownerProfile = "general";
 export const requiredProfiles = ["general"];
-
-export async function run(context = {}, dependencies = {}) {
+export default async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
   const read = dependencies.read ?? readFile;
   let content;

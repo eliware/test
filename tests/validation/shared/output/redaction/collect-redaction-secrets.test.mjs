@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
-import { collectRedactionSecrets } from "../../../../../src/validation/shared/output/redaction/collect-redaction-secrets.mjs";
-
+import collectRedactionSecrets from "../../../../../src/validation/shared/output/redaction/collect-redaction-secrets.mjs";
 test("collects unique string values from protected environment keys", () => {
   expect(
     collectRedactionSecrets({
@@ -14,24 +13,25 @@ test("collects unique string values from protected environment keys", () => {
     }),
   ).toEqual(["long-secret"]);
 });
-
 test("returns no secrets for missing or non-object environments", () => {
   expect(collectRedactionSecrets()).toEqual([]);
   expect(collectRedactionSecrets("TOKEN=value")).toEqual([]);
 });
-
 test("collects configured values regardless of environment size", () => {
   const environment = Object.fromEntries(
-    Array.from({ length: 105 }, (_, index) => [`SERVICE_TOKEN_${index}`, `secret-${index}`]),
+    Array.from(
+      {
+        length: 105,
+      },
+      (_, index) => [`SERVICE_TOKEN_${index}`, `secret-${index}`],
+    ),
   );
   environment.SHORT_TOKEN = "x";
-
   const secrets = collectRedactionSecrets(environment);
   expect(secrets).toHaveLength(105);
   expect(secrets).toContain("secret-104");
   expect(secrets).not.toContain("x");
 });
-
 test("collects common cloud, GitHub, and npm settings", () => {
   expect(
     collectRedactionSecrets({
@@ -41,11 +41,13 @@ test("collects common cloud, GitHub, and npm settings", () => {
     }),
   ).toEqual(["aws-access-key", "github-token", "npm-auth"]);
 });
-
 test("does not treat the working directory as protected data", () => {
-  expect(collectRedactionSecrets({ PWD: "/workspace/project" })).toEqual([]);
+  expect(
+    collectRedactionSecrets({
+      PWD: "/workspace/project",
+    }),
+  ).toEqual([]);
 });
-
 test("ignores short values that can overlap ordinary command output", () => {
   expect(
     collectRedactionSecrets({

@@ -1,8 +1,7 @@
 const sensitiveEnvironmentKey =
   /(?:password|passwd|pwd|token|secret|credential|api[_-]?key|access[_-]?key|private[_-]?key|client[_-]?(?:secret|id)|refresh[_-]?token|session[_-]?id)/iu;
 const MIN_REDACTION_SECRET_LENGTH = 8;
-
-export function collectRedactionSecrets(environment) {
+export default function collectRedactionSecrets(environment) {
   if (!environment || typeof environment !== "object") return [];
   return [
     ...new Set(

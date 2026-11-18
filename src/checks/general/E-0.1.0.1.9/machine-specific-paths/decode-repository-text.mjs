@@ -1,7 +1,9 @@
-export function decodeRepositoryText(bytes) {
+export default function decodeRepositoryText(bytes) {
   if (bytes.includes(0)) return null;
   try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return new TextDecoder("utf-8", {
+      fatal: true,
+    }).decode(bytes);
   } catch {
     return null;
   }

@@ -1,4 +1,4 @@
-export function validateOrderedPackageFiles(files, requiredEntries) {
+export default function validateOrderedPackageFiles(files, requiredEntries) {
   if (files.some((entry) => typeof entry !== "string"))
     return "package.json.files must contain only string paths.";
   if (new Set(files).size !== files.length)

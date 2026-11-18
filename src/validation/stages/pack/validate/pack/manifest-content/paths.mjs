@@ -1,10 +1,8 @@
-import { isSafeRelativePosixPath } from "../../../../../shared/path/is-safe-relative-posix-path.mjs";
-
+import isSafeRelativePosixPath from "../../../../../shared/path/is-safe-relative-posix-path.mjs";
 function safeAllowlistEntry(entry) {
   return isSafeRelativePosixPath(entry) && !/[*!?{}()[\]]/u.test(entry) && !entry.startsWith("!");
 }
-
-export function validatePackManifestAllowlist(files) {
+export default function validatePackManifestAllowlist(files) {
   if (!Array.isArray(files)) return "package.json.files must be an array.";
   if (new Set(files).size !== files.length)
     return "package.json.files must not contain duplicates.";

@@ -6,8 +6,7 @@ const ROUTINE_JEST_OUTPUT = [
   /^\s*(?:All files|[^\s|]+)\s+\|/u,
   /^\[eliware-test(?:-progress)?\]/u,
 ];
-
-export function parseActionableJestOutput(text) {
+export default function parseActionableJestOutput(text) {
   return String(text ?? "")
     .split(/\r?\nSummary of all failing tests\r?\n/u, 1)[0]
     .split(/\r?\n/)

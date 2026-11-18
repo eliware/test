@@ -19,7 +19,6 @@ const proseFields = new Set([
   "acceptance",
   "content",
 ]);
-
-export function isYamlProseField(field) {
+export default function isYamlProseField(field) {
   return proseFields.has(field);
 }

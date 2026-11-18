@@ -1,12 +1,11 @@
 import { expect, test } from "@jest/globals";
 import { runbookSchemaVersion } from "../../../test-fixtures/helpers/project-version.mjs";
-import { readRunbookSchema } from "../../../src/checks/workspace/E-0.1.2.1.0/read-runbook-schema.mjs";
-import { ruleId, run } from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
-
+import readRunbookSchema from "../../../src/checks/workspace/E-0.1.2.1.0/read-runbook-schema.mjs";
+import { ruleId } from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
+import run from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
 const schema = await readRunbookSchema();
 const index = "# Runbooks\n\n- [Deploy](deploy.yaml)";
 const document = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy the service\nowner: DevOps\nboundaries: Do not change production data\nprerequisites: []\nsteps:\n  - Run npm test`;
-
 function inventory(files, readText = async () => "") {
   return {
     files: async () => files,
@@ -17,61 +16,83 @@ function inventory(files, readText = async () => "") {
     },
   };
 }
-
 test("validates the runbook index and documents through the workspace rule", async () => {
   const repositoryInventory = inventory(
     ["runbooks/README.md", "runbooks/deploy.yaml"],
     async (path) => (path.endsWith("README.md") ? index : document),
   );
-  await expect(run({ repositoryInventory }, { readSchema: async () => schema })).resolves.toEqual({
+  await expect(
+    run(
+      {
+        repositoryInventory,
+      },
+      {
+        readSchema: async () => schema,
+      },
+    ),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("uses the bundled schema when no schema reader is injected", async () => {
   const repositoryInventory = inventory(
     ["runbooks/README.md", "runbooks/deploy.yaml"],
     async (path) => (path.endsWith("README.md") ? index : document),
   );
-  await expect(run({ repositoryInventory })).resolves.toEqual({
+  await expect(
+    run({
+      repositoryInventory,
+    }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("accepts an index when no runbook documents exist", async () => {
   await expect(
-    run({ repositoryInventory: inventory(["runbooks/README.md"], async () => "# Runbooks") }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+    run({
+      repositoryInventory: inventory(["runbooks/README.md"], async () => "# Runbooks"),
+    }),
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test("requires the runbook index", async () => {
-  await expect(run({ repositoryInventory: inventory([]) })).resolves.toMatchObject({
+  await expect(
+    run({
+      repositoryInventory: inventory([]),
+    }),
+  ).resolves.toMatchObject({
     ruleId,
     status: "fail",
     message: "runbooks/README.md is required.",
   });
 });
-
 test("reports when the runbook index cannot be read", async () => {
   const repositoryInventory = inventory(["runbooks/README.md"], async (path) => {
     if (path === "runbooks/README.md") throw new Error("blocked");
     return "";
   });
-
-  await expect(run({ repositoryInventory })).resolves.toMatchObject({
+  await expect(
+    run({
+      repositoryInventory,
+    }),
+  ).resolves.toMatchObject({
     ruleId,
     status: "fail",
     message: "runbooks/README.md could not be read: blocked",
   });
 });
-
 test("returns a failed rule result when runbook validation finds an error", async () => {
   await expect(
-    run({ repositoryInventory: inventory(["runbooks/README.md"], async () => "Overview") }),
+    run({
+      repositoryInventory: inventory(["runbooks/README.md"], async () => "Overview"),
+    }),
   ).resolves.toMatchObject({
     ruleId,
     status: "fail",
@@ -80,7 +101,6 @@ test("returns a failed rule result when runbook validation finds an error", asyn
     ),
   });
 });
-
 test("requires an inventory and reports inventory errors", async () => {
   await expect(run()).resolves.toMatchObject({
     status: "fail",
@@ -95,5 +115,7 @@ test("requires an inventory and reports inventory errors", async () => {
         readText: async () => "",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("denied") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("denied"),
+  });
 });

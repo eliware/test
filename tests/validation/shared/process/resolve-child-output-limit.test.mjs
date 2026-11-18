@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { resolveChildOutputLimit } from "../../../../src/validation/shared/process/resolve-child-output-limit.mjs";
-
+import resolveChildOutputLimit from "../../../../src/validation/shared/process/resolve-child-output-limit.mjs";
 test.each([
   [25, 25],
   [1.8, 1],

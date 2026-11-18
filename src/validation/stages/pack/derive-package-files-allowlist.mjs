@@ -1,6 +1,5 @@
-import { readCanonicalOrder } from "../../shared/conventions/read-canonical-order.mjs";
-
-export function derivePackageFilesAllowlist(packageJson) {
+import readCanonicalOrder from "../../shared/conventions/read-canonical-order.mjs";
+export default function derivePackageFilesAllowlist(packageJson) {
   const profiles = packageJson?.eliware?.apply ?? [];
   const order = readCanonicalOrder("package-files.yaml");
   const entries = [...order.baseEntries];

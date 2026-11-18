@@ -1,8 +1,8 @@
 import { readFile, realpath, stat } from "node:fs/promises";
-import { hasMarkdownFragment } from "./resolve-markdown-fragment.mjs";
-import { isPathOutsideRoot, resolveLocalMarkdownReference } from "./resolve/local-reference.mjs";
-
-export function createLocalMarkdownReferenceValidator(root, dependencies = {}) {
+import hasMarkdownFragment from "./resolve-markdown-fragment.mjs";
+import isPathOutsideRoot from "./resolve/local-reference/is-path-outside-root.mjs";
+import resolveLocalMarkdownReference from "./resolve/local-reference.mjs";
+export default function createLocalMarkdownReferenceValidator(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
   const inspect = dependencies.stat ?? stat;
   const resolveRealpath = dependencies.realpath ?? realpath;

@@ -1,7 +1,6 @@
-import { packSmokeCandidate } from "../pack-smoke-candidate.mjs";
-import { installSmokeCandidate } from "../install-smoke-candidate.mjs";
-
-export async function runSmokePackageTransaction({
+import packSmokeCandidate from "../pack-smoke-candidate.mjs";
+import installSmokeCandidate from "../install-smoke-candidate.mjs";
+export default async function runSmokePackageTransaction({
   root,
   packageJson,
   run,

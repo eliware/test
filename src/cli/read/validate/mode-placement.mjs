@@ -1,4 +1,4 @@
-export function validateModePlacement(
+export default function validateModePlacement(
   wrapperArgs,
   delegatedArgs,
   modes,

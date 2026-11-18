@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { hasNpmPublicationTokenSetting } from "../../../../../src/checks/private/E-0.1.12.1.0/validate-private/token-settings.mjs";
-
+import hasNpmPublicationTokenSetting from "../../../../../src/checks/private/E-0.1.12.1.0/validate-private/token-settings.mjs";
 test.each([
   "NPM_TOKEN=value node publish.mjs",
   "export NODE_AUTH_TOKEN=value",
@@ -11,7 +10,6 @@ test.each([
 ])("detects npm publication token setting %s", (command) => {
   expect(hasNpmPublicationTokenSetting(command)).toBe(true);
 });
-
 test.each(["npm test", "docker push ghcr.io/example", "echo NPM_TOKEN"])(
   "allows command without a token setting: %s",
   (command) => {

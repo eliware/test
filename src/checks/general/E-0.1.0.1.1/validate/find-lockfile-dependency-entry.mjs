@@ -1,4 +1,4 @@
-export function findLockfileDependencyEntry(packages, parent, name) {
+export default function findLockfileDependencyEntry(packages, parent, name) {
   let current = parent;
   while (true) {
     const candidate = `${current}/node_modules/${name}`.replace(/^\//u, "");

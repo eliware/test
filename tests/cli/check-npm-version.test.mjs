@@ -1,26 +1,34 @@
 import { expect, jest, test } from "@jest/globals";
-import { checkNpmVersion } from "../../src/cli/check-npm-version.mjs";
-
+import checkNpmVersion from "../../src/cli/check-npm-version.mjs";
 function executeWith(error, output) {
   return jest.fn((command, args, options, callback) => {
     callback(error, output);
   });
 }
-
 test("accepts npm 12 and later from the resolved npm command", async () => {
   const executeProcess = executeWith(null, "12.0.0\n");
-  await expect(checkNpmVersion({ executeProcess, platform: "linux", env: {} })).resolves.toBeNull();
+  await expect(
+    checkNpmVersion({
+      executeProcess,
+      platform: "linux",
+      env: {},
+    }),
+  ).resolves.toBeNull();
   expect(executeProcess).toHaveBeenCalledWith(
     "npm",
     ["--version"],
-    expect.objectContaining({ encoding: "utf8" }),
+    expect.objectContaining({
+      encoding: "utf8",
+    }),
     expect.any(Function),
   );
 });
-
 test("uses the active npm_execpath on Windows instead of a shell lookup", async () => {
   const executeProcess = executeWith(null, "12.2.0");
-  const env = { npm_execpath: "C:\\npm\\npm-cli.js", PATH: "C:\\tools" };
+  const env = {
+    npm_execpath: "C:\\npm\\npm-cli.js",
+    PATH: "C:\\tools",
+  };
   await expect(
     checkNpmVersion({
       executeProcess,
@@ -34,14 +42,18 @@ test("uses the active npm_execpath on Windows instead of a shell lookup", async 
   expect(executeProcess).toHaveBeenCalledWith(
     "C:\\node.exe",
     ["C:\\npm\\npm-cli.js", "--version"],
-    expect.objectContaining({ cwd: "C:\\repo", env }),
+    expect.objectContaining({
+      cwd: "C:\\repo",
+      env,
+    }),
     expect.any(Function),
   );
 });
-
 test("uses the Windows PATH npm when no npm_execpath is present", async () => {
   const executeProcess = executeWith(null, "12.2.0");
-  const env = { PATH: "C:\\tools;D:\\npm-tools" };
+  const env = {
+    PATH: "C:\\tools;D:\\npm-tools",
+  };
   await expect(
     checkNpmVersion({
       executeProcess,
@@ -54,32 +66,40 @@ test("uses the Windows PATH npm when no npm_execpath is present", async () => {
   expect(executeProcess).toHaveBeenCalledWith(
     "cmd.exe",
     ["/d", "/s", "/c", "npm", "--version"],
-    expect.objectContaining({ cwd: "C:\\repo", env }),
+    expect.objectContaining({
+      cwd: "C:\\repo",
+      env,
+    }),
     expect.any(Function),
   );
 });
-
 test("rejects npm versions older than 12", async () => {
   await expect(
-    checkNpmVersion({ executeProcess: executeWith(null, "11.9.0"), env: {} }),
+    checkNpmVersion({
+      executeProcess: executeWith(null, "11.9.0"),
+      env: {},
+    }),
   ).resolves.toBe("npm 12 or later is required for validation. Found npm 11.9.0.");
 });
-
 test.each(["", "unknown", "12", "12.0.0 extra"])(
   "rejects malformed npm version output %j",
   async (output) => {
     await expect(
-      checkNpmVersion({ executeProcess: executeWith(null, output), env: {} }),
+      checkNpmVersion({
+        executeProcess: executeWith(null, output),
+        env: {},
+      }),
     ).resolves.toBe("Cannot determine the active npm version. Install npm 12 or later.");
   },
 );
-
 test("reports when the npm version process cannot be resolved or run", async () => {
   await expect(
-    checkNpmVersion({ executeProcess: executeWith(new Error("npm missing"), ""), env: {} }),
+    checkNpmVersion({
+      executeProcess: executeWith(new Error("npm missing"), ""),
+      env: {},
+    }),
   ).resolves.toBe("Cannot determine the active npm version. Install npm 12 or later.");
 });
-
 test("checks the active npm executable by default", async () => {
   const diagnostic = await checkNpmVersion();
   expect(

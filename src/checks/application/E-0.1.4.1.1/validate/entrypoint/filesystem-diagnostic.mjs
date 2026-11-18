@@ -1,4 +1,4 @@
-export function formatEntrypointFilesystemDiagnostic(result, target) {
+export default function formatEntrypointFilesystemDiagnostic(result, target) {
   if (result === "symlink") return `Entrypoint target path must not contain a symlink: ${target}.`;
   if (result === "directory")
     return `Entrypoint target path segment must be a directory: ${target}.`;

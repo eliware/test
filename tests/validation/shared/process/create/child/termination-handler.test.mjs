@@ -1,13 +1,29 @@
 import { expect, jest, test } from "@jest/globals";
-import { createChildTerminationHandler } from "../../../../../../src/validation/shared/process/create/child/termination-handler.mjs";
-
-function createHandler(options = {}, settledState = { value: false }) {
+import createChildTerminationHandler from "../../../../../../src/validation/shared/process/create/child/termination-handler.mjs";
+function createHandler(
+  options = {},
+  settledState = {
+    value: false,
+  },
+) {
   const resolve = jest.fn();
-  const timeout = { stop: jest.fn() };
-  const output = { flush: jest.fn(), result: () => ({ stdout: "", stderr: "" }) };
+  const timeout = {
+    stop: jest.fn(),
+  };
+  const output = {
+    flush: jest.fn(),
+    result: () => ({
+      stdout: "",
+      stderr: "",
+    }),
+  };
   const handler = createChildTerminationHandler({
     child: {},
-    options: { terminationGraceMs: 10, forceKillConfirmationMs: 10, ...options },
+    options: {
+      terminationGraceMs: 10,
+      forceKillConfirmationMs: 10,
+      ...options,
+    },
     environment: {},
     timeout,
     output,
@@ -17,9 +33,14 @@ function createHandler(options = {}, settledState = { value: false }) {
       settledState.value = true;
     },
   });
-  return { handler, resolve, timeout, output, settledState };
+  return {
+    handler,
+    resolve,
+    timeout,
+    output,
+    settledState,
+  };
 }
-
 test("settles as unconfirmed after graceful and forced termination", () => {
   jest.useFakeTimers();
   try {
@@ -44,7 +65,6 @@ test("settles as unconfirmed after graceful and forced termination", () => {
     jest.useRealTimers();
   }
 });
-
 test("uses explicit termination options and ignores late unconfirmed callbacks", () => {
   jest.useFakeTimers();
   try {
@@ -65,7 +85,6 @@ test("uses explicit termination options and ignores late unconfirmed callbacks",
     jest.useRealTimers();
   }
 });
-
 test("contains timeout callback and termination errors while settling", () => {
   jest.useFakeTimers();
   try {
@@ -79,14 +98,19 @@ test("contains timeout callback and termination errors while settling", () => {
     });
     handler.onTimeout();
     jest.advanceTimersByTime(20);
-    expect(resolve).toHaveBeenCalledWith(expect.objectContaining({ terminationConfirmed: false }));
+    expect(resolve).toHaveBeenCalledWith(
+      expect.objectContaining({
+        terminationConfirmed: false,
+      }),
+    );
   } finally {
     jest.useRealTimers();
   }
 });
-
 test("ignores a timeout callback after the child has settled", () => {
-  const timeout = { stop: jest.fn() };
+  const timeout = {
+    stop: jest.fn(),
+  };
   const handler = createChildTerminationHandler({
     child: {},
     options: {},

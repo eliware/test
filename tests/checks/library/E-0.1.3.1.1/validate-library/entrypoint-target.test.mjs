@@ -1,8 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { validateLibraryEntrypointTarget } from "../../../../../src/checks/library/E-0.1.3.1.1/validate-library/entrypoint-target.mjs";
-
+import validateLibraryEntrypointTarget from "../../../../../src/checks/library/E-0.1.3.1.1/validate-library/entrypoint-target.mjs";
 test("validates runtime targets and declaration targets with matching modules", async () => {
-  const checkFile = async () => ({ isFile: () => true });
+  const checkFile = async () => ({
+    isFile: () => true,
+  });
   await expect(
     validateLibraryEntrypointTarget("/repo", "./src/index.mjs", "runtime", checkFile),
   ).resolves.toEqual([]);
@@ -10,7 +11,6 @@ test("validates runtime targets and declaration targets with matching modules", 
     validateLibraryEntrypointTarget("/repo", "./src/index.d.ts", "declaration", checkFile),
   ).resolves.toEqual([]);
 });
-
 test.each([
   "types/index.d.ts",
   "./src\\index.mjs",
@@ -25,7 +25,6 @@ test.each([
     })),
   ).resolves.toEqual([`Library runtime entrypoint must target a file under src/: ${target}.`]);
 });
-
 test("reports missing files and missing declaration companions", async () => {
   await expect(
     validateLibraryEntrypointTarget("/repo", "./src/missing.mjs", "runtime", async () => ({

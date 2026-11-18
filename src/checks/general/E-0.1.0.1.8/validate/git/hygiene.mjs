@@ -1,10 +1,9 @@
 import { defaultGitRunner } from "./default-runner.mjs";
-import { validateGitIgnoreProbes } from "./ignore/probes.mjs";
-import { validateNestedGitIgnoreFiles } from "./ignore/nested-gitignore-files.mjs";
-import { validateGitIgnoreRequiredRules } from "./ignore/required-rules.mjs";
-import { validateTrackedPaths } from "./tracked-paths.mjs";
-
-export async function validateGitHygiene(
+import validateGitIgnoreProbes from "./ignore/probes.mjs";
+import validateNestedGitIgnoreFiles from "./ignore/nested-gitignore-files.mjs";
+import validateGitIgnoreRequiredRules from "./ignore/required-rules.mjs";
+import validateTrackedPaths from "./tracked-paths.mjs";
+export default async function validateGitHygiene(
   root,
   runGit = defaultGitRunner,
   { readText, isPathExempt } = {},

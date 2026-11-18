@@ -1,6 +1,5 @@
-import { isValidBinTarget } from "./target.mjs";
-
-export function validateBinShape(bin) {
+import isValidBinTarget from "./target.mjs";
+export default function validateBinShape(bin) {
   if (bin === undefined) return [];
   if (typeof bin === "string") {
     return isValidBinTarget(bin) ? [] : ["package.json bin must be a nonempty path string."];

@@ -1,12 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { validateModePlacement } from "../../../../src/cli/read/validate/mode-placement.mjs";
-
+import validateModePlacement from "../../../../src/cli/read/validate/mode-placement.mjs";
 const modeFlags = ["--lint", "--audit"];
-
 test("allows a single mode with delegated options", () => {
   expect(validateModePlacement(["--lint"], [], ["--lint"], modeFlags, [])).toBeUndefined();
 });
-
 test("rejects repeated timing flags and mutually exclusive modes", () => {
   expect(() => validateModePlacement(["--lint", "--audit"], [], modeFlags, modeFlags, [])).toThrow(
     "mutually exclusive",
@@ -15,7 +12,6 @@ test("rejects repeated timing flags and mutually exclusive modes", () => {
     "may be supplied once",
   );
 });
-
 test("requires diagnostic flags and modes in canonical positions", () => {
   expect(() =>
     validateModePlacement(["--lint", "--debug-timing"], [], ["--lint"], modeFlags, [1]),

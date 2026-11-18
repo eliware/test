@@ -1,96 +1,163 @@
 import { expect, jest, test } from "@jest/globals";
 import { packageVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
-
 const readFile = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-const { validatePackageLock } =
-  await import("../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/lock.mjs");
-
-const pkg = { name: "@eliware/example", version: packageVersion };
+jest.unstable_mockModule("node:fs/promises", () => ({
+  readFile,
+  default: readFile,
+}));
+const validatePackageLock = (
+  await import("../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/lock.mjs")
+).default;
+const pkg = {
+  name: "@eliware/example",
+  version: packageVersion,
+};
 const validLock = {
   name: pkg.name,
   version: pkg.version,
   lockfileVersion: 3,
-  packages: { "": { name: pkg.name, version: pkg.version } },
+  packages: {
+    "": {
+      name: pkg.name,
+      version: pkg.version,
+    },
+  },
 };
 const readLock = (value) => async () => JSON.stringify(value);
-
 test("uses the mocked filesystem reader by default", async () => {
-  const packageJson = { ...pkg, dependencies: { beta: "^1.0.0", alpha: "^1.0.0" } };
+  const packageJson = {
+    ...pkg,
+    dependencies: {
+      beta: "^1.0.0",
+      alpha: "^1.0.0",
+    },
+  };
   const lockfile = {
     ...validLock,
     packages: {
-      "": { ...validLock.packages[""], dependencies: { alpha: "^1.0.0", beta: "^1.0.0" } },
-      "node_modules/alpha": { version: "1.0.0" },
-      "node_modules/beta": { version: "1.0.0" },
+      "": {
+        ...validLock.packages[""],
+        dependencies: {
+          alpha: "^1.0.0",
+          beta: "^1.0.0",
+        },
+      },
+      "node_modules/alpha": {
+        version: "1.0.0",
+      },
+      "node_modules/beta": {
+        version: "1.0.0",
+      },
     },
   };
   readFile.mockResolvedValue(JSON.stringify(lockfile));
   await expect(validatePackageLock("/repo", packageJson)).resolves.toEqual([]);
 });
-
 test("accepts matching package lock metadata", async () => {
-  await expect(validatePackageLock("/repo", pkg, { read: readLock(validLock) })).resolves.toEqual(
-    [],
-  );
+  await expect(
+    validatePackageLock("/repo", pkg, {
+      read: readLock(validLock),
+    }),
+  ).resolves.toEqual([]);
 });
-
 test("reports invalid lock JSON", async () => {
   await expect(
-    validatePackageLock("/repo", pkg, { read: async () => "bad json" }),
+    validatePackageLock("/repo", pkg, {
+      read: async () => "bad json",
+    }),
   ).resolves.toEqual(["package-lock.json must exist and contain valid JSON."]);
 });
-
 test("reports package metadata that differs from the lockfile", async () => {
   await expect(
-    validatePackageLock("/repo", pkg, { read: readLock({ ...validLock, version: "14.0.0" }) }),
+    validatePackageLock("/repo", pkg, {
+      read: readLock({
+        ...validLock,
+        version: "14.0.0",
+      }),
+    }),
   ).resolves.toContain("package-lock.json name and version must match package.json.");
 });
-
 test("checks dependency maps and direct dependency entries", async () => {
-  const packageJson = { ...pkg, dependencies: { alpha: "1" }, devDependencies: { beta: "2" } };
+  const packageJson = {
+    ...pkg,
+    dependencies: {
+      alpha: "1",
+    },
+    devDependencies: {
+      beta: "2",
+    },
+  };
   const lock = {
     ...validLock,
     packages: {
       "": {
         name: pkg.name,
         version: pkg.version,
-        dependencies: { alpha: "wrong" },
+        dependencies: {
+          alpha: "wrong",
+        },
         devDependencies: [],
       },
-      "node_modules/alpha": { version: "1", dependencies: { missing: "1" } },
+      "node_modules/alpha": {
+        version: "1",
+        dependencies: {
+          missing: "1",
+        },
+      },
     },
   };
-  const errors = await validatePackageLock("/repo", packageJson, { read: readLock(lock) });
+  const errors = await validatePackageLock("/repo", packageJson, {
+    read: readLock(lock),
+  });
   expect(errors.join("\n")).toContain("dependencies must match");
   expect(errors.join("\n")).toContain("devDependencies must be an object");
   expect(errors.join("\n")).toContain("every direct dependency: beta");
   expect(errors.join("\n")).toContain("references missing dependency missing");
 });
-
 test("reports malformed package dependency maps", async () => {
   const errors = await validatePackageLock(
     "/repo",
-    { ...pkg, peerDependencies: [] },
-    { read: readLock(validLock) },
+    {
+      ...pkg,
+      peerDependencies: [],
+    },
+    {
+      read: readLock(validLock),
+    },
   );
   expect(errors).toContain("package.json peerDependencies must be an object.");
 });
-
 test("rejects null dependency maps and malformed dependency ranges", async () => {
-  const packageJson = { ...pkg, dependencies: null };
-  const errors = await validatePackageLock("/repo", packageJson, { read: readLock(validLock) });
+  const packageJson = {
+    ...pkg,
+    dependencies: null,
+  };
+  const errors = await validatePackageLock("/repo", packageJson, {
+    read: readLock(validLock),
+  });
   expect(errors).toContain("package.json dependencies must be an object.");
-
   const malformed = await validatePackageLock(
     "/repo",
-    { ...pkg, dependencies: { alpha: [] } },
+    {
+      ...pkg,
+      dependencies: {
+        alpha: [],
+      },
+    },
     {
       read: readLock({
         ...validLock,
         packages: {
-          "": { name: pkg.name, version: pkg.version, dependencies: { alpha: [] } },
-          "node_modules/alpha": { version: "1.0.0" },
+          "": {
+            name: pkg.name,
+            version: pkg.version,
+            dependencies: {
+              alpha: [],
+            },
+          },
+          "node_modules/alpha": {
+            version: "1.0.0",
+          },
         },
       }),
     },
@@ -99,71 +166,115 @@ test("rejects null dependency maps and malformed dependency ranges", async () =>
     "package.json dependencies has an invalid dependency range for alpha.",
   );
 });
-
 test("requires each locked direct package version to satisfy its declared range", async () => {
   const errors = await validatePackageLock(
     "/repo",
-    { ...pkg, dependencies: { alpha: "^2.0.0" } },
+    {
+      ...pkg,
+      dependencies: {
+        alpha: "^2.0.0",
+      },
+    },
     {
       read: readLock({
         ...validLock,
         packages: {
-          "": { name: pkg.name, version: pkg.version, dependencies: { alpha: "^2.0.0" } },
-          "node_modules/alpha": { version: "1.5.0" },
+          "": {
+            name: pkg.name,
+            version: pkg.version,
+            dependencies: {
+              alpha: "^2.0.0",
+            },
+          },
+          "node_modules/alpha": {
+            version: "1.5.0",
+          },
         },
       }),
     },
   );
   expect(errors).toContain("package-lock.json version for alpha does not satisfy ^2.0.0.");
 });
-
 test("accepts a mailauth transitive version selected by a joi security override", async () => {
   const packageJson = {
     ...pkg,
-    dependencies: { mailauth: "^5.0.0" },
-    overrides: { joi: "^18.0.0" },
+    dependencies: {
+      mailauth: "^5.0.0",
+    },
+    overrides: {
+      joi: "^18.0.0",
+    },
   };
   const lockfile = {
     ...validLock,
     packages: {
       "": {
         ...validLock.packages[""],
-        dependencies: { mailauth: "^5.0.0" },
+        dependencies: {
+          mailauth: "^5.0.0",
+        },
       },
       "node_modules/mailauth": {
         version: "5.0.0",
-        dependencies: { joi: "^17.0.0" },
+        dependencies: {
+          joi: "^17.0.0",
+        },
       },
-      "node_modules/joi": { version: "18.0.0" },
+      "node_modules/joi": {
+        version: "18.0.0",
+      },
     },
   };
-
   await expect(
-    validatePackageLock("/repo", packageJson, { read: readLock(lockfile) }),
+    validatePackageLock("/repo", packageJson, {
+      read: readLock(lockfile),
+    }),
   ).resolves.toEqual([]);
 });
-
 test("accepts npm alias ranges and rejects unsupported direct ranges", async () => {
-  const packageJson = { ...pkg, dependencies: { alias: "npm:actual@^1.0.0" } };
+  const packageJson = {
+    ...pkg,
+    dependencies: {
+      alias: "npm:actual@^1.0.0",
+    },
+  };
   const lock = {
     ...validLock,
     packages: {
-      "": { name: pkg.name, version: pkg.version, dependencies: packageJson.dependencies },
-      "node_modules/alias": { version: "1.2.0" },
+      "": {
+        name: pkg.name,
+        version: pkg.version,
+        dependencies: packageJson.dependencies,
+      },
+      "node_modules/alias": {
+        version: "1.2.0",
+      },
     },
   };
   await expect(
-    validatePackageLock("/repo", packageJson, { read: readLock(lock) }),
+    validatePackageLock("/repo", packageJson, {
+      read: readLock(lock),
+    }),
   ).resolves.toEqual([]);
   const invalid = await validatePackageLock(
     "/repo",
-    { ...pkg, dependencies: { alias: "file:../alias" } },
+    {
+      ...pkg,
+      dependencies: {
+        alias: "file:../alias",
+      },
+    },
     {
       read: readLock({
         ...lock,
         packages: {
           ...lock.packages,
-          "": { ...lock.packages[""], dependencies: { alias: "file:../alias" } },
+          "": {
+            ...lock.packages[""],
+            dependencies: {
+              alias: "file:../alias",
+            },
+          },
         },
       }),
     },

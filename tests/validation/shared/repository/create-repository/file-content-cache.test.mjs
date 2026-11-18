@@ -1,6 +1,12 @@
 import { expect, jest, test } from "@jest/globals";
-import { createRepositoryFileContentCache } from "../../../../../src/validation/shared/repository/create-repository/file-content-cache.mjs";
-const fileVersion = (mtimeNs, size = 4n) => ({ dev: 1n, ino: 2n, size, mtimeNs, ctimeNs: mtimeNs });
+import createRepositoryFileContentCache from "../../../../../src/validation/shared/repository/create-repository/file-content-cache.mjs";
+const fileVersion = (mtimeNs, size = 4n) => ({
+  dev: 1n,
+  ino: 2n,
+  size,
+  mtimeNs,
+  ctimeNs: mtimeNs,
+});
 test("shares one byte read across byte and text access", async () => {
   const read = jest.fn(async () => "text content");
   const cache = createRepositoryFileContentCache("/repo", read, async () => fileVersion(1n, 12n));
@@ -117,10 +123,13 @@ test("keeps an in-flight previous entry accounted while another read evicts cont
   expect(read).toHaveBeenCalledTimes(3);
 });
 test("drops failed reads so a later request can retry", async () => {
-  const stat = jest
-    .fn()
-    .mockRejectedValueOnce(new Error("stat denied"))
-    .mockResolvedValue({ dev: 1n, ino: 2n, size: 4n, mtimeNs: 1n, ctimeNs: 1n });
+  const stat = jest.fn().mockRejectedValueOnce(new Error("stat denied")).mockResolvedValue({
+    dev: 1n,
+    ino: 2n,
+    size: 4n,
+    mtimeNs: 1n,
+    ctimeNs: 1n,
+  });
   const read = jest.fn().mockResolvedValue("text");
   const cache = createRepositoryFileContentCache("/repo", read, stat);
   await expect(cache.readText("README.md")).rejects.toThrow("stat denied");
@@ -136,7 +145,13 @@ test("shares concurrent failures until they settle, then allows a retry", async 
     .mockImplementationOnce(
       () => new Promise((_resolve, reject) => ((rejectStat = reject), notifyStat())),
     )
-    .mockResolvedValue({ dev: 1n, ino: 2n, size: 4n, mtimeNs: 1n, ctimeNs: 1n });
+    .mockResolvedValue({
+      dev: 1n,
+      ino: 2n,
+      size: 4n,
+      mtimeNs: 1n,
+      ctimeNs: 1n,
+    });
   const cache = createRepositoryFileContentCache("/repo", async () => "retry", stat);
   const first = cache.readBytes("README.md");
   const concurrent = cache.readBytes("/repo/README.md");

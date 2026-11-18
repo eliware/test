@@ -1,6 +1,5 @@
 import { killWindowsProcessTree } from "./windows/process-tree.mjs";
-
-export function createChildTerminator(defaultKillTree = killWindowsProcessTree) {
+export default function createChildTerminator(defaultKillTree = killWindowsProcessTree) {
   return function terminateChild(
     child,
     platform = process.platform,
@@ -39,5 +38,4 @@ export function createChildTerminator(defaultKillTree = killWindowsProcessTree) 
     return false;
   };
 }
-
 export const terminateChild = createChildTerminator();

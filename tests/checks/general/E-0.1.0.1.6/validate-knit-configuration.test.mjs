@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateKnitConfiguration } from "../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration.mjs";
-
+import validateKnitConfiguration from "../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration.mjs";
 const validCommands = ["git pull", "npm ci", "npm test"];
 const deploy = (commands = validCommands) =>
   `version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands:\n${commands.map((item) => `          - ${item}`).join("\n")}\n`;
@@ -8,29 +7,29 @@ const inventory = (text, files = [".knit/deploy.yaml"]) => ({
   files: async () => files,
   readText: async () => text,
 });
-
 test("validates Knit deployment and command configuration", async () => {
   await expect(validateKnitConfiguration(inventory(deploy()))).resolves.toEqual([]);
 });
-
 test("accepts extra validation commands through declared package scripts", async () => {
   await expect(
     validateKnitConfiguration(inventory(deploy([...validCommands, "npm run validate"])), {
-      scripts: { validate: "netdoc --validate" },
+      scripts: {
+        validate: "netdoc --validate",
+      },
     }),
   ).resolves.toEqual([]);
 });
-
 test("rejects direct validation commands in Knit deployment configuration", async () => {
   await expect(
     validateKnitConfiguration(inventory(deploy([...validCommands, "codescope all"])), {
-      scripts: { validate: "netdoc --validate" },
+      scripts: {
+        validate: "netdoc --validate",
+      },
     }),
   ).resolves.toContain(
     ".knit/deploy.yaml commands field 1 command 4 must call a declared package script with npm run <name>.",
   );
 });
-
 test("requires the canonical timeout for push and tag deployments", async () => {
   const tag = `  tags:\n    v*:\n      deployments:\n        - timeoutMs: 1\n          commands:\n${validCommands.map((item) => `            - ${item}`).join("\n")}\n`;
   await expect(validateKnitConfiguration(inventory(`${deploy()}${tag}`))).resolves.toContain(
@@ -40,14 +39,12 @@ test("requires the canonical timeout for push and tag deployments", async () => 
     validateKnitConfiguration(inventory(deploy().replace("timeoutMs: 300000", "timeoutMs: 1"))),
   ).resolves.toContain(".knit/deploy.yaml deployment 1 must set timeoutMs to 300000.");
 });
-
 test("accepts repository-specific deployment paths and quoted on keys", async () => {
   const source = deploy()
     .replace("on:", "'on':")
     .replace("        timeoutMs", `      cwd: /${"srv"}/app\n        timeoutMs`);
   await expect(validateKnitConfiguration(inventory(source))).resolves.toEqual([]);
 });
-
 test("reports missing inventory, missing files, and unreadable files", async () => {
   await expect(validateKnitConfiguration()).resolves.toEqual([
     "Knit configuration could not be inspected.",
@@ -64,7 +61,6 @@ test("reports missing inventory, missing files, and unreadable files", async () 
     }),
   ).resolves.toEqual(["Knit configuration could not be inspected: inventory unavailable"]);
 });
-
 test("reports invalid YAML, multiple documents, missing deployments, and commands", async () => {
   await expect(validateKnitConfiguration(inventory("invalid: ["))).resolves.toEqual(
     expect.arrayContaining([expect.stringContaining("could not be parsed")]),

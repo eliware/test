@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isJestPolicyFile } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/policy-file.mjs";
-
+import isJestPolicyFile from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/policy-file.mjs";
 test.each([
   ["package.json", true],
   ["src/main.mjs", true],

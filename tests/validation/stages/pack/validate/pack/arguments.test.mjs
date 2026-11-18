@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validatePackArguments } from "../../../../../../src/validation/stages/pack/validate/pack/arguments.mjs";
-
+import validatePackArguments from "../../../../../../src/validation/stages/pack/validate/pack/arguments.mjs";
 test("rejects arguments that can disable dry-run or alter selected pack output", () => {
   for (const args of [
     ["--dry-run=false"],
@@ -19,7 +18,6 @@ test("rejects arguments that can disable dry-run or alter selected pack output",
     expect(validatePackArguments(args)).toMatch(/cannot/u);
   }
 });
-
 test("allows safe options while requiring their values", () => {
   expect(validatePackArguments()).toBeNull();
   expect(validatePackArguments(["--ignore-scripts", "--loglevel", "verbose"])).toBeNull();
@@ -27,7 +25,6 @@ test("allows safe options while requiring their values", () => {
   expect(validatePackArguments(["--loglevel"])).toContain("requires a value");
   expect(validatePackArguments(["--loglevel", "--unknown"])).toContain("requires a value");
 });
-
 test("returns a stable diagnostic for malformed argument inputs", () => {
   for (const args of [null, "--dry-run", {}, ["--dry-run", 1]])
     expect(validatePackArguments(args)).toBe("Provide pack arguments in an array of strings.");

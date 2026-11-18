@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { writeDebugTiming } from "../../../src/cli/write/debug-timing.mjs";
-
+import writeDebugTiming from "../../../src/cli/write/debug-timing.mjs";
 test("writes timing only when enabled", () => {
   const output = [];
   writeDebugTiming((message) => output.push(message), 995, true);

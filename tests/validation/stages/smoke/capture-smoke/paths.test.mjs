@@ -1,14 +1,15 @@
 import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { captureSmokePaths } from "../../../../../src/validation/stages/smoke/capture-smoke/paths.mjs";
-
+import captureSmokePaths from "../../../../../src/validation/stages/smoke/capture-smoke/paths.mjs";
 test("captures each state path once for package files, package directory, and bin links", async () => {
   const checkedPaths = [];
   const parentChecks = [];
   const fs = {
     lstat: jest.fn(async (path) => {
       checkedPaths.push(path);
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      throw Object.assign(new Error("missing"), {
+        code: "ENOENT",
+      });
     }),
   };
   const entries = await captureSmokePaths(
@@ -32,15 +33,26 @@ test("captures each state path once for package files, package directory, and bi
   ];
   expect(checkedPaths).toEqual(expectedPaths);
   expect(parentChecks).toEqual(
-    Array.from({ length: expectedPaths.length }, () => ["C:/consumer", "@eliware/test"]),
+    Array.from(
+      {
+        length: expectedPaths.length,
+      },
+      () => ["C:/consumer", "@eliware/test"],
+    ),
   );
-  expect(entries).toEqual(expectedPaths.map((path) => ({ path, type: "missing" })));
+  expect(entries).toEqual(
+    expectedPaths.map((path) => ({
+      path,
+      type: "missing",
+    })),
+  );
 });
-
 test("captures paths when callers do not provide a parent check", async () => {
   const fs = {
     lstat: async () => {
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      throw Object.assign(new Error("missing"), {
+        code: "ENOENT",
+      });
     },
   };
   await expect(

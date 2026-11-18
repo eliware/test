@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
-import { readProfileDocuments } from "./profile-documents.mjs";
-import { buildProfileCatalog } from "../build-profile-catalog.mjs";
-
+import readProfileDocuments from "./profile-documents.mjs";
+import buildProfileCatalog from "../build-profile-catalog.mjs";
 const packageJson = JSON.parse(
   readFileSync(new URL("../../../../package.json", import.meta.url), "utf8"),
 );
@@ -13,8 +12,7 @@ export const bundledProfileCatalog = buildProfileCatalog(
   localProfileDocuments,
   bundledConventionVersion,
 );
-
-export function readBundledProfileCatalog({ documents = localProfileDocuments } = {}) {
+export default function readBundledProfileCatalog({ documents = localProfileDocuments } = {}) {
   return documents === localProfileDocuments
     ? bundledProfileCatalog
     : buildProfileCatalog(documents, bundledConventionVersion);

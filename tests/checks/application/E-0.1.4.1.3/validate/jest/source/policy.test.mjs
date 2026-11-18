@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateJestSourcePolicy } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/source/policy.mjs";
-
+import validateJestSourcePolicy from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/source/policy.mjs";
 test("rejects runner imports, coverage exclusions, and separate config files", async () => {
   const texts = new Map([
     [
@@ -22,7 +21,10 @@ test("rejects runner imports, coverage exclusions, and separate config files", a
     ],
     readText: async (path) => texts.get(path.replaceAll("\\", "/").replace("repo/", "")) ?? "",
   };
-  const errors = await validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory });
+  const errors = await validateJestSourcePolicy({
+    root: "repo",
+    repositoryInventory: inventory,
+  });
   expect(errors).toEqual([
     "src/run.mjs must not import or invoke a test runner or coverage tool.",
     "src/run.mjs must not exclude production coverage.",
@@ -31,7 +33,6 @@ test("rejects runner imports, coverage exclusions, and separate config files", a
     "nested/jest.config.ts is a separate test runner or coverage configuration file.",
   ]);
 });
-
 test("reports inventory failures", async () => {
   await expect(
     validateJestSourcePolicy({
@@ -43,17 +44,18 @@ test("reports inventory failures", async () => {
     }),
   ).resolves.toEqual(["Jest source policy could not read the repository inventory."]);
 });
-
 test("allows clean sources and the supported Jest API", async () => {
   const inventory = {
     files: async () => ["src/run.mjs"],
     readText: async () => 'import { test } from "@jest/globals";',
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toEqual([]);
 });
-
 test("allows runner names in comments and inert configuration values", async () => {
   const texts = new Map([
     ["src/notes.mjs", '// vitest run\nconst settings = { runner: "mocha" };'],
@@ -64,19 +66,26 @@ test("allows runner names in comments and inert configuration values", async () 
     readText: async (path) => texts.get(path.replaceAll("\\", "/").replace("repo/", "")),
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toEqual([]);
 });
-
 test("allows Istanbul ignore only in the primary library export barrel", async () => {
   const content = '/* istanbul ignore file */\nexport { value } from "../../value.mjs";';
-  const inventory = { files: async () => ["src/index.mjs"], readText: async () => content };
+  const inventory = {
+    files: async () => ["src/index.mjs"],
+    readText: async () => content,
+  };
   await expect(
     validateJestSourcePolicy({
       root: "repo",
       packageJson: {
         main: "./src/index.mjs",
-        eliware: { apply: ["library"] },
+        eliware: {
+          apply: ["library"],
+        },
       },
       repositoryInventory: inventory,
     }),
@@ -86,13 +95,14 @@ test("allows Istanbul ignore only in the primary library export barrel", async (
       root: "repo",
       packageJson: {
         main: "./src/index.mjs",
-        eliware: { apply: ["library", "application"] },
+        eliware: {
+          apply: ["library", "application"],
+        },
       },
       repositoryInventory: inventory,
     }),
   ).resolves.toContain("src/index.mjs must not exclude production coverage.");
 });
-
 test("allows the harness API and checks its package scripts", async () => {
   const inventory = {
     files: async () => ["src/run.mjs", "package.json"],
@@ -104,12 +114,13 @@ test("allows the harness API and checks its package scripts", async () => {
   await expect(
     validateJestSourcePolicy({
       root: "repo",
-      packageJson: { name: "@eliware/test" },
+      packageJson: {
+        name: "@eliware/test",
+      },
       repositoryInventory: inventory,
     }),
   ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
 });
-
 test("rejects unreadable source files", async () => {
   const inventory = {
     files: async () => ["src/missing.mjs"],
@@ -118,16 +129,17 @@ test("rejects unreadable source files", async () => {
     },
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toEqual(["src/missing.mjs could not be read to check Jest source policy."]);
 });
-
 test("reports errors from the default context", async () => {
   await expect(validateJestSourcePolicy()).resolves.toEqual([
     "Jest source policy could not read the repository inventory.",
   ]);
 });
-
 test.each([
   ["src/dynamic.mts", "import(`jest`);"],
   ["tests/runner.jsx", 'spawn("jest");'],
@@ -141,30 +153,36 @@ test.each([
     readText: async () => content,
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain(`${path} must not import or invoke a test runner or coverage tool.`);
 });
-
 test("rejects alternative runners in package scripts", async () => {
   const inventory = {
     files: async () => ["package.json"],
     readText: async () => '{"scripts":{"test:extra":"vitest run"}}',
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
 });
-
 test("rejects Node test runner flags after Node options", async () => {
   const inventory = {
     files: async () => ["package.json"],
     readText: async () => '{"scripts":{"test:extra":"node --experimental-test-coverage --test"}}',
   };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
 });
-
 test.each([
   "jest.config.mts",
   ".jestrc.cjs",
@@ -177,18 +195,29 @@ test.each([
   "uvu.config.mjs",
   "vitest.workspace.mts",
 ])("rejects separate Jest config %s", async (path) => {
-  const inventory = { files: async () => [path], readText: async () => "" };
+  const inventory = {
+    files: async () => [path],
+    readText: async () => "",
+  };
   await expect(
-    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    validateJestSourcePolicy({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toContain(`${path} is a separate test runner or coverage configuration file.`);
 });
-
 test.each(["babel.config.js", "babel.config.json", ".babelrc", ".babelrc.json"])(
   "allows Babel build configuration %s",
   async (path) => {
-    const inventory = { files: async () => [path], readText: async () => "" };
+    const inventory = {
+      files: async () => [path],
+      readText: async () => "",
+    };
     await expect(
-      validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+      validateJestSourcePolicy({
+        root: "repo",
+        repositoryInventory: inventory,
+      }),
     ).resolves.toEqual([]);
   },
 );

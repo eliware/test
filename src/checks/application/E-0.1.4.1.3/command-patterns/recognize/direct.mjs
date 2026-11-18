@@ -1,4 +1,4 @@
-export function isDirectTestCommand(command, names) {
+export default function isDirectTestCommand(command, names) {
   const runner = names.join("|");
   const direct = new RegExp(`^(?:${runner})(?:\\.cmd)?(?:\\s|$)`, "iu");
   const binary = new RegExp(

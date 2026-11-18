@@ -1,31 +1,40 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-
 const validatePackManifest = jest.fn();
 jest.unstable_mockModule(
   "../../../../src/validation/stages/pack/validate/pack/manifest.mjs",
-  () => ({ validatePackManifest }),
+  () => ({
+    validatePackManifest,
+    default: validatePackManifest,
+  }),
 );
-
-const { executePackValidation } =
-  await import("../../../../src/validation/stages/pack/execute-pack-validation.mjs");
-
+const executePackValidation = (
+  await import("../../../../src/validation/stages/pack/execute-pack-validation.mjs")
+).default;
 beforeEach(() => {
   jest.resetAllMocks();
   validatePackManifest.mockReturnValue(null);
 });
-
 test("skips execution outside pack mode", async () => {
   const runPack = jest.fn();
   await expect(
-    executePackValidation({ root: "C:\\repo", executePack: true, mode: "other", runPack }),
+    executePackValidation({
+      root: "C:\\repo",
+      executePack: true,
+      mode: "other",
+      runPack,
+    }),
   ).resolves.toBeNull();
   expect(runPack).not.toHaveBeenCalled();
 });
-
 test("runs the pack stage when explicitly selected and validates its manifest", async () => {
-  const packageJson = { name: "@eliware/example", files: ["README.md", "LICENSE"] };
-  const runPack = jest.fn(async () => ({ code: 0, stdout: "manifest" }));
-
+  const packageJson = {
+    name: "@eliware/example",
+    files: ["README.md", "LICENSE"],
+  };
+  const runPack = jest.fn(async () => ({
+    code: 0,
+    stdout: "manifest",
+  }));
   await expect(
     executePackValidation({
       root: "C:\\repo",
@@ -44,26 +53,30 @@ test("runs the pack stage when explicitly selected and validates its manifest", 
     packageJson,
   );
 });
-
 test("passes empty manifest output and optional package metadata to validation", async () => {
   await expect(
     executePackValidation({
       root: "C:\\repo",
       executePack: true,
       mode: "pack",
-      runPack: async () => ({ code: 0 }),
+      runPack: async () => ({
+        code: 0,
+      }),
     }),
   ).resolves.toBeNull();
   expect(validatePackManifest).toHaveBeenCalledWith("", undefined, undefined, undefined);
 });
-
 test("formats failed child-process diagnostics", async () => {
   await expect(
     executePackValidation({
       root: "C:\\repo",
       executePack: true,
       mode: "pack",
-      runPack: async () => ({ code: 1, stdout: "pack findings", stderr: "details" }),
+      runPack: async () => ({
+        code: 1,
+        stdout: "pack findings",
+        stderr: "details",
+      }),
     }),
   ).resolves.toBe("npm pack failed: pack findings\ndetails");
   await expect(
@@ -71,11 +84,14 @@ test("formats failed child-process diagnostics", async () => {
       root: "C:\\repo",
       executePack: true,
       mode: "pack",
-      runPack: async () => ({ code: 1, stdout: "", stderr: "" }),
+      runPack: async () => ({
+        code: 1,
+        stdout: "",
+        stderr: "",
+      }),
     }),
   ).resolves.toBe("npm pack failed without diagnostics.");
 });
-
 test("maps manifest errors and process startup failures", async () => {
   validatePackManifest.mockReturnValueOnce("manifest invalid");
   await expect(
@@ -83,7 +99,10 @@ test("maps manifest errors and process startup failures", async () => {
       root: "C:\\repo",
       executePack: true,
       mode: "pack",
-      runPack: async () => ({ code: 0, stdout: "manifest" }),
+      runPack: async () => ({
+        code: 0,
+        stdout: "manifest",
+      }),
     }),
   ).resolves.toBe("manifest invalid");
   await expect(

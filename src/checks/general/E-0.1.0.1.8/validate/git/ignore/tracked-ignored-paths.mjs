@@ -1,11 +1,17 @@
-import { parseGitNulPaths } from "../../../parse-git-index/paths.mjs";
-
-export async function validateTrackedIgnoredPaths(root, runGit, isPathExempt = () => false) {
+import parseGitNulPaths from "../../../parse-git-index/paths.mjs";
+export default async function validateTrackedIgnoredPaths(
+  root,
+  runGit,
+  isPathExempt = () => false,
+) {
   try {
     const { stdout } = await runGit(
       "git",
       ["-C", root, "ls-files", "--cached", "--ignored", "--exclude-standard", "-z"],
-      { windowsHide: true, encoding: "buffer" },
+      {
+        windowsHide: true,
+        encoding: "buffer",
+      },
     );
     const ignored = parseGitNulPaths(stdout).filter((path) => !isPathExempt(path));
     return ignored.length

@@ -1,6 +1,5 @@
 import { canonicalOrderRequirements } from "../canonical-order-requirements.mjs";
-
-export function validateCanonicalOrderDocument(document, path) {
+export default function validateCanonicalOrderDocument(document, path) {
   const name = path.split("/").at(-1);
   const contract = canonicalOrderRequirements[name];
   if (!contract) return [];
@@ -26,7 +25,6 @@ export function validateCanonicalOrderDocument(document, path) {
   validateNestedValues(orders, contract.nestedValues, path, errors);
   return errors;
 }
-
 function validateNestedValues(orders, nestedValues = {}, path, errors) {
   for (const [field, entries] of Object.entries(nestedValues)) {
     for (const [entry, required] of Object.entries(entries)) {
@@ -37,7 +35,6 @@ function validateNestedValues(orders, nestedValues = {}, path, errors) {
     }
   }
 }
-
 function validateNestedMaps(orders, nestedMaps = {}, nestedTypes = {}, path, errors) {
   for (const [field, entries] of Object.entries(nestedMaps)) {
     for (const [entry, required] of Object.entries(entries)) {
@@ -58,7 +55,6 @@ function validateNestedMaps(orders, nestedMaps = {}, nestedTypes = {}, path, err
     }
   }
 }
-
 function hasType(value, type) {
   if (type === "text") return typeof value === "string" && Boolean(value.trim());
   if (type === "text-list") return Array.isArray(value) && value.length > 0 && value.every(isText);
@@ -71,15 +67,12 @@ function hasType(value, type) {
   if (type === "object-map") return isObject(value) && Object.values(value).every(isObject);
   return false;
 }
-
 function isText(value) {
   return typeof value === "string" && Boolean(value.trim());
 }
-
 function isTextList(value) {
   return Array.isArray(value) && value.every(isText);
 }
-
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }

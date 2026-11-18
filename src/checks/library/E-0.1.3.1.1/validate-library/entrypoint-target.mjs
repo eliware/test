@@ -1,6 +1,5 @@
 import { join } from "node:path";
-
-export async function validateLibraryEntrypointTarget(root, target, kind, checkFile) {
+export default async function validateLibraryEntrypointTarget(root, target, kind, checkFile) {
   const label = kind === "runtime" ? "Library runtime entrypoint" : "Library declaration";
   if (!isSourceTarget(target, kind)) return [`${label} must target a file under src/: ${target}.`];
   try {
@@ -11,7 +10,6 @@ export async function validateLibraryEntrypointTarget(root, target, kind, checkF
   if (kind === "declaration") return validateDeclarationCompanion(root, target, checkFile);
   return [];
 }
-
 async function validateDeclarationCompanion(root, target, checkFile) {
   const companion = target.slice(0, -".d.ts".length) + ".mjs";
   try {
@@ -21,7 +19,6 @@ async function validateDeclarationCompanion(root, target, checkFile) {
     return [`Library declaration must sit beside its same-basename .mjs file: ${target}.`];
   }
 }
-
 function isSourceTarget(target, kind) {
   const extension = kind === "runtime" ? /\.(?:mjs|js)$/u : /\.d\.ts$/u;
   const segments = typeof target === "string" ? target.slice(2).split("/") : [];

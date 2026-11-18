@@ -1,7 +1,6 @@
-import { buildPackArguments } from "./build-pack-arguments.mjs";
-import { resolvePackExecutable } from "./resolve-pack-executable.mjs";
-
-export async function runNpmPack(
+import buildPackArguments from "./build-pack-arguments.mjs";
+import resolvePackExecutable from "./resolve-pack-executable.mjs";
+export default async function runNpmPack(
   root,
   run,
   resolveCommand = resolvePackExecutable,
@@ -12,7 +11,9 @@ export async function runNpmPack(
   const [command, prefix] = resolveCommand(env, process.platform, process.execPath, root);
   return run(command, [...prefix, ...argumentsList], {
     cwd: root,
-    env: { ...env },
+    env: {
+      ...env,
+    },
     maxOutputLength: 1_000_000,
   });
 }

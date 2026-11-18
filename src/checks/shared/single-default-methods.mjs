@@ -1,15 +1,13 @@
 import { join, posix } from "node:path";
 import { parse } from "@babel/parser";
-import { isPureExportBarrel } from "./is/pure-export-barrel.mjs";
-
-export async function validateSingleDefaultMethods(
+import isPureExportBarrel from "./is/pure-export-barrel.mjs";
+export default async function validateSingleDefaultMethods(
   files,
   readText,
   packageJson,
   root,
   options = {},
 ) {
-  if (packageJson.name === "@eliware/test") return [];
   const errors = [];
   for (const path of files.filter((file) => /^src\/.*\.mjs$/u.test(file))) {
     if (options.library && isLibraryMain(path, packageJson)) continue;
@@ -23,7 +21,9 @@ export async function validateSingleDefaultMethods(
     if (isPureExportBarrel(source)) continue;
     let program;
     try {
-      program = parse(source, { sourceType: "module" }).program;
+      program = parse(source, {
+        sourceType: "module",
+      }).program;
     } catch {
       errors.push(`${path} could not be parsed to check its exported methods.`);
       continue;
@@ -34,13 +34,11 @@ export async function validateSingleDefaultMethods(
   }
   return errors;
 }
-
 function isLibraryMain(path, packageJson) {
   if (typeof packageJson.main !== "string") return false;
   const main = posix.normalize(packageJson.main.replaceAll("\\", "/").replace(/^\.\//u, ""));
   return path === main;
 }
-
 function countExportedMethods(body) {
   const localMethods = new Set();
   for (const node of body) {
@@ -77,13 +75,14 @@ function countExportedMethods(body) {
       if (specifier.exported.name !== "default") named += 1;
     }
   }
-  return { total, named };
+  return {
+    total,
+    named,
+  };
 }
-
 function isExportedFunction(node, localMethods) {
   return isFunction(node) || (node.type === "Identifier" && localMethods.has(node.name));
 }
-
 function isFunction(node) {
   return ["ArrowFunctionExpression", "FunctionExpression", "FunctionDeclaration"].includes(
     node?.type,

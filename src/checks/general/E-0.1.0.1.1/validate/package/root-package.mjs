@@ -1,6 +1,5 @@
 import semver from "semver";
-import { toSemverRange } from "../to-semver-range.mjs";
-
+import toSemverRange from "../to-semver-range.mjs";
 const dependencyFields = [
   "dependencies",
   "devDependencies",
@@ -8,8 +7,7 @@ const dependencyFields = [
   "peerDependencies",
 ];
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-
-export function validateLockfileRootPackage(packageJson, rootPackage, packages) {
+export default function validateLockfileRootPackage(packageJson, rootPackage, packages) {
   const errors = [];
   for (const field of dependencyFields) {
     const expected = packageJson?.[field];
@@ -57,7 +55,6 @@ export function validateLockfileRootPackage(packageJson, rootPackage, packages) 
   }
   return errors;
 }
-
 function sorted(value) {
   return JSON.stringify(
     Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right))),

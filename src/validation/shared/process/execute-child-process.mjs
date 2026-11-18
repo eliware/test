@@ -1,11 +1,10 @@
 import { spawn } from "node:child_process";
-import { attachChildProcessOutput, terminateChildProcess } from "./attach-child-process-output.mjs";
-import { createChildProcessOutputCapture } from "./create/child/process-output-capture.mjs";
-import { redactChildProcessError } from "../output/redaction/redact/child-process-error.mjs";
-
+import attachChildProcessOutput from "./attach-child-process-output.mjs";
+import terminateChildProcess from "./attach-child-process-output/terminate-child-process.mjs";
+import createChildProcessOutputCapture from "./create/child/process-output-capture.mjs";
+import redactChildProcessError from "../output/redaction/redact/child-process-error.mjs";
 const MAX_OUTPUT_LENGTH = 100_000;
-
-export function execute(command, args, options = {}, spawnProcess = spawn) {
+export default function execute(command, args, options = {}, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
     const {
       maxOutputLength = MAX_OUTPUT_LENGTH,
@@ -23,7 +22,9 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
     try {
       child = spawnProcess(command, args, {
         ...childOptions,
-        env: { ...(childOptions.env ?? process.env) },
+        env: {
+          ...(childOptions.env ?? process.env),
+        },
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -47,7 +48,11 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
           return;
         }
         settled = true;
-        resolveResult({ code, signal, ...output.finish() });
+        resolveResult({
+          code,
+          signal,
+          ...output.finish(),
+        });
       });
     } catch (error) {
       terminateChildProcess(child);

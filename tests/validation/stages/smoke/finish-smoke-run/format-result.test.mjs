@@ -1,9 +1,6 @@
 import { expect, test } from "@jest/globals";
-import {
-  formatSmokeCleanupFailure,
-  formatSmokeFinishResult,
-} from "../../../../../src/validation/stages/smoke/finish-smoke-run/format-result.mjs";
-
+import formatSmokeCleanupFailure from "../../../../../src/validation/stages/smoke/finish-smoke-run/format-result.mjs";
+import formatSmokeFinishResult from "../../../../../src/validation/stages/smoke/finish-smoke-run/format-result/format-smoke-finish-result.mjs";
 test("formats successful restoration with and without cleanup details", () => {
   expect(formatSmokeFinishResult("Smoke passed.", undefined, "")).toBe(
     "Smoke passed. Previous target package state restored.",
@@ -12,7 +9,6 @@ test("formats successful restoration with and without cleanup details", () => {
     "Smoke passed. Previous target package state restored. Backup retained.",
   );
 });
-
 test("formats restoration and cleanup failures", () => {
   expect(formatSmokeFinishResult("Smoke passed.", "target changed", "Backup retained.")).toBe(
     "Smoke passed. Target restoration failed: target changed. Backup retained.",

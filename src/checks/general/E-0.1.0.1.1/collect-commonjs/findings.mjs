@@ -1,8 +1,7 @@
-import { collectCommonJsAliases } from "./aliases.mjs";
-import { collectCommonJsExportAliases } from "./export-aliases.mjs";
-import { visitCommonJsAst } from "./ast-visitor.mjs";
-
-export function collectCommonJsFindings(node, findings, file) {
+import collectCommonJsAliases from "./aliases.mjs";
+import collectCommonJsExportAliases from "./export-aliases.mjs";
+import visitCommonJsAst from "./ast-visitor.mjs";
+export default function collectCommonJsFindings(node, findings, file) {
   if (!node || typeof node !== "object") return;
   const aliases = collectCommonJsAliases(node, "require");
   const moduleAliases = collectCommonJsAliases(node, "module");
@@ -11,7 +10,6 @@ export function collectCommonJsFindings(node, findings, file) {
     collectNodeFinding(child, findings, file, aliases, moduleAliases, exportsAliases),
   );
 }
-
 function collectNodeFinding(node, findings, file, requires, modules, exportAliases) {
   if (
     node.type === "CallExpression" &&

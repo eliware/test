@@ -1,13 +1,16 @@
 import semver from "semver";
-import { findLockfileDependencyEntry } from "../find-lockfile-dependency-entry.mjs";
-import { toSemverRange } from "../to-semver-range.mjs";
-import { isOptionalPeer } from "../optional-peer.mjs";
-import { isValidLockfileDependencyName } from "../dependency-name.mjs";
-import { resolvePackageOverride } from "../resolve-package-override.mjs";
-
+import findLockfileDependencyEntry from "../find-lockfile-dependency-entry.mjs";
+import toSemverRange from "../to-semver-range.mjs";
+import isOptionalPeer from "../optional-peer.mjs";
+import isValidLockfileDependencyName from "../dependency-name.mjs";
+import resolvePackageOverride from "../resolve-package-override.mjs";
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"];
-
-export function validateLockfileDependencyReferences(path, entry, packages, overrides = {}) {
+export default function validateLockfileDependencyReferences(
+  path,
+  entry,
+  packages,
+  overrides = {},
+) {
   const errors = [];
   for (const field of dependencyFields) {
     if (entry[field] === undefined) continue;
@@ -20,7 +23,6 @@ export function validateLockfileDependencyReferences(path, entry, packages, over
   }
   return errors;
 }
-
 function validateDependencyReference(path, entry, packages, overrides, field, name, errors) {
   if (!isValidLockfileDependencyName(name)) {
     errors.push(`package-lock.json entry ${path} has an invalid ${field} package name ${name}.`);
@@ -48,7 +50,6 @@ function validateDependencyReference(path, entry, packages, overrides, field, na
     errors,
   );
 }
-
 function validateLockedVersion(path, name, targetPath, lockedVersion, range, overrides, errors) {
   const overrideSpec = resolvePackageOverride(overrides, packageName(path), name);
   const overrideRange = toSemverRange(overrideSpec);
@@ -70,13 +71,11 @@ function validateLockedVersion(path, name, targetPath, lockedVersion, range, ove
   )
     errors.push(`package-lock.json entry ${path} dependency ${name} does not satisfy its range.`);
 }
-
 function packageName(path) {
   const location = path.slice(path.lastIndexOf("node_modules/") + "node_modules/".length);
   if (location.startsWith("@")) return location.split("/").slice(0, 2).join("/");
   return location.split("/")[0];
 }
-
 function isRegistryTag(value) {
   return /^[a-z][a-z0-9._-]*$/iu.test(value);
 }

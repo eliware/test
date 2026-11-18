@@ -1,9 +1,7 @@
-import { validateOrderingSpecificationDocument } from "../ordering-specification-document.mjs";
-import { validateSpecificationRules } from "./rules.mjs";
-
+import validateOrderingSpecificationDocument from "../ordering-specification-document.mjs";
+import validateSpecificationRules from "./rules.mjs";
 const documentFields = new Set(["version", "description", "directives"]);
-
-export function validateSpecificationDocument(value, path, { ordering = true } = {}) {
+export default function validateSpecificationDocument(value, path, { ordering = true } = {}) {
   if (ordering && path.startsWith("specs/conventions/ordering/"))
     return validateOrderingSpecificationDocument(value, path);
   const errors = [];

@@ -1,11 +1,8 @@
-import { compareReleaseVersions } from "./notes/version/order.mjs";
-import { validateReleaseDateHistory } from "./date-history.mjs";
-import {
-  parseReleaseVersionHeading,
-  releaseVersionFromHeading,
-} from "./notes/version/from-heading.mjs";
-
-export function validateReleaseVersionHistory(entries, packageVersion) {
+import compareReleaseVersions from "./notes/version/order/compare-release-versions.mjs";
+import validateReleaseDateHistory from "./date-history.mjs";
+import parseReleaseVersionHeading from "./notes/version/from-heading.mjs";
+import releaseVersionFromHeading from "./notes/version/from-heading/release-version-from-heading.mjs";
+export default function validateReleaseVersionHistory(entries, packageVersion) {
   const errors = [];
   const newestVersion = releaseVersionFromHeading(entries[0] ?? "");
   if (typeof packageVersion !== "string" || !packageVersion)

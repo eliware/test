@@ -1,10 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { findProhibitedPackFiles } from "../../../../src/validation/stages/pack/find-prohibited-pack-files.mjs";
-
+import findProhibitedPackFiles from "../../../../src/validation/stages/pack/find-prohibited-pack-files.mjs";
 test("defaults to an empty packed-file list", () => {
   expect(findProhibitedPackFiles()).toEqual([]);
 });
-
 test("identifies every prohibited directory, lockfile, config, and secret path", () => {
   const files = [
     "tests/example.test.mjs",
@@ -47,7 +45,6 @@ test("identifies every prohibited directory, lockfile, config, and secret path",
   ];
   expect(findProhibitedPackFiles(files)).toEqual(files);
 });
-
 test("permits ordinary runtime files, including environment files", () => {
   expect(
     findProhibitedPackFiles([

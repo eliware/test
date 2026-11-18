@@ -1,14 +1,11 @@
-import { createNumericMinHeap } from "../numeric-min-heap.mjs";
-
-export function createActiveStarts() {
+import createNumericMinHeap from "../numeric-min-heap.mjs";
+export default function createActiveStarts() {
   const activeEndsByStart = new Map();
   const starts = createNumericMinHeap();
-
   function set(start, end) {
     if (!activeEndsByStart.has(start)) starts.insert(start);
     activeEndsByStart.set(start, end);
   }
-
   function earliestCrossing(boundary) {
     while (starts.size > 0) {
       const start = starts.peek();
@@ -19,6 +16,8 @@ export function createActiveStarts() {
     }
     return null;
   }
-
-  return Object.freeze({ set, earliestCrossing });
+  return Object.freeze({
+    set,
+    earliestCrossing,
+  });
 }

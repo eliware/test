@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { buildPackArguments } from "../../../../src/validation/stages/pack/build-pack-arguments.mjs";
-
+import buildPackArguments from "../../../../src/validation/stages/pack/build-pack-arguments.mjs";
 test("builds the dry-run JSON pack command", () => {
   expect(buildPackArguments()).toEqual(["pack", "--ignore-scripts", "--dry-run", "--json"]);
   expect(buildPackArguments(["--ignore-scripts"])).toEqual([

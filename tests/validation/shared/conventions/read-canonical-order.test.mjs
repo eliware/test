@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
+import readCanonicalOrder from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
 import { conventionVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
-
 test("reads structured canonical order data", () => {
   expect(readCanonicalOrder("eliware-apply.yaml").profiles).toEqual([
     "general",
@@ -20,13 +19,11 @@ test("reads structured canonical order data", () => {
     "private",
   ]);
 });
-
 test("rejects paths outside the ordering specification names", () => {
   expect(() => readCanonicalOrder("../directives.yaml")).toThrow(
     "Invalid canonical ordering file name.",
   );
 });
-
 test("rejects an ordering document with the wrong version", () => {
   expect(() =>
     readCanonicalOrder(
@@ -35,7 +32,6 @@ test("rejects an ordering document with the wrong version", () => {
     ),
   ).toThrow("Invalid canonical ordering specification: invalid.yaml.");
 });
-
 test("rejects missing required package profile entries", () => {
   expect(() =>
     readCanonicalOrder(

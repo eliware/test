@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.12.mjs";
-
+import { ruleId } from "../../../src/checks/general/E-0.1.0.1.12.mjs";
+import run from "../../../src/checks/general/E-0.1.0.1.12.mjs";
 function context(index = "- [Guide](guide.md)") {
   return {
     root: "/repo",
@@ -13,11 +13,13 @@ function context(index = "- [Guide](guide.md)") {
     },
   };
 }
-
 test("checks docs indexes for all repositories", async () => {
-  await expect(run(context())).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  await expect(run(context())).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test("reports documentation index errors", async () => {
   await expect(run(context(""))).resolves.toMatchObject({
     ruleId,
@@ -25,7 +27,9 @@ test("reports documentation index errors", async () => {
     message: expect.stringContaining("docs/README.md must link guide.md"),
   });
 });
-
 test("uses its default context", async () => {
-  await expect(run()).resolves.toMatchObject({ ruleId, status: "fail" });
+  await expect(run()).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+  });
 });

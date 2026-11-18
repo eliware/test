@@ -23,8 +23,7 @@ const runnerConfigurationFields = [
   "testRunner",
   "test-runner",
 ];
-
-export function validateRunnerConfiguration(packageJson = {}) {
+export default function validateRunnerConfiguration(packageJson = {}) {
   return runnerConfigurationFields.some((field) => packageJson[field] !== undefined)
     ? ["package.json must not configure a separate test runner or coverage engine."]
     : [];

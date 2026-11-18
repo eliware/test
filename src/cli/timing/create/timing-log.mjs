@@ -1,7 +1,6 @@
 import { appendFileSync, lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-
-export function createTimingLog(root, startedAt, fileSystem = {}) {
+export default function createTimingLog(root, startedAt, fileSystem = {}) {
   const append = fileSystem.append ?? appendFileSync;
   const inspect = fileSystem.lstat ?? lstatSync;
   const mkdir = fileSystem.mkdir ?? mkdirSync;
@@ -14,7 +13,9 @@ export function createTimingLog(root, startedAt, fileSystem = {}) {
       throw new Error("coverage must be a real directory.");
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
-    mkdir(directory, { recursive: true });
+    mkdir(directory, {
+      recursive: true,
+    });
     const created = inspect(directory);
     if (created.isSymbolicLink() || !created.isDirectory())
       throw new Error("coverage must be a real directory.");

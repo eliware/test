@@ -1,4 +1,4 @@
-export function redactMatchedSecrets(text, matchEnds, limit = text.length) {
+export default function redactMatchedSecrets(text, matchEnds, limit = text.length) {
   let output = "";
   let cursor = 0;
   let rangeStart = -1;

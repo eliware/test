@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateLibraryExamplesLink } from "../../../../../src/checks/library/E-0.1.3.1.0/validate-library/examples-link.mjs";
-
+import validateLibraryExamplesLink from "../../../../../src/checks/library/E-0.1.3.1.0/validate-library/examples-link.mjs";
 test("requires a root README link to the examples index", async () => {
   const context = {
     root: "/repo",
@@ -12,11 +11,12 @@ test("requires a root README link to the examples index", async () => {
   await expect(
     validateLibraryExamplesLink({
       ...context,
-      repositoryInventory: { readText: async () => "## Examples" },
+      repositoryInventory: {
+        readText: async () => "## Examples",
+      },
     }),
   ).resolves.toEqual(["README.md must link examples/README.md."]);
 });
-
 test("reports unreadable README files", async () => {
   await expect(
     validateLibraryExamplesLink({

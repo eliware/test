@@ -1,10 +1,8 @@
-import { collectJestTestAliases } from "./jest/aliases.mjs";
-
-export function collectExecutableJestTestAliases(program, names, blockedDescribes) {
+import collectJestTestAliases from "./jest/aliases.mjs";
+export default function collectExecutableJestTestAliases(program, names, blockedDescribes) {
   let changed = true;
   while (changed) changed = visit(program, names, blockedDescribes);
 }
-
 function visit(node, names, blockedDescribes, allowFunction = false) {
   if (!node || typeof node !== "object") return false;
   if (isFunction(node)) return allowFunction && visit(node.body, names, blockedDescribes);
@@ -16,7 +14,6 @@ function visit(node, names, blockedDescribes, allowFunction = false) {
       found = visit(item, names, blockedDescribes, item === callback) || found;
   return found;
 }
-
 function getSuiteCallback(node, describeNames, blockedDescribes) {
   if (node.type !== "CallExpression") return null;
   const callee = node.callee;
@@ -32,7 +29,6 @@ function getSuiteCallback(node, describeNames, blockedDescribes) {
     ? callback
     : null;
 }
-
 function isFunction(node) {
   return ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"].includes(
     node?.type,

@@ -1,6 +1,5 @@
 import { posix } from "node:path";
-
-export function isPrimaryLibraryBarrel(packageJson = {}, path) {
+export default function isPrimaryLibraryBarrel(packageJson = {}, path) {
   const main = packageJson.main;
   if (typeof main !== "string" || !main.startsWith("./")) return false;
   const primaryEntry = posix.normalize(main.slice(2));

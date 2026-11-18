@@ -1,9 +1,10 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { collectExecutableJestTestAliases } from "../../../../../src/checks/application/E-0.1.4.1.2/collect/executable-jest-test-aliases.mjs";
-
+import collectExecutableJestTestAliases from "../../../../../src/checks/application/E-0.1.4.1.2/collect/executable-jest-test-aliases.mjs";
 function collect(source, blockedDescribes = new Set()) {
-  const program = parse(source, { sourceType: "module" }).program;
+  const program = parse(source, {
+    sourceType: "module",
+  }).program;
   const names = {
     callbacks: new Set(["test", "it"]),
     namespaces: new Set(),
@@ -12,7 +13,6 @@ function collect(source, blockedDescribes = new Set()) {
   collectExecutableJestTestAliases(program, names, blockedDescribes);
   return names.callbacks;
 }
-
 test("ignores aliases inside uninvoked functions", () => {
   expect(
     collect(
@@ -20,7 +20,6 @@ test("ignores aliases inside uninvoked functions", () => {
     ),
   ).not.toContain("fake");
 });
-
 test("collects dynamic imports and destructured aliases", () => {
   expect(
     collect(
@@ -28,7 +27,6 @@ test("collects dynamic imports and destructured aliases", () => {
     ),
   ).toContain("run");
 });
-
 test("ignores non-test properties in a destructured Jest import", () => {
   expect(
     collect(
@@ -40,7 +38,6 @@ test("ignores non-test properties in a destructured Jest import", () => {
   ).not.toContain("suite");
   expect(collect('const { ...rest } = await import("@jest/globals");')).not.toContain("rest");
 });
-
 test("ignores unsupported aliases and skipped suite callbacks", () => {
   expect(
     collect(
@@ -48,7 +45,6 @@ test("ignores unsupported aliases and skipped suite callbacks", () => {
     ),
   ).not.toContain("hidden");
 });
-
 test("collects aliases in focused Jest suite callbacks", () => {
   expect(
     collect(
@@ -56,13 +52,11 @@ test("collects aliases in focused Jest suite callbacks", () => {
     ),
   ).toContain("run");
 });
-
 test("ignores callback aliases under non-Jest calls", () => {
   expect(
     collect('import { test } from "@jest/globals"; other("suite", () => { const fake = test; });'),
   ).not.toContain("fake");
 });
-
 test("collects aliases inside a function expression suite callback", () => {
   expect(
     collect(
@@ -70,7 +64,6 @@ test("collects aliases inside a function expression suite callback", () => {
     ),
   ).toContain("run");
 });
-
 test("collects aliases in module code and executable suite callbacks", () => {
   expect(
     collect(
@@ -78,7 +71,6 @@ test("collects aliases in module code and executable suite callbacks", () => {
     ),
   ).toEqual(new Set(["test", "it", "direct", "nested"]));
 });
-
 test("does not collect aliases in a locally shadowed suite callback", () => {
   expect(
     collect(

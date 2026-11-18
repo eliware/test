@@ -1,7 +1,6 @@
-import { findProtectedNegationMatches } from "./protected-negations/matched-names.mjs";
-import { restoresProtectedName } from "./protected-negations/restores-name.mjs";
-
-export function findProtectedNegations(rules) {
+import findProtectedNegationMatches from "./protected-negations/matched-names.mjs";
+import restoresProtectedName from "./protected-negations/restores-name.mjs";
+export default function findProtectedNegations(rules) {
   const restorations = [];
   rules.forEach((rule, index) => {
     if (!rule.startsWith("!")) return;

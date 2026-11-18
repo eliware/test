@@ -1,69 +1,134 @@
 import { expect, test } from "@jest/globals";
-import { validateWorkflowStepFields } from "../../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/step/fields.mjs";
-
+import validateWorkflowStepFields from "../../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/step/fields.mjs";
 test("accepts approved step shapes and null entries", () => {
   expect(
     validateWorkflowStepFields([
-      { uses: "actions/checkout@v7", with: { "fetch-depth": 0 } },
-      { uses: "actions/setup-node@v7", with: {} },
-      { run: "npm test" },
+      {
+        uses: "actions/checkout@v7",
+        with: {
+          "fetch-depth": 0,
+        },
+      },
+      {
+        uses: "actions/setup-node@v7",
+        with: {},
+      },
+      {
+        run: "npm test",
+      },
       null,
     ]),
   ).toEqual([]);
 });
-
 test("accepts full history for checks that need repository tags", () => {
   expect(
-    validateWorkflowStepFields([{ uses: "actions/checkout@v7", with: { "fetch-depth": 0 } }]),
-  ).toEqual([]);
-});
-
-test("allows arbitrary fields on steps after the required npm test", () => {
-  expect(
     validateWorkflowStepFields([
-      { uses: "actions/checkout@v7", with: { "fetch-depth": 0 } },
-      { uses: "actions/setup-node@v7", with: {} },
-      { run: "npm -g install npm@latest" },
-      { run: "npm ci" },
-      { run: "npm test" },
-      { uses: "vendor/action@v1", with: { token: "secret" }, if: "always()" },
+      {
+        uses: "actions/checkout@v7",
+        with: {
+          "fetch-depth": 0,
+        },
+      },
     ]),
   ).toEqual([]);
 });
-
+test("allows arbitrary fields on steps after the required npm test", () => {
+  expect(
+    validateWorkflowStepFields([
+      {
+        uses: "actions/checkout@v7",
+        with: {
+          "fetch-depth": 0,
+        },
+      },
+      {
+        uses: "actions/setup-node@v7",
+        with: {},
+      },
+      {
+        run: "npm -g install npm@latest",
+      },
+      {
+        run: "npm ci",
+      },
+      {
+        run: "npm test",
+      },
+      {
+        uses: "vendor/action@v1",
+        with: {
+          token: "secret",
+        },
+        if: "always()",
+      },
+    ]),
+  ).toEqual([]);
+});
 test("reports conditional fields on required steps only once", () => {
   expect(
     validateWorkflowStepFields([
-      { run: "npm ci", if: "always()" },
-      { run: "npm test" },
-      { run: "npm run optional", "continue-on-error": true },
+      {
+        run: "npm ci",
+        if: "always()",
+      },
+      {
+        run: "npm test",
+      },
+      {
+        run: "npm run optional",
+        "continue-on-error": true,
+      },
     ]),
   ).toEqual([
     "ci.yaml required validation steps must run unconditionally without continue-on-error.",
   ]);
 });
-
 test.each([
-  { uses: "actions/checkout@v7", with: { "fetch-depth": 0 }, name: "checkout" },
-  { uses: "actions/setup-node@v7", name: "setup" },
-  { run: "npm test", name: "test" },
+  {
+    uses: "actions/checkout@v7",
+    with: {
+      "fetch-depth": 0,
+    },
+    name: "checkout",
+  },
+  {
+    uses: "actions/setup-node@v7",
+    name: "setup",
+  },
+  {
+    run: "npm test",
+    name: "test",
+  },
 ])("rejects unsupported fields in a step", (step) => {
   expect(validateWorkflowStepFields([step])).toEqual([
     "ci.yaml steps must use only approved keys and inputs.",
   ]);
 });
-
-test.each([{ "fetch-depth": 1 }, { token: "secret" }, {}, null])(
-  "rejects unsupported checkout inputs %j",
-  (withValue) => {
-    expect(validateWorkflowStepFields([{ uses: "actions/checkout@v7", with: withValue }])).toEqual([
-      "ci.yaml checkout must set the canonical full-history options.",
-    ]);
+test.each([
+  {
+    "fetch-depth": 1,
   },
-);
-
+  {
+    token: "secret",
+  },
+  {},
+  null,
+])("rejects unsupported checkout inputs %j", (withValue) => {
+  expect(
+    validateWorkflowStepFields([
+      {
+        uses: "actions/checkout@v7",
+        with: withValue,
+      },
+    ]),
+  ).toEqual(["ci.yaml checkout must set the canonical full-history options."]);
+});
 test("requires full history when checkout has no inputs", () => {
-  expect(validateWorkflowStepFields([{ uses: "actions/checkout@v7" }])).toContain(
-    "ci.yaml checkout must set the canonical full-history options.",
-  );
+  expect(
+    validateWorkflowStepFields([
+      {
+        uses: "actions/checkout@v7",
+      },
+    ]),
+  ).toContain("ci.yaml checkout must set the canonical full-history options.");
 });

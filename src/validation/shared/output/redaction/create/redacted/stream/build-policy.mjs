@@ -1,6 +1,5 @@
-import { createRedactedSearchPolicy } from "./search-policy.mjs";
-
-export function buildRedactedStreamPolicy(normalized, getSecretMatcher) {
+import createRedactedSearchPolicy from "./search-policy.mjs";
+export default function buildRedactedStreamPolicy(normalized, getSecretMatcher) {
   if (normalized.policy.suppressed) return normalized.policy;
   return {
     ...normalized.policy,

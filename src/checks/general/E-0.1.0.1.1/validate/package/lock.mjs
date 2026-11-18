@@ -1,10 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { validateLockfilePackageEntries } from "../lockfile/package-entries.mjs";
-import { validateLockfileRootPackage } from "./root-package.mjs";
-import { validateLockfileMetadata } from "./lock-metadata.mjs";
-
-export async function validatePackageLock(root, packageJson, { read = readFile } = {}) {
+import validateLockfilePackageEntries from "../lockfile/package-entries.mjs";
+import validateLockfileRootPackage from "./root-package.mjs";
+import validateLockfileMetadata from "./lock-metadata.mjs";
+export default async function validatePackageLock(root, packageJson, { read = readFile } = {}) {
   let lockfile;
   try {
     lockfile = JSON.parse(await read(join(root, "package-lock.json"), "utf8"));

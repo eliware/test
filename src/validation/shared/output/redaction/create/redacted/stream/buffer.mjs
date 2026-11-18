@@ -1,8 +1,7 @@
-import { createPendingTextChunks } from "../../pending-text-chunks.mjs";
-import { finishRedactedStreamBuffer } from "../../../finish-redacted-stream-buffer.mjs";
-import { appendRedactedStreamText } from "../../../append-redacted-stream-text.mjs";
-
-export function createRedactedStreamBuffer({
+import createPendingTextChunks from "../../pending-text-chunks.mjs";
+import finishRedactedStreamBuffer from "../../../finish-redacted-stream-buffer.mjs";
+import appendRedactedStreamText from "../../../append-redacted-stream-text.mjs";
+export default function createRedactedStreamBuffer({
   pendingLimit,
   bufferLimit = pendingLimit,
   decoder,
@@ -17,7 +16,6 @@ export function createRedactedStreamBuffer({
   const pendingChunks =
     typeof findSafeBoundary?.appendText === "function" ? createPendingTextChunksFactory() : null;
   let finished = false;
-
   function addText(text) {
     if (finished) return "";
     const result = appendRedactedStreamText({
@@ -34,7 +32,6 @@ export function createRedactedStreamBuffer({
     pending = result.pending;
     return result.output;
   }
-
   function finish() {
     if (finished) return "";
     finished = true;
@@ -51,6 +48,8 @@ export function createRedactedStreamBuffer({
     pending = "";
     return output;
   }
-
-  return { addText, finish };
+  return {
+    addText,
+    finish,
+  };
 }

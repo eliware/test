@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { collectValidationInventoryOptions } from "../../../src/validation/planning/collect-validation-inventory-options.mjs";
-
+import collectValidationInventoryOptions from "../../../src/validation/planning/collect-validation-inventory-options.mjs";
 test("combines unique inventory options from selected checks", () => {
   expect(
     collectValidationInventoryOptions([
@@ -25,16 +24,23 @@ test("combines unique inventory options from selected checks", () => {
     includeTestResultsUnder: ["docs"],
   });
 });
-
 test("limits options to one mode rule when supplied", () => {
   expect(
     collectValidationInventoryOptions(
       [
         {
           ruleId: "docs",
-          repositoryInventoryOptions: { expandedDirectories: ["docs"], includeTestResults: true },
+          repositoryInventoryOptions: {
+            expandedDirectories: ["docs"],
+            includeTestResults: true,
+          },
         },
-        { ruleId: "audit", repositoryInventoryOptions: { expandedDirectories: [".github"] } },
+        {
+          ruleId: "audit",
+          repositoryInventoryOptions: {
+            expandedDirectories: [".github"],
+          },
+        },
       ],
       "audit",
     ),
@@ -44,22 +50,30 @@ test("limits options to one mode rule when supplied", () => {
     includeTestResultsUnder: [],
   });
 });
-
 test("defaults checks without inventory options to an empty inventory policy", () => {
-  expect(collectValidationInventoryOptions([{ ruleId: "no-options" }])).toEqual({
+  expect(
+    collectValidationInventoryOptions([
+      {
+        ruleId: "no-options",
+      },
+    ]),
+  ).toEqual({
     expandedDirectories: [],
     includeTestResults: false,
     includeTestResultsUnder: [],
   });
 });
-
 test("expands documentation and example trees for application indexes", () => {
   expect(
     collectValidationInventoryOptions([
       {
         ruleId: "application-docs",
-        repositoryInventoryOptions: { expandedDirectories: ["docs", "examples"] },
+        repositoryInventoryOptions: {
+          expandedDirectories: ["docs", "examples"],
+        },
       },
     ]),
-  ).toMatchObject({ expandedDirectories: ["docs", "examples"] });
+  ).toMatchObject({
+    expandedDirectories: ["docs", "examples"],
+  });
 });

@@ -1,4 +1,4 @@
-export function createValidationStageResult(stage, code, message, output) {
+export default function createValidationStageResult(stage, code, message, output) {
   return {
     ruleId: `stage:${stage}`,
     stage,

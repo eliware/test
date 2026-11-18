@@ -1,6 +1,5 @@
-import { hasAlternativeToolCommand } from "../has-alternative-tool-command.mjs";
-
-export function validateApplicationTestToolScripts(packageJson = {}) {
+import hasAlternativeToolCommand from "../has-alternative-tool-command.mjs";
+export default function validateApplicationTestToolScripts(packageJson = {}) {
   return Object.entries(packageJson.scripts ?? {})
     .filter(([, command]) => typeof command === "string" && hasAlternativeToolCommand(command))
     .map(

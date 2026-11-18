@@ -1,6 +1,6 @@
-import { adjustRedactedStreamBoundary, splitsSurrogatePair } from "./stream/boundary.mjs";
-
-export function appendRedactedStreamText({
+import adjustRedactedStreamBoundary from "./stream/boundary.mjs";
+import splitsSurrogatePair from "./stream/boundary/splits-surrogate-pair.mjs";
+export default function appendRedactedStreamText({
   text,
   pending,
   pendingChunks,
@@ -41,11 +41,16 @@ export function appendRedactedStreamText({
     output.push(append(safePrefix, matchEnds));
     if (!pendingChunks) pending = pending.slice(boundary);
   }
-  return { output: output.join(""), pending };
+  return {
+    output: output.join(""),
+    pending,
+  };
 }
-
 function suppressStreamBuffer(pendingChunks, suppress) {
   suppress();
   pendingChunks?.clear();
-  return { output: "", pending: "" };
+  return {
+    output: "",
+    pending: "",
+  };
 }

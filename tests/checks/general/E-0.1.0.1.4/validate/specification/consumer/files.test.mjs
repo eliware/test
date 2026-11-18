@@ -1,15 +1,21 @@
 import { expect, test } from "@jest/globals";
 import { join } from "node:path";
-import { readConsumerSpecificationFiles } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/consumer/files.mjs";
-
+import readConsumerSpecificationFiles from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/consumer/files.mjs";
 const root = "C:/repo";
 const specs = join(root, "specs");
 const nested = join(specs, "nested");
-const record = (name) => ({ name, isDirectory: () => false, isFile: () => true });
-const folder = (name) => ({ name, isDirectory: () => true, isFile: () => false });
+const record = (name) => ({
+  name,
+  isDirectory: () => false,
+  isFile: () => true,
+});
+const folder = (name) => ({
+  name,
+  isDirectory: () => true,
+  isFile: () => false,
+});
 const directiveDocument =
   "version: '15.1'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
-
 test("reads directive documents from nested YAML files", async () => {
   const result = await readConsumerSpecificationFiles(root, {
     readdir: async (path) => {
@@ -29,7 +35,6 @@ test("reads directive documents from nested YAML files", async () => {
     "specs/nested/extra.yml document 1",
   ]);
 });
-
 test("reports specification discovery failure", async () => {
   await expect(
     readConsumerSpecificationFiles(root, {
@@ -37,15 +42,21 @@ test("reports specification discovery failure", async () => {
         throw new Error("blocked");
       },
     }),
-  ).resolves.toEqual({ error: "Consumer specification discovery failed: blocked" });
+  ).resolves.toEqual({
+    error: "Consumer specification discovery failed: blocked",
+  });
 });
-
 test("uses the default file reader without reading when no YAML files exist", async () => {
   await expect(
-    readConsumerSpecificationFiles(root, { readdir: async () => [] }),
-  ).resolves.toMatchObject({ errors: [], documents: [], directivePathExists: false });
+    readConsumerSpecificationFiles(root, {
+      readdir: async () => [],
+    }),
+  ).resolves.toMatchObject({
+    errors: [],
+    documents: [],
+    directivePathExists: false,
+  });
 });
-
 test("records unreadable and malformed YAML files", async () => {
   const result = await readConsumerSpecificationFiles(root, {
     readdir: async () => [record("directives.yaml"), record("bad.yaml")],
@@ -58,7 +69,6 @@ test("records unreadable and malformed YAML files", async () => {
   expect(result.errors).toContain("specs/directives.yaml could not be read: read denied");
   expect(result.errors[0]).toContain("specs/bad.yaml is invalid YAML:");
 });
-
 test("records parser exceptions and empty root directive documents", async () => {
   const invalidSource = await readConsumerSpecificationFiles(root, {
     readdir: async () => [record("directives.yaml")],

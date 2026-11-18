@@ -1,15 +1,15 @@
-import { verifySmokeTargetInstallation } from "./load-smoke-target/installed-state.mjs";
-import { readSmokeTargetPackage } from "./load-smoke-target/package.mjs";
-import { validateSmokeTargetRequirements } from "./load-smoke-target/requirements.mjs";
-
-export { hasPackageDependency } from "./load-smoke-target/requirements.mjs";
-
-export async function loadSmokeTarget(targetRoot, packageName) {
+import verifySmokeTargetInstallation from "./load-smoke-target/installed-state.mjs";
+import readSmokeTargetPackage from "./load-smoke-target/package.mjs";
+import validateSmokeTargetRequirements from "./load-smoke-target/requirements/validate-smoke-target-requirements.mjs";
+export { default as hasPackageDependency } from "./load-smoke-target/requirements.mjs";
+export default async function loadSmokeTarget(targetRoot, packageName) {
   let targetPackage;
   try {
     targetPackage = await readSmokeTargetPackage(targetRoot);
     if (targetPackage?.name === packageName)
-      return { error: validateSmokeTargetRequirements(targetPackage, packageName) };
+      return {
+        error: validateSmokeTargetRequirements(targetPackage, packageName),
+      };
     await verifySmokeTargetInstallation(targetRoot, packageName);
   } catch {
     return {
@@ -17,6 +17,12 @@ export async function loadSmokeTarget(targetRoot, packageName) {
     };
   }
   const requirementsError = validateSmokeTargetRequirements(targetPackage, packageName);
-  if (requirementsError) return { error: requirementsError };
-  return { targetPackage, error: null };
+  if (requirementsError)
+    return {
+      error: requirementsError,
+    };
+  return {
+    targetPackage,
+    error: null,
+  };
 }

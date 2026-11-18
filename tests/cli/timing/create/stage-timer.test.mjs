@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createStageTimer } from "../../../../src/cli/timing/create/stage-timer.mjs";
-
+import createStageTimer from "../../../../src/cli/timing/create/stage-timer.mjs";
 test("writes separate start and completion lines for each check", () => {
   let now = 1000;
   const output = [];
@@ -15,7 +14,6 @@ test("writes separate start and completion lines for each check", () => {
   expect(output).toEqual(["[0.000s] E-0.1...\n", "[1.500s] E-0.1 completed - 1.500s\n"]);
   expect(output.join("")).toBe("[0.000s] E-0.1...\n[1.500s] E-0.1 completed - 1.500s\n");
 });
-
 test("step updates the timer without writing transition chatter", () => {
   let now = 1000;
   const output = [];
@@ -31,7 +29,6 @@ test("step updates the timer without writing transition chatter", () => {
   timer.end("E-0.1");
   expect(output.join("")).toBe("[0.000s] E-0.1...\n[1.500s] E-0.1 completed - 1.000s\n");
 });
-
 test("tracks durations independently for concurrent checks", () => {
   let now = 1000;
   const output = [];
@@ -55,7 +52,6 @@ test("tracks durations independently for concurrent checks", () => {
       "[3.000s] E-second completed - 2.000s\n",
   );
 });
-
 test("reports zero duration when a check ends without a start", () => {
   const output = [];
   const timer = createStageTimer(
@@ -66,7 +62,6 @@ test("reports zero duration when a check ends without a start", () => {
   timer.end("E-unstarted");
   expect(output).toEqual(["[0.000s] E-unstarted completed - 0.000s\n"]);
 });
-
 test("places nested output between the check start and completion lines", () => {
   let now = 1000;
   const output = [];
@@ -86,7 +81,6 @@ test("places nested output between the check start and completion lines", () => 
     "[0.000s] E-0.1.130.13...\n[0.000s] tests/example.test.mjs... PASS - 0.212s\n[1.000s] E-0.1.130.13 completed - 1.000s\n",
   );
 });
-
 test("closes an open nested line before the stage completion", () => {
   let now = 1000;
   const output = [];
@@ -104,7 +98,6 @@ test("closes an open nested line before the stage completion", () => {
     "[0.000s] E-0.1.130.13...\n[0.000s] tests/slow.test.mjs...\n[1.000s] E-0.1.130.13 completed - 1.000s\n",
   );
 });
-
 test("uses the default clock and writer adapters", () => {
   const disabled = createStageTimer();
   disabled.start("E-0.1");
@@ -113,7 +106,6 @@ test("uses the default clock and writer adapters", () => {
   enabled.start("E-0.1");
   enabled.end("E-0.1");
 });
-
 test("does not emit check timing when disabled", () => {
   const output = [];
   const timer = createStageTimer(
@@ -129,7 +121,6 @@ test("does not emit check timing when disabled", () => {
   timer.end("E-0.1");
   expect(output).toEqual([]);
 });
-
 test("reports checks skipped after a prerequisite failure", () => {
   const output = [];
   const timer = createStageTimer(
@@ -142,7 +133,6 @@ test("reports checks skipped after a prerequisite failure", () => {
     "[0.000s] Skipping E-0.1.130.13 because a prerequisite check failed\n",
   );
 });
-
 test("writes elapsed stage markers", () => {
   let now = 1000;
   const output = [];
@@ -155,7 +145,6 @@ test("writes elapsed stage markers", () => {
   timer.stage("jest");
   expect(output).toEqual(["[24.503s] Stage: jest\n"]);
 });
-
 test("does not report skipped checks when timing is disabled", () => {
   const output = [];
   const timer = createStageTimer(

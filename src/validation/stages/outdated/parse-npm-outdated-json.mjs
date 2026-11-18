@@ -1,3 +1,3 @@
-export function parseNpmOutdatedJson(source) {
+export default function parseNpmOutdatedJson(source) {
   return JSON.parse(source);
 }

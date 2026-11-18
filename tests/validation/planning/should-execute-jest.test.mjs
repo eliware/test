@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { shouldExecuteJest } from "../../../src/validation/planning/should-execute-jest.mjs";
-
+import shouldExecuteJest from "../../../src/validation/planning/should-execute-jest.mjs";
 test.each([
   [true, ["general", "application"], true],
   [true, ["general", "library"], true],

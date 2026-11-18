@@ -1,4 +1,4 @@
-export function redactAuthorizationCredentials(text) {
+export default function redactAuthorizationCredentials(text) {
   return text
     .replace(
       /((?:authorization|proxy-authorization)\s*:\s*(?:bearer|basic)\s+)[^\s,;}]+/giu,

@@ -1,8 +1,7 @@
-import { execute } from "../../shared/process/execute-child-process.mjs";
-import { buildOxlintArguments } from "./build-oxlint-arguments.mjs";
-import { resolveOxlintExecutable } from "./resolve-oxlint-executable.mjs";
-
-export async function runOxlint(
+import execute from "../../shared/process/execute-child-process.mjs";
+import buildOxlintArguments from "./build-oxlint-arguments.mjs";
+import resolveOxlintExecutable from "./resolve-oxlint-executable.mjs";
+export default async function runOxlint(
   root,
   run = execute,
   resolveExecutable = resolveOxlintExecutable,

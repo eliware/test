@@ -1,11 +1,10 @@
-import { executePackValidation } from "../../pack/execute-pack-validation.mjs";
-import { runNpmPack } from "../../pack/run-npm-pack.mjs";
-import { runNpmScript } from "../../scripts/run-npm-script.mjs";
-import { validateDirectToolScript } from "../../scripts/validate-direct-tool-script.mjs";
-import { createValidationStageResult } from "../../shared/create-validation-stage-result.mjs";
-import { createOutdatedRunner } from "./outdated-runner.mjs";
-
-export function createProfileValidationStageRunners({
+import executePackValidation from "../../pack/execute-pack-validation.mjs";
+import runNpmPack from "../../pack/run-npm-pack.mjs";
+import runNpmScript from "../../scripts/run-npm-script.mjs";
+import validateDirectToolScript from "../../scripts/validate-direct-tool-script.mjs";
+import createValidationStageResult from "../../shared/create-validation-stage-result.mjs";
+import createOutdatedRunner from "./outdated-runner.mjs";
+export default function createProfileValidationStageRunners({
   validatePack = executePackValidation,
   runPack = runNpmPack,
   runOutdated,
@@ -41,7 +40,6 @@ export function createProfileValidationStageRunners({
     build: async (context) => runProfileScript("build", 11, "web", context, runScript),
   };
 }
-
 async function runProfileScript(script, code, profile, context, runScript) {
   if (!context.packageJson?.eliware?.apply?.includes(profile))
     return createValidationStageResult(script, 0, `${script} does not apply.`);
@@ -51,7 +49,9 @@ async function runProfileScript(script, code, profile, context, runScript) {
   const configurationError = validateDirectToolScript(command, script, context.packageJson);
   if (configurationError) return createValidationStageResult(script, 1, configurationError);
   try {
-    const env = { ...(context.env ?? process.env) };
+    const env = {
+      ...(context.env ?? process.env),
+    };
     if (script === "build") env.npm_config_ignore_scripts = "true";
     const value = await runScript(context.root, script, undefined, undefined, env);
     return createValidationStageResult(

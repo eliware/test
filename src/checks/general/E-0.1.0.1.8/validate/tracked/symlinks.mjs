@@ -1,6 +1,5 @@
-import { readTrackedIndexEntries } from "./read-index-entries.mjs";
-
-export async function validateTrackedSymlinks(root, runGit, isPathExempt = () => false) {
+import readTrackedIndexEntries from "./read-index-entries.mjs";
+export default async function validateTrackedSymlinks(root, runGit, isPathExempt = () => false) {
   try {
     const links = (await readTrackedIndexEntries(root, runGit))
       .filter(({ mode }) => mode === "120000")

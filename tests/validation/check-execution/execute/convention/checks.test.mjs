@@ -1,15 +1,21 @@
 import { expect, jest, test } from "@jest/globals";
-import { executeConventionChecks } from "../../../../../src/validation/check-execution/execute/convention/checks.mjs";
-
-const pass = (ruleId) => ({ ruleId, status: "pass", message: "" });
+import executeConventionChecks from "../../../../../src/validation/check-execution/execute/convention/checks.mjs";
+const pass = (ruleId) => ({
+  ruleId,
+  status: "pass",
+  message: "",
+});
 const makeCheck = (ruleId, calls, status = "pass") => ({
   ruleId,
   run: async () => {
     calls.push(ruleId);
-    return { ruleId, status, message: status === "fail" ? "check failed" : "" };
+    return {
+      ruleId,
+      status,
+      message: status === "fail" ? "check failed" : "",
+    };
   },
 });
-
 function createStageContext(stages, calls, failedStage = "") {
   const names = [...stages, "jest"];
   return {
@@ -33,7 +39,6 @@ function createStageContext(stages, calls, failedStage = "") {
     ),
   };
 }
-
 test("runs the two pre-Jest barriers and Jest with cached stage output", async () => {
   const calls = [];
   const stages = ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"];
@@ -50,13 +55,15 @@ test("runs the two pre-Jest barriers and Jest with cached stage output", async (
   expect(calls).toEqual([...stages, "E-first", "E-second", "jest"]);
   expect(context.validationSummary.checkCount).toBe(9);
 });
-
 test("stops after initial stages fail and skips checks and Jest", async () => {
   const calls = [];
   const context = createStageContext(["lint"], calls, "lint");
   const checks = [
     makeCheck("E-before", calls),
-    { ...makeCheck("E-after", calls), run: jest.fn(makeCheck("E-after", calls).run) },
+    {
+      ...makeCheck("E-after", calls),
+      run: jest.fn(makeCheck("E-after", calls).run),
+    },
   ];
   const results = await executeConventionChecks(checks, context, new Set());
   expect(calls).toEqual(["lint"]);
@@ -64,7 +71,6 @@ test("stops after initial stages fail and skips checks and Jest", async () => {
   expect(context.stageResults.jest.status).toBe("skip");
   expect(results.map(({ status }) => status)).toEqual(["fail"]);
 });
-
 test("waits for all initial stages before starting remaining checks", async () => {
   const calls = [];
   const stages = ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"];
@@ -80,10 +86,15 @@ test("waits for all initial stages before starting remaining checks", async () =
       if (initialNames.size === [...initialNames].filter((name) => calls.includes(name)).length)
         markInitialStarted();
       await initialGate;
-      return { stage, code: 0, status: "pass", message: "", output: `${stage} report` };
+      return {
+        stage,
+        code: 0,
+        status: "pass",
+        message: "",
+        output: `${stage} report`,
+      };
     };
   }
-
   const validation = executeConventionChecks([makeCheck("E-rule", calls)], context, new Set());
   await initialStarted;
   expect(calls).toEqual([...initialNames]);
@@ -93,7 +104,6 @@ test("waits for all initial stages before starting remaining checks", async () =
   expect(calls).toContain("pack");
   expect(calls.at(-1)).toBe("jest");
 });
-
 test("runs every convention check but skips Jest after a check fails", async () => {
   const calls = [];
   const checks = [
@@ -105,11 +115,14 @@ test("runs every convention check but skips Jest after a check fails", async () 
   const results = await executeConventionChecks(checks, {}, new Set());
   expect(calls).toEqual(checks.map(({ ruleId }) => ruleId));
   expect(results.filter(({ status }) => status === "fail")).toEqual([
-    { ruleId: "E-0.1.4", status: "fail", message: "check failed" },
+    {
+      ruleId: "E-0.1.4",
+      status: "fail",
+      message: "check failed",
+    },
   ]);
   expect(results.some(({ status }) => status === "skip")).toBe(false);
 });
-
 test("executes required checks beneath advisory parents", async () => {
   const ids = [
     "E-0.1.130.6",
@@ -137,8 +150,15 @@ test("executes required checks beneath advisory parents", async () => {
   }));
   const checks = [
     ...placeholders,
-    { ruleId: "E-0.1.26", applicability: "advisory-only", run: jest.fn() },
-    { ...makeCheck("A-0.1.26.0", []), parentRuleId: "E-0.1.26" },
+    {
+      ruleId: "E-0.1.26",
+      applicability: "advisory-only",
+      run: jest.fn(),
+    },
+    {
+      ...makeCheck("A-0.1.26.0", []),
+      parentRuleId: "E-0.1.26",
+    },
   ];
   const results = await executeConventionChecks(checks, {}, new Set());
   expect(results.map(({ ruleId }) => ruleId)).toEqual(["A-0.1.26.0"]);

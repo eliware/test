@@ -1,22 +1,22 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join, resolve } from "node:path";
 import { platform } from "node:os";
-
 const realpath = jest.fn();
 const stat = jest.fn();
-
-jest.unstable_mockModule("node:fs/promises", () => ({ realpath, stat }));
-
-const { validateFocusedTestPath } =
-  await import("../../../../../src/validation/stages/jest/configuration/validate-focused-test-path.mjs");
-
+jest.unstable_mockModule("node:fs/promises", () => ({
+  realpath,
+  stat,
+}));
+const validateFocusedTestPath = (
+  await import("../../../../../src/validation/stages/jest/configuration/validate-focused-test-path.mjs")
+).default;
 const root = resolve("/repo");
-
 beforeEach(() => {
   realpath.mockReset().mockImplementation(async (path) => path);
-  stat.mockReset().mockResolvedValue({ isFile: () => true });
+  stat.mockReset().mockResolvedValue({
+    isFile: () => true,
+  });
 });
-
 test("validates focused test paths before execution", async () => {
   await expect(validateFocusedTestPath(root)).resolves.toEqual([]);
   await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toEqual([
@@ -30,13 +30,13 @@ test("validates focused test paths before execution", async () => {
     "does not exist",
   );
   await expect(validateFocusedTestPath(root, ["tests"])).rejects.toThrow("under tests/");
-
-  stat.mockResolvedValueOnce({ isFile: () => false });
+  stat.mockResolvedValueOnce({
+    isFile: () => false,
+  });
   await expect(validateFocusedTestPath(root, ["tests/directory.test.mjs"])).rejects.toThrow(
     "regular file",
   );
 });
-
 const casePathTest = platform() === "win32" ? test : test.skip;
 casePathTest("returns the canonical casing accepted by Windows", async () => {
   realpath.mockImplementation(async (path) =>
@@ -46,13 +46,11 @@ casePathTest("returns the canonical casing accepted by Windows", async () => {
     "tests/Sample.test.mjs",
   ]);
 });
-
 test("rejects symlinks that escape the repository", async () => {
   const outside = resolve("/outside", "linked.test.mjs");
   realpath.mockImplementation(async (path) =>
     path.endsWith(join("external", "linked.test.mjs")) ? outside : path,
   );
-
   await expect(validateFocusedTestPath(root, ["tests/external/linked.test.mjs"])).rejects.toThrow(
     "must resolve inside the repository",
   );

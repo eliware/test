@@ -1,12 +1,10 @@
 import { expect, test } from "@jest/globals";
-import { validateReleaseNoteSections } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/note-sections.mjs";
-
+import validateReleaseNoteSections from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/note-sections.mjs";
 test("requires release entries to contain categories", () => {
   expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0"])).toContain(
     "## 1.0.0 must contain a release subsection.",
   );
 });
-
 test("rejects repeated or misplaced categories and text outside categories", () => {
   const errors = validateReleaseNoteSections([
     "# Release Notes",
@@ -24,7 +22,6 @@ test("rejects repeated or misplaced categories and text outside categories", () 
   expect(errors.join("\n")).toContain("text outside a release subsection");
   expect(errors.join("\n")).toContain("must not repeat the Added subsection");
 });
-
 test("rejects unsupported headings and unsupported categories", () => {
   const errors = validateReleaseNoteSections([
     "# Release Notes",
@@ -35,7 +32,6 @@ test("rejects unsupported headings and unsupported categories", () => {
   expect(errors.join("\n")).toContain("unsupported heading: #### Detail");
   expect(errors.join("\n")).toContain("unsupported subsection: Unknown");
 });
-
 test("accepts each supported category with meaningful text", () => {
   const names = ["Added", "Changed", "Fixed", "Breaking changes", "Migration", "Security"];
   const lines = ["# Release Notes", "## 1.0.0"];

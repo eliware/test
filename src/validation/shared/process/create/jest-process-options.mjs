@@ -1,8 +1,7 @@
-import { createJestEnvironment } from "../../../stages/jest/configuration/create-jest/environment.mjs";
-import { createJestProgressTracker } from "../../../stages/jest/progress/create/jest/progress-tracker.mjs";
-import { formatJestSuiteProgress } from "../../../stages/format/jest-suite-progress.mjs";
-
-export function createJestProcessOptions(root, args = [], options = {}) {
+import createJestEnvironment from "../../../stages/jest/configuration/create-jest/environment.mjs";
+import createJestProgressTracker from "../../../stages/jest/progress/create/jest/progress-tracker.mjs";
+import formatJestSuiteProgress from "../../../stages/format/jest-suite-progress.mjs";
+export default function createJestProcessOptions(root, args = [], options = {}) {
   const invokingEnvironment = options.env ?? process.env;
   const progress = createJestProgressTracker();
   const env = createJestEnvironment(invokingEnvironment);
@@ -32,10 +31,24 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     },
     maxOutputLength: 1_000_000,
     ...(typeof options.writeOutput === "function"
-      ? { maxProgressLineLength: Number.MAX_SAFE_INTEGER }
+      ? {
+          maxProgressLineLength: Number.MAX_SAFE_INTEGER,
+        }
       : {}),
-    ...(options.onStderr ? { onStderr: options.onStderr } : {}),
-    ...(options.onRawStdout ? { onRawStdout: options.onRawStdout } : {}),
-    ...(options.onRawStderr ? { onRawStderr: options.onRawStderr } : {}),
+    ...(options.onStderr
+      ? {
+          onStderr: options.onStderr,
+        }
+      : {}),
+    ...(options.onRawStdout
+      ? {
+          onRawStdout: options.onRawStdout,
+        }
+      : {}),
+    ...(options.onRawStderr
+      ? {
+          onRawStderr: options.onRawStderr,
+        }
+      : {}),
   };
 }

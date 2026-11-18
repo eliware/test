@@ -1,4 +1,4 @@
-export function scheduleChildTermination(child, options, onUnconfirmed, onAttempt) {
+export default function scheduleChildTermination(child, options, onUnconfirmed, onAttempt) {
   const terminate = (signal) => {
     try {
       const result = options.terminateChild(

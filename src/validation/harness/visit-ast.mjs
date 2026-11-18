@@ -1,4 +1,4 @@
-export function visitAst(node, callback) {
+export default function visitAst(node, callback) {
   if (!node || typeof node !== "object") return;
   callback(node);
   for (const value of Object.values(node)) {

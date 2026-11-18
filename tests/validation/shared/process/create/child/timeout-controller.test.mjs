@@ -1,21 +1,30 @@
 import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
-import { runChild } from "../../../../../../src/validation/shared/process/run/child.mjs";
-import { createChildTimeoutController } from "../../../../../../src/validation/shared/process/create/child/timeout-controller.mjs";
-
+import runChild from "../../../../../../src/validation/shared/process/run/child.mjs";
+import createChildTimeoutController from "../../../../../../src/validation/shared/process/create/child/timeout-controller.mjs";
 test("safely controls timers before initialization and creates suite and progress trackers", () => {
-  const termination = { onTimeout: jest.fn() };
-  const suite = { start: jest.fn(), end: jest.fn(), stop: jest.fn() };
-  const progress = { reset: jest.fn(), stop: jest.fn() };
+  const termination = {
+    onTimeout: jest.fn(),
+  };
+  const suite = {
+    start: jest.fn(),
+    end: jest.fn(),
+    stop: jest.fn(),
+  };
+  const progress = {
+    reset: jest.fn(),
+    stop: jest.fn(),
+  };
   const createSuiteTracker = jest.fn(() => suite);
   const createTimeout = jest.fn(() => progress);
   const controller = createChildTimeoutController(
-    { progressTimeoutMs: 5 },
+    {
+      progressTimeoutMs: 5,
+    },
     createTimeout,
     () => termination,
     createSuiteTracker,
   );
-
   controller.timeout.reset();
   controller.timeout.stop();
   controller.start();
@@ -24,11 +33,16 @@ test("safely controls timers before initialization and creates suite and progres
   controller.timeout.reset();
   controller.timeout.stop();
   expect(createSuiteTracker).toHaveBeenCalledWith(
-    { progressTimeoutMs: 5 },
+    {
+      progressTimeoutMs: 5,
+    },
     createTimeout,
     expect.any(Function),
   );
-  expect(createTimeout).toHaveBeenCalledWith({ timeoutMs: 5, onTimeout: expect.any(Function) });
+  expect(createTimeout).toHaveBeenCalledWith({
+    timeoutMs: 5,
+    onTimeout: expect.any(Function),
+  });
   expect(progress.reset).toHaveBeenCalledTimes(1);
   expect(progress.stop).toHaveBeenCalledTimes(1);
   expect(suite.stop).toHaveBeenCalledTimes(1);
@@ -39,7 +53,6 @@ test("safely controls timers before initialization and creates suite and progres
   expect(termination.onTimeout).toHaveBeenCalledTimes(1);
   expect(() => createChildTimeoutController({}, createTimeout, () => termination)).not.toThrow();
 });
-
 test("wires progress, timeout, output, and timed-out child settlement", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -55,7 +68,10 @@ test("wires progress, timeout, output, and timed-out child settlement", async ()
     spawnProcess: () => child,
     createProgressTimeout: ({ onTimeout: callback }) => {
       fireTimeout = callback;
-      return { reset, stop: jest.fn() };
+      return {
+        reset,
+        stop: jest.fn(),
+      };
     },
     progressPattern: /progress/u,
     onProgress,
@@ -65,13 +81,11 @@ test("wires progress, timeout, output, and timed-out child settlement", async ()
     terminateChild: () => true,
     terminationGraceMs: 60_000,
   });
-
   child.stdout.emit("data", "output");
   child.stderr.emit("data", "progress\n");
   fireTimeout();
   child.emit("close", null, "SIGTERM");
   child.stderr.emit("data", "progress after close\n");
-
   await expect(result).resolves.toMatchObject({
     timedOut: true,
     terminationRequested: true,
@@ -84,7 +98,6 @@ test("wires progress, timeout, output, and timed-out child settlement", async ()
   expect(onStdout).toHaveBeenCalledWith("output");
   expect(onStderr).toHaveBeenCalledWith("progress\n");
 });
-
 test("terminates Jest when one suite exceeds its total runtime deadline", async () => {
   jest.useFakeTimers();
   try {
@@ -105,18 +118,17 @@ test("terminates Jest when one suite exceeds its total runtime deadline", async 
       terminateChild: () => true,
       terminationGraceMs: 1,
     });
-
     child.stderr.emit("data", "progress\n");
     child.stdout.emit("data", "test still producing output\n");
     jest.advanceTimersByTime(11_001);
-
-    await expect(result).resolves.toMatchObject({ timedOut: true });
+    await expect(result).resolves.toMatchObject({
+      timedOut: true,
+    });
     expect(onSuiteTimeout).toHaveBeenCalledWith("tests/slow.test.mjs");
   } finally {
     jest.useRealTimers();
   }
 });
-
 test("stops a child at its fixed runtime limit despite continued output", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -126,7 +138,11 @@ test("stops a child at its fixed runtime limit despite continued output", async 
   const result = runChild("ignored", [], {
     spawnProcess: () => child,
     createProgressTimeout: (options) => {
-      const timer = { ...options, reset: jest.fn(), stop: jest.fn() };
+      const timer = {
+        ...options,
+        reset: jest.fn(),
+        stop: jest.fn(),
+      };
       timers.push(timer);
       return timer;
     },
@@ -136,15 +152,14 @@ test("stops a child at its fixed runtime limit despite continued output", async 
     terminationGraceMs: 0,
     forceKillConfirmationMs: 0,
   });
-
   child.stdout.emit("data", "output keeps arriving");
   const runtimeTimer = timers.find(({ timeoutMs }) => timeoutMs === 10_000);
   runtimeTimer.onTimeout();
-
-  await expect(result).resolves.toMatchObject({ timedOut: true });
+  await expect(result).resolves.toMatchObject({
+    timedOut: true,
+  });
   expect(runtimeTimer.reset).toHaveBeenCalledTimes(1);
 });
-
 test("settles a child error after timeout begins without waiting for close", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -155,7 +170,10 @@ test("settles a child error after timeout begins without waiting for close", asy
     spawnProcess: () => child,
     createProgressTimeout: ({ onTimeout }) => {
       fireTimeout = onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
+      return {
+        reset: jest.fn(),
+        stop: jest.fn(),
+      };
     },
     terminateChild: () => true,
   });
@@ -163,7 +181,6 @@ test("settles a child error after timeout begins without waiting for close", asy
   child.emit("error", new Error("child failed"));
   await expect(result).rejects.toThrow("child failed");
 });
-
 test("settles when the process never confirms termination", async () => {
   jest.useFakeTimers();
   try {
@@ -176,16 +193,17 @@ test("settles when the process never confirms termination", async () => {
       spawnProcess: () => child,
       createProgressTimeout: ({ onTimeout }) => {
         fireTimeout = onTimeout;
-        return { reset: jest.fn(), stop: jest.fn() };
+        return {
+          reset: jest.fn(),
+          stop: jest.fn(),
+        };
       },
       terminateChild: () => false,
       terminationGraceMs: 1,
       forceKillConfirmationMs: 1,
     });
-
     fireTimeout();
     jest.advanceTimersByTime(2);
-
     await expect(result).resolves.toMatchObject({
       code: null,
       signal: "SIGKILL",

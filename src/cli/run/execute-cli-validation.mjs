@@ -1,14 +1,13 @@
-import { readDiagnosticOptions } from "../read/diagnostic-options.mjs";
-import { createStageTimer } from "../timing/create/stage-timer.mjs";
-import { runConventionStage } from "../../validation/check-execution/run-convention-stage.mjs";
-import { runValidation } from "../../validation/run-validation.mjs";
-import { createValidationRunOptions } from "../create-validation-run-options.mjs";
-import { writeValidationResults } from "../write/validation-results.mjs";
-import { formatExitCode } from "../format-exit-code.mjs";
-import { parseFocusedArguments } from "../parse/focused-arguments.mjs";
-import { selectTimingOutput } from "../select-timing-output.mjs";
-
-export async function executeCliValidation({
+import readDiagnosticOptions from "../read/diagnostic-options.mjs";
+import createStageTimer from "../timing/create/stage-timer.mjs";
+import runConventionStage from "../../validation/check-execution/run-convention-stage.mjs";
+import runValidation from "../../validation/run-validation/run-validation.mjs";
+import createValidationRunOptions from "../create-validation-run-options.mjs";
+import writeValidationResults from "../write/validation-results.mjs";
+import formatExitCode from "../format-exit-code.mjs";
+import parseFocusedArguments from "../parse/focused-arguments.mjs";
+import selectTimingOutput from "../select-timing-output.mjs";
+export default async function executeCliValidation({
   args,
   write,
   root,
@@ -30,7 +29,11 @@ export async function executeCliValidation({
       createValidationRunOptions(
         args,
         diagnosticOptions,
-        { ...options, validationSummary, writeCliOutput: write },
+        {
+          ...options,
+          validationSummary,
+          writeCliOutput: write,
+        },
         stageTimer,
         output,
       ),

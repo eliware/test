@@ -2,7 +2,6 @@ const profileSections = {
   application: "Application",
   library: "Library",
 };
-
 const requiredGuidance = [
   "Run focused tests first during development.",
   "Run one test file with `npm test -- tests/path/to/example.test.mjs`.",
@@ -10,28 +9,23 @@ const requiredGuidance = [
   "Prevent repeated full-suite runs during development.",
   "Run the full `npm test` suite for final validation before a commit, milestone, or release.",
 ];
-
-export async function validateProfileTestGuidance(profile, inventory) {
+export default async function validateProfileTestGuidance(profile, inventory) {
   const section = profileSections[profile];
   if (!section) return [];
-
   let content;
   try {
     content = await inventory.readText("AGENTS.md");
   } catch (error) {
     return [`AGENTS.md could not be read: ${error.message}`];
   }
-
   const body = readSection(content, section);
   const missing = requiredGuidance.filter((guidance) => !body.includes(guidance));
   return missing.map((guidance) => `AGENTS.md ## ${section} must include: ${guidance}`);
 }
-
 function readSection(content, heading) {
   const lines = content.split(/\r?\n/u);
   const start = lines.findIndex((line) => line === `## ${heading}`);
   if (start < 0) return "";
-
   const end = lines.findIndex((line, index) => index > start && /^##\s+/u.test(line));
   return lines.slice(start + 1, end < 0 ? lines.length : end).join("\n");
 }

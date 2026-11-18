@@ -1,11 +1,16 @@
 import { cp, lstat, readFile, readlink, rm, stat } from "node:fs/promises";
-import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
-import { cleanupFailedSmokeCapture } from "./cleanup-failed-capture.mjs";
-import { captureSmokePaths } from "./paths.mjs";
-
-const defaultFs = { cp, lstat, readFile, readlink, rm, stat };
-
-export async function captureSmokeTargetState(
+import assertSmokePackageParents from "../assert-smoke-package-parents.mjs";
+import cleanupFailedSmokeCapture from "./cleanup-failed-capture.mjs";
+import captureSmokePaths from "./paths.mjs";
+const defaultFs = {
+  cp,
+  lstat,
+  readFile,
+  readlink,
+  rm,
+  stat,
+};
+export default async function captureSmokeTargetState(
   root,
   packageName,
   binNames = [],
@@ -25,7 +30,12 @@ export async function captureSmokeTargetState(
       platform,
       (targetRoot, name) => assertSmokePackageParents(targetRoot, name, fs.lstat),
     );
-    return { entries, storage, targetRoot: root, packageName };
+    return {
+      entries,
+      storage,
+      targetRoot: root,
+      packageName,
+    };
   } catch (error) {
     await cleanupFailedSmokeCapture(storage, fs, error);
   }

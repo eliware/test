@@ -1,9 +1,6 @@
 import { expect, test } from "@jest/globals";
-import {
-  buildJestArguments,
-  focusedPathFrom,
-} from "../../../../../src/validation/stages/jest/configuration/build-jest-arguments.mjs";
-
+import { focusedPathFrom } from "../../../../../src/validation/stages/jest/configuration/build-jest-arguments.mjs";
+import buildJestArguments from "../../../../../src/validation/stages/jest/configuration/build-jest-arguments.mjs";
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
   expect(focusedPathFrom(["--watch", "tests/sample.test.mjs"])).toBe("tests/sample.test.mjs");
@@ -30,7 +27,6 @@ test("builds focused and default Jest argument lists", () => {
     "tests/two.test.mjs",
   ]);
 });
-
 test("allows serial execution and open-handle detection when requested", () => {
   expect(buildJestArguments(["--runInBand", "--detectOpenHandles"])).toEqual([
     "--coverage",
@@ -44,13 +40,11 @@ test("allows serial execution and open-handle detection when requested", () => {
     "--detectOpenHandles=false",
   ]);
 });
-
 test("rejects extra focused test paths forwarded after the separator", () => {
   expect(() => buildJestArguments(["tests/sample.test.mjs", "--", "tests/other.test.mjs"])).toThrow(
     "before the -- separator",
   );
 });
-
 test.each([
   ["--coverage=false"],
   ["--no-coverage"],

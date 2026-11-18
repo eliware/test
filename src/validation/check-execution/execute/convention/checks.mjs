@@ -1,12 +1,9 @@
-import { executeConventionRules } from "./rules.mjs";
-import { filterConventionChecksForExecution } from "../../filter-convention-checks-for-execution.mjs";
-import { runValidationStages } from "../../../stages/run-validation-stages.mjs";
-import {
-  countCompletedPackageStages,
-  executeInitialPackageStages,
-  executeRemainingPackageStages,
-} from "./package-stages.mjs";
-
+import executeConventionRules from "./rules.mjs";
+import filterConventionChecksForExecution from "../../filter-convention-checks-for-execution.mjs";
+import runValidationStages from "../../../stages/run-validation-stages.mjs";
+import countCompletedPackageStages from "./package-stages/count-completed-package-stages.mjs";
+import executeInitialPackageStages from "./package-stages.mjs";
+import executeRemainingPackageStages from "./package-stages/execute-remaining-package-stages.mjs";
 function skipJest(context) {
   context.stageResults ??= {};
   context.stageResults.jest = {
@@ -17,8 +14,7 @@ function skipJest(context) {
     message: "Jest skipped because a pre-Jest stage or check failed.",
   };
 }
-
-export async function executeConventionChecks(checks, context, exemptions) {
+export default async function executeConventionChecks(checks, context, exemptions) {
   const selected = filterConventionChecksForExecution(checks, context, exemptions);
   context.timing?.stage?.("initial package stages");
   const initialStageResults = await executeInitialPackageStages(context);
@@ -28,7 +24,6 @@ export async function executeConventionChecks(checks, context, exemptions) {
     skipJest(context);
     return initialStageResults;
   }
-
   context.validationSummary ??= {};
   context.timing?.stage?.("remaining package stages and convention checks");
   const [remainingStageResults, checkResults] = await Promise.all([

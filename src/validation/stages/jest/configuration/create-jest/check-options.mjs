@@ -1,4 +1,4 @@
-export function createJestCheckOptions(context, onTimeout) {
+export default function createJestCheckOptions(context, onTimeout) {
   return {
     onTimeout,
     env: context.env ?? process.env,

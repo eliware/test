@@ -1,11 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { findRepositoryFiles } from "../shared/repository/find-repository-files.mjs";
-import { findTestPolicyViolations } from "./scan-test-policy.mjs";
-
+import findRepositoryFiles from "../shared/repository/find-repository-files/find/repository-files.mjs";
+import findTestPolicyViolations from "./scan-test-policy.mjs";
 const testFilePattern = /^tests\/.*\.(?:test|spec)\.(?:c|m)?(?:j|t)sx?$/iu;
-
-export async function validateTestIsolationPolicy(root) {
+export default async function validateTestIsolationPolicy(root) {
   const files = await findRepositoryFiles(root);
   const testFiles = files.filter((path) => testFilePattern.test(path));
   const violations = [];

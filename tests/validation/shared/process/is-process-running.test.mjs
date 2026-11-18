@@ -1,9 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
-import { isProcessRunning } from "../../../../src/validation/shared/process/is-process-running.mjs";
-
+import isProcessRunning from "../../../../src/validation/shared/process/is-process-running.mjs";
 test("detects running and missing processes", () => {
   expect(isProcessRunning(42, jest.fn())).toBe(true);
-  const missing = Object.assign(new Error("missing"), { code: "ESRCH" });
+  const missing = Object.assign(new Error("missing"), {
+    code: "ESRCH",
+  });
   expect(
     isProcessRunning(
       42,
@@ -13,9 +14,10 @@ test("detects running and missing processes", () => {
     ),
   ).toBe(false);
 });
-
 test("treats permission denial as a live process and propagates other failures", () => {
-  const denied = Object.assign(new Error("denied"), { code: "EPERM" });
+  const denied = Object.assign(new Error("denied"), {
+    code: "EPERM",
+  });
   expect(
     isProcessRunning(
       42,
@@ -30,7 +32,6 @@ test("treats permission denial as a live process and propagates other failures",
     }),
   ).toThrow("probe failed");
 });
-
 test("uses process.kill as the default liveness probe", () => {
   const probe = jest.spyOn(process, "kill").mockImplementation(() => true);
   try {

@@ -1,6 +1,5 @@
-import { matchesRepositoryPathPattern } from "./matches-repository-path-pattern.mjs";
-
-export function scopeCheckContext(context, paths = []) {
+import matchesRepositoryPathPattern from "./matches-repository-path-pattern.mjs";
+export default function scopeCheckContext(context, paths = []) {
   if (!paths.length) return context;
   const isExcluded = (path) => paths.some((pattern) => matchesRepositoryPathPattern(pattern, path));
   const inventory = context.repositoryInventory;
@@ -25,7 +24,9 @@ export function scopeCheckContext(context, paths = []) {
     ...context,
     repositoryInventory: scopedInventory,
     ...(context.repositoryFiles
-      ? { repositoryFiles: context.repositoryFiles.filter((path) => !isExcluded(path)) }
+      ? {
+          repositoryFiles: context.repositoryFiles.filter((path) => !isExcluded(path)),
+        }
       : {}),
     exemptPaths: paths,
     isPathExempt: isExcluded,

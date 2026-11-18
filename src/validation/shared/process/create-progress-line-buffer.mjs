@@ -1,6 +1,5 @@
 import { StringDecoder } from "node:string_decoder";
-
-export function createProgressLineBuffer({ onLine, onText, maxLineLength = 4096 }) {
+export default function createProgressLineBuffer({ onLine, onText, maxLineLength = 4096 }) {
   const decoder = new StringDecoder("utf8");
   let pending = "";
   let pendingOverflowed = false;
@@ -28,5 +27,8 @@ export function createProgressLineBuffer({ onLine, onText, maxLineLength = 4096 
     pending = "";
     pendingOverflowed = false;
   }
-  return Object.freeze({ push, flush });
+  return Object.freeze({
+    push,
+    flush,
+  });
 }

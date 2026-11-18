@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createValidationStageResult } from "../../../../src/validation/stages/shared/create-validation-stage-result.mjs";
-
+import createValidationStageResult from "../../../../src/validation/stages/shared/create-validation-stage-result.mjs";
 test("creates passing and failing cached stage records", () => {
   expect(createValidationStageResult("lint", 0, "", "report")).toEqual({
     ruleId: "stage:lint",

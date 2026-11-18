@@ -1,4 +1,4 @@
-export function validateCiWorkflowAccess(document, job) {
+export default function validateCiWorkflowAccess(document, job) {
   const errors = [];
   if (!onlyReadPermissions(document.permissions))
     errors.push("ci.yaml workflow permissions must contain only contents: read.");
@@ -12,11 +12,9 @@ export function validateCiWorkflowAccess(document, job) {
     errors.push("ci.yaml must not set inherited shell or working-directory overrides.");
   return errors;
 }
-
 function hasRunOverrides(defaults) {
   return ["shell", "working-directory"].some((key) => Object.hasOwn(defaults?.run ?? {}, key));
 }
-
 function onlyReadPermissions(permissions) {
   return Boolean(
     permissions && Object.keys(permissions).length === 1 && permissions.contents === "read",

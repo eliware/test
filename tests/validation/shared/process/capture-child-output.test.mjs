@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
-import { createChildOutputCapture } from "../../../../src/validation/shared/process/capture-child-output.mjs";
-
+import createChildOutputCapture from "../../../../src/validation/shared/process/capture-child-output.mjs";
 test("captures and streams redacted bounded output", () => {
   const output = [];
   const capture = createChildOutputCapture(5, {
@@ -9,37 +8,43 @@ test("captures and streams redacted bounded output", () => {
   });
   capture.stdout("abcdef");
   capture.stderr("ghijkl");
-  expect(capture.result()).toEqual({ stdout: "abcd…", stderr: "" });
+  expect(capture.result()).toEqual({
+    stdout: "abcd…",
+    stderr: "",
+  });
   expect(output).toEqual(["abcde"]);
 });
-
 test("applies stderr transformation before capture", () => {
   const capture = createChildOutputCapture(20, {
     captureStderr: (text) => text.replace("hidden", ""),
   });
   capture.stderr("hiddenvisible");
-  expect(capture.result()).toEqual({ stdout: "", stderr: "visible" });
+  expect(capture.result()).toEqual({
+    stdout: "",
+    stderr: "visible",
+  });
 });
-
 test("supports omitted output callbacks", () => {
   const capture = createChildOutputCapture(10);
   capture.stdout("visible");
-  expect(capture.result()).toEqual({ stdout: "visible", stderr: "" });
+  expect(capture.result()).toEqual({
+    stdout: "visible",
+    stderr: "",
+  });
 });
-
 test("sends original stream chunks to raw output handlers", () => {
   const raw = [];
   const capture = createChildOutputCapture(100, {
-    env: { SERVICE_TOKEN: "private-value" },
+    env: {
+      SERVICE_TOKEN: "private-value",
+    },
     onRawStdout: (text) => raw.push(text),
   });
   capture.stdout("private-value");
   capture.flush();
-
   expect(raw).toEqual(["private-value"]);
   expect(capture.result().stdout).toBe("[REDACTED]");
 });
-
 test("enforces a shared output budget across stdout and stderr", () => {
   const capture = createChildOutputCapture(10);
   capture.stdout("1234567");
@@ -48,70 +53,73 @@ test("enforces a shared output budget across stdout and stderr", () => {
   expect(result.stdout.length + result.stderr.length).toBe(10);
   expect(result.stderr).toContain("…");
 });
-
 test("marks output as truncated when a later chunk crosses an exactly filled budget", () => {
   const capture = createChildOutputCapture(10);
   capture.stdout("1234567890");
   capture.stderr("more output");
-
-  expect(capture.result()).toEqual({ stdout: "123456789…", stderr: "" });
+  expect(capture.result()).toEqual({
+    stdout: "123456789…",
+    stderr: "",
+  });
 });
-
 test("handles output overflow when the configured budget is zero", () => {
   const capture = createChildOutputCapture(0);
   capture.stdout("output");
   capture.flush();
-
-  expect(capture.result()).toEqual({ stdout: "", stderr: "" });
+  expect(capture.result()).toEqual({
+    stdout: "",
+    stderr: "",
+  });
 });
-
 test("does not split a Unicode surrogate pair at the output boundary", () => {
   const streamed = [];
-  const createTextStream = () => ({ push: () => "😀tail", finish: () => "" });
+  const createTextStream = () => ({
+    push: () => "😀tail",
+    finish: () => "",
+  });
   const capture = createChildOutputCapture(2, {
     onStdout: (text) => streamed.push(text),
     createTextStream,
   });
   capture.stdout("input");
   capture.flush();
-
   expect(capture.result().stdout).toBe("…");
   expect(streamed.join("")).toBe("😀");
   expect(streamed.join("")).not.toMatch(/[\uD800-\uDBFF]$/u);
 });
-
 test("does not emit an empty streamed prefix after removing a split pair", () => {
   const streamed = [];
-  const createTextStream = () => ({ push: () => "😀tail", finish: () => "" });
+  const createTextStream = () => ({
+    push: () => "😀tail",
+    finish: () => "",
+  });
   const capture = createChildOutputCapture(1, {
     onStdout: (text) => streamed.push(text),
     createTextStream,
   });
   capture.stdout("input");
   capture.flush();
-
   expect(capture.result().stdout).toBe("…");
   expect(streamed).toEqual([]);
 });
-
 test("keeps non-surrogate Unicode characters intact at the boundary", () => {
   const capture = createChildOutputCapture(1);
   capture.stdout("\uE000tail");
   capture.flush();
   expect(capture.result().stdout).toBe("…");
 });
-
 test("does not split a surrogate pair in transformed stderr capture", () => {
-  const createTextStream = () => ({ push: () => "output", finish: () => "" });
+  const createTextStream = () => ({
+    push: () => "output",
+    finish: () => "",
+  });
   const capture = createChildOutputCapture(2, {
     captureStderr: () => "😀tail",
     createTextStream,
   });
   capture.stderr("input");
-
   expect(capture.result().stderr).toBe("…");
 });
-
 test("streams redacted text after the adapter transforms child output", () => {
   const streamed = [];
   const capture = createChildOutputCapture(100, {
@@ -129,15 +137,20 @@ test("streams redacted text after the adapter transforms child output", () => {
   });
   expect(streamed.join("")).not.toContain("private-value");
 });
-
 test("suppresses complete progress output when a configured secret exceeds the capture limit", () => {
-  const capture = createChildOutputCapture(4, { env: { SERVICE_TOKEN: "secret-value" } });
+  const capture = createChildOutputCapture(4, {
+    env: {
+      SERVICE_TOKEN: "secret-value",
+    },
+  });
   expect(capture.redactComplete("secret-value")).toBe("");
 });
-
 test("preserves version output when a sensitive environment value is short", () => {
-  const capture = createChildOutputCapture(100, { env: { XDG_SESSION_ID: "1" } });
+  const capture = createChildOutputCapture(100, {
+    env: {
+      XDG_SESSION_ID: "1",
+    },
+  });
   capture.stdout(packageVersion);
-
   expect(capture.result().stdout).toBe(packageVersion);
 });

@@ -1,14 +1,15 @@
 import { expect, test } from "@jest/globals";
-import { validateReadmeStructure } from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/structure.mjs";
-import { readCanonicalOrder } from "../../../../../src/validation/shared/conventions/read-canonical-order.mjs";
-
+import validateReadmeStructure from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/structure.mjs";
+import readCanonicalOrder from "../../../../../src/validation/shared/conventions/read-canonical-order.mjs";
 const order = readCanonicalOrder("readme-sections.yaml");
 const expected = [order.tableOfContentsHeading, ...order.generalSections, ...order.finalSections];
-const packageJson = { name: "fixture", description: "Description" };
+const packageJson = {
+  name: "fixture",
+  description: "Description",
+};
 const brand =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 const valid = createReadme(expected, packageJson);
-
 function createReadme(headings, metadata) {
   return [
     brand,
@@ -26,18 +27,15 @@ function createReadme(headings, metadata) {
     ...headings.slice(1).flatMap((heading) => [`## ${heading}`, "Section text.", ""]),
   ].join("\n");
 }
-
 test("accepts canonical section and link order", () => {
   expect(validateReadmeStructure(valid, expected, packageJson)).toBeNull();
 });
-
 test("rejects blank required sections", () => {
   const blank = valid.replace("## Features\nSection text.", "## Features\n\n### Details");
   expect(validateReadmeStructure(blank, expected, packageJson)).toContain(
     "README.md section Features must contain content.",
   );
 });
-
 test("accepts a title with trailing badges", () => {
   const content = valid.replace(
     "## fixture\n\nDescription",
@@ -45,7 +43,6 @@ test("accepts a title with trailing badges", () => {
   );
   expect(validateReadmeStructure(content, expected, packageJson)).toBeNull();
 });
-
 test("rejects invalid brand, title, headings, and contents list", () => {
   expect(validateReadmeStructure("bad", expected, packageJson)).toContain("logo header");
   expect(
@@ -71,16 +68,16 @@ test("rejects invalid brand, title, headings, and contents list", () => {
       packageJson,
     ),
   ).toContain("title");
-  expect(validateReadmeStructure(valid, expected, { description: "Description" })).toContain(
-    "title",
-  );
+  expect(
+    validateReadmeStructure(valid, expected, {
+      description: "Description",
+    }),
+  ).toContain("title");
 });
-
 test("rejects unlisted sections", () => {
   const unlisted = valid.replace("## License", "## News\n\nSection text.\n\n## License");
   expect(validateReadmeStructure(unlisted, expected, packageJson)).toContain("unlisted sections");
 });
-
 test("rejects invalid blank lines in the header", () => {
   expect(
     validateReadmeStructure(
@@ -90,7 +87,6 @@ test("rejects invalid blank lines in the header", () => {
     ),
   ).toContain("Table of Contents with blank lines");
 });
-
 test("does not count table-of-contents links inside code", () => {
   const codeLinks = expected
     .slice(1)
@@ -104,19 +100,16 @@ test("does not count table-of-contents links inside code", () => {
     );
   expect(validateReadmeStructure(content, expected, packageJson)).toContain("Table of Contents");
 });
-
 test("does not count table-of-contents images as links", () => {
   const content = valid.replace("- [Features](#features)", "- ![Features](#features)");
   expect(validateReadmeStructure(content, expected, packageJson)).toContain("Table of Contents");
 });
-
 test("does not count the required title inside code", () => {
   const content = valid.replace("\n\n## fixture\n\n", "\n\n```text\n## fixture\n```\n\n");
   expect(validateReadmeStructure(content, expected, packageJson)).toContain("title");
   expect(validateReadmeStructure(brand, expected, packageJson)).toContain("title");
   expect(validateReadmeStructure(valid, expected)).toContain("title");
 });
-
 test("does not count section headings inside code", () => {
   const sections = expected
     .slice(1)

@@ -1,17 +1,30 @@
-import { resolveValidationStageOptions } from "./resolve/validation-stage-options.mjs";
-import { resolveFocusedScope } from "./resolve/focused/scope.mjs";
-
-export function createValidationRunOptions(args, diagnosticOptions, options, timing, write) {
+import resolveValidationStageOptions from "./resolve/validation-stage-options.mjs";
+import resolveFocusedScope from "./resolve/focused/scope.mjs";
+export default function createValidationRunOptions(
+  args,
+  diagnosticOptions,
+  options,
+  timing,
+  write,
+) {
   const focusedScope = resolveFocusedScope(diagnosticOptions.jestArgs);
   return {
     ...resolveValidationStageOptions(diagnosticOptions, options),
-    ...(options.env ? { env: options.env } : {}),
+    ...(options.env
+      ? {
+          env: options.env,
+        }
+      : {}),
     jestArgs: diagnosticOptions.jestArgs,
     toolArgs: focusedScope ? [] : diagnosticOptions.toolArgs,
     timing,
     validationSummary: options.validationSummary,
     writeOutput: write,
     writeCliOutput: options.writeCliOutput,
-    ...(focusedScope ? { focusedScope } : {}),
+    ...(focusedScope
+      ? {
+          focusedScope,
+        }
+      : {}),
   };
 }

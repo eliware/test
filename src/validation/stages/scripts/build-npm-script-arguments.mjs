@@ -1,3 +1,3 @@
-export function buildNpmScriptArguments(scriptName) {
+export default function buildNpmScriptArguments(scriptName) {
   return ["run", scriptName, "--silent"];
 }

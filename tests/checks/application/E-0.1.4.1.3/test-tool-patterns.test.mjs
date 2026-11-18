@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isTestToolSpecifier } from "../../../../src/checks/application/E-0.1.4.1.3/test-tool-patterns.mjs";
-
+import isTestToolSpecifier from "../../../../src/checks/application/E-0.1.4.1.3/test-tool-patterns.mjs";
 test("recognizes test tools and excludes the Jest globals package", () => {
   expect(isTestToolSpecifier("@jest/core")).toBe(true);
   expect(isTestToolSpecifier("@jest/globals")).toBe(false);

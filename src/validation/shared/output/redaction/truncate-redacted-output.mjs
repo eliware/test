@@ -1,6 +1,5 @@
 const marker = "[REDACTED]";
-
-export function truncateRedactedOutput(text, limit) {
+export default function truncateRedactedOutput(text, limit) {
   const boundedLimit = Math.max(0, limit);
   const truncated = text.slice(0, boundedLimit);
   const markerStart = truncated.lastIndexOf(marker[0]);

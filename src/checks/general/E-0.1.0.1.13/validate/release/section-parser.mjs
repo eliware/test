@@ -1,17 +1,23 @@
-export function parseReleaseNoteSections(lines) {
+export default function parseReleaseNoteSections(lines) {
   const entries = [];
   const unscopedSections = [];
   const errors = [];
   let entry;
   let section;
-
   for (const line of lines.slice(1)) {
     if (line.startsWith("## ")) {
-      entry = { heading: line, sections: [] };
+      entry = {
+        heading: line,
+        sections: [],
+      };
       entries.push(entry);
       section = undefined;
     } else if (line.startsWith("### ")) {
-      section = { heading: line, name: line.slice(4), content: [] };
+      section = {
+        heading: line,
+        name: line.slice(4),
+        content: [],
+      };
       if (entry) entry.sections.push(section);
       else unscopedSections.push(section);
     } else if (/^#{1,6}\s/u.test(line)) {
@@ -22,6 +28,9 @@ export function parseReleaseNoteSections(lines) {
       else errors.push("RELEASE_NOTES.md must not contain text outside a release subsection.");
     }
   }
-
-  return { entries, unscopedSections, errors };
+  return {
+    entries,
+    unscopedSections,
+    errors,
+  };
 }

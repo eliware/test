@@ -1,12 +1,18 @@
 import { expect, jest, test } from "@jest/globals";
-import { createUnconfirmedTerminationSettlement } from "../../../../../../../src/validation/shared/process/create/child/termination/settle-unconfirmed.mjs";
-
+import createUnconfirmedTerminationSettlement from "../../../../../../../src/validation/shared/process/create/child/termination/settle-unconfirmed.mjs";
 test("settles once with captured output after termination cannot be confirmed", () => {
-  const state = { settled: false };
-  const timeout = { stop: jest.fn() };
+  const state = {
+    settled: false,
+  };
+  const timeout = {
+    stop: jest.fn(),
+  };
   const output = {
     flush: jest.fn(),
-    result: jest.fn(() => ({ stdout: "out", stderr: "err" })),
+    result: jest.fn(() => ({
+      stdout: "out",
+      stderr: "err",
+    })),
   };
   const resolve = jest.fn();
   const settle = createUnconfirmedTerminationSettlement({
@@ -18,10 +24,8 @@ test("settles once with captured output after termination cannot be confirmed", 
     output,
     resolve,
   });
-
   settle();
   settle();
-
   expect(resolve).toHaveBeenCalledTimes(1);
   expect(resolve).toHaveBeenCalledWith({
     code: null,
@@ -35,10 +39,14 @@ test("settles once with captured output after termination cannot be confirmed", 
   expect(timeout.stop).toHaveBeenCalledTimes(1);
   expect(output.flush).toHaveBeenCalledTimes(1);
 });
-
 test("ignores settlement after another result has completed", () => {
-  const timeout = { stop: jest.fn() };
-  const output = { flush: jest.fn(), result: jest.fn() };
+  const timeout = {
+    stop: jest.fn(),
+  };
+  const output = {
+    flush: jest.fn(),
+    result: jest.fn(),
+  };
   const resolve = jest.fn();
   const settle = createUnconfirmedTerminationSettlement({
     isSettled: () => true,
@@ -47,9 +55,7 @@ test("ignores settlement after another result has completed", () => {
     output,
     resolve,
   });
-
   settle();
-
   expect(timeout.stop).not.toHaveBeenCalled();
   expect(output.flush).not.toHaveBeenCalled();
   expect(resolve).not.toHaveBeenCalled();

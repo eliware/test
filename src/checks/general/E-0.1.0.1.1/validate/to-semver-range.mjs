@@ -1,6 +1,5 @@
 import semver from "semver";
-
-export function toSemverRange(value) {
+export default function toSemverRange(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   const range = semver.validRange(value);
   if (range) return value;

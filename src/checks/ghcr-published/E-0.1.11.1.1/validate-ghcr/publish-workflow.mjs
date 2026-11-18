@@ -1,6 +1,5 @@
-import { validateCanonicalPublisherWorkflow } from "../../../shared/publish-workflow/validate/canonical-publisher-workflow.mjs";
-
-export async function validateGhcrPublishWorkflow(inventory) {
+import validateCanonicalPublisherWorkflow from "../../../shared/publish-workflow/validate/canonical-publisher-workflow.mjs";
+export default async function validateGhcrPublishWorkflow(inventory) {
   if (!inventory?.files) return ["Repository files could not be inspected."];
   try {
     if (!(await inventory.files("all")).includes("Dockerfile"))

@@ -1,9 +1,8 @@
-import { visitAst } from "../visit-ast.mjs";
-import { collectFileHandles, collectMockedHandles } from "./collect/file-handles.mjs";
-
+import visitAst from "../visit-ast.mjs";
+import collectFileHandles from "./collect/file-handles.mjs";
+import collectMockedHandles from "./collect/file-handles/collect-mocked-handles.mjs";
 const writeMethods = new Set(["write", "writeFile", "writev"]);
-
-export function findFileHandleWriteViolations(ast, filePath) {
+export default function findFileHandleWriteViolations(ast, filePath) {
   const handles = collectFileHandles(ast);
   const mocked = collectMockedHandles(ast);
   const violations = [];
@@ -17,18 +16,15 @@ export function findFileHandleWriteViolations(ast, filePath) {
   });
   return violations;
 }
-
 function isMemberCall(node) {
   return (
     node.type === "CallExpression" &&
     ["MemberExpression", "OptionalMemberExpression"].includes(node.callee?.type)
   );
 }
-
 function memberName(member) {
   return member.computed ? member.property.value : member.property.name;
 }
-
 function rootName(node) {
   if (node?.type === "Identifier") return node.name;
   if (["MemberExpression", "OptionalMemberExpression"].includes(node?.type))

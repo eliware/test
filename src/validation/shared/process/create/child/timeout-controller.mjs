@@ -1,6 +1,5 @@
-import { createSuiteTimeoutTracker } from "../../../../stages/jest/progress/create/suite-timeout-tracker.mjs";
-
-export function createChildTimeoutController(
+import createSuiteTimeoutTracker from "../../../../stages/jest/progress/create/suite-timeout-tracker.mjs";
+export default function createChildTimeoutController(
   options,
   createTimeout,
   getTermination,

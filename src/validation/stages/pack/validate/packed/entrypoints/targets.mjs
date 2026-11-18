@@ -1,5 +1,4 @@
-import { collectNestedStringValues } from "../../../../../shared/package/collect-nested-string-values.mjs";
-
+import collectNestedStringValues from "../../../../../shared/package/collect-nested-string-values.mjs";
 const packageTargetFields = [
   ["main", true],
   ["module", true],
@@ -13,7 +12,6 @@ const packageTargetFields = [
   ["typesVersions", true],
   ["imports", false],
 ];
-
 function collectTargets(value, allowBarePath) {
   return collectNestedStringValues(value).flatMap((target) => {
     if (target.startsWith("./")) return [target.slice(2)];
@@ -21,8 +19,7 @@ function collectTargets(value, allowBarePath) {
     return [];
   });
 }
-
-export function collectPackedEntrypointTargets(packageJson) {
+export default function collectPackedEntrypointTargets(packageJson) {
   return [
     ...new Set(
       packageTargetFields.flatMap(([field, allowBarePath]) =>

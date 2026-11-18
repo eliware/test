@@ -6,8 +6,7 @@ const containerPathRoots = [
   ["", "srv", "repository"].join("/"),
   ["", "srv", "workspace"].join("/"),
 ];
-
-export function hasPosixMachineSpecificPath(content) {
+export default function hasPosixMachineSpecificPath(content) {
   return [...content.matchAll(pathPattern)].some(([match]) => {
     const path = match.slice(match.indexOf("/")).replace(/[.,!?`]+$/u, "");
     return !containerPathRoots.some((root) => path === root || path.startsWith(`${root}/`));

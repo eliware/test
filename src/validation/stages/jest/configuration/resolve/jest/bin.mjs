@@ -1,7 +1,10 @@
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-
-export function resolveJestBin(requireFromConsumer, packageName, resolveRealPath = realpathSync) {
+export default function resolveJestBin(
+  requireFromConsumer,
+  packageName,
+  resolveRealPath = realpathSync,
+) {
   try {
     requireFromConsumer.resolve(packageName);
   } catch (error) {
@@ -9,7 +12,6 @@ export function resolveJestBin(requireFromConsumer, packageName, resolveRealPath
       return undefined;
     throw error;
   }
-
   try {
     const resolved = requireFromConsumer.resolve(`${packageName}/bin/jest`);
     const packagePath = requireFromConsumer.resolve(`${packageName}/package.json`);
@@ -21,7 +23,6 @@ export function resolveJestBin(requireFromConsumer, packageName, resolveRealPath
   } catch (error) {
     if (error?.message?.includes("escapes its package directory")) throw error;
   }
-
   const packagePath = requireFromConsumer.resolve(`${packageName}/package.json`);
   const metadata = JSON.parse(readFileSync(packagePath, "utf8"));
   const bin = typeof metadata.bin === "string" ? metadata.bin : metadata.bin?.jest;
@@ -43,7 +44,6 @@ export function resolveJestBin(requireFromConsumer, packageName, resolveRealPath
     throw new Error(`Installed ${packageName} Jest executable does not exist: ${resolved}`);
   return resolved;
 }
-
 function isPathInside(directory, target) {
   const relativePath = relative(directory, target);
   return (

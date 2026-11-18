@@ -1,13 +1,12 @@
-import { isLauncher } from "../../is/launcher.mjs";
-import { readStaticString } from "../../read-static-string.mjs";
-import { visitAst } from "../../visit-ast.mjs";
-import { isModuleLoadCall } from "../../is/module-load-call.mjs";
-import { isTestToolSpecifier } from "../../test-tool-patterns.mjs";
-import { isTestToolCommand } from "../../command-patterns.mjs";
-import { collectCommandStrings } from "../collect/command-strings.mjs";
-import { findImportSpecifier } from "../find-import-specifier.mjs";
-
-export function visitTestToolUse(program, strings, launchNames, allowHarnessTools) {
+import isLauncher from "../../is/launcher.mjs";
+import readStaticString from "../../read-static-string.mjs";
+import visitAst from "../../visit-ast.mjs";
+import isModuleLoadCall from "../../is/module-load-call.mjs";
+import isTestToolSpecifier from "../../test-tool-patterns.mjs";
+import isTestToolCommand from "../../command-patterns.mjs";
+import collectCommandStrings from "../collect/command-strings.mjs";
+import findImportSpecifier from "../find-import-specifier.mjs";
+export default function visitTestToolUse(program, strings, launchNames, allowHarnessTools) {
   return visitAst(program, (node) => {
     const specifier = findImportSpecifier(node, strings);
     if (

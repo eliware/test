@@ -1,4 +1,4 @@
-export function collectCommonJsAliases(root, source) {
+export default function collectCommonJsAliases(root, source) {
   const aliases = new Set([source]);
   let changed = true;
   while (changed) {
@@ -20,7 +20,6 @@ export function collectCommonJsAliases(root, source) {
   }
   return aliases;
 }
-
 function visit(node, callback) {
   if (!node || typeof node !== "object") return;
   callback(node);

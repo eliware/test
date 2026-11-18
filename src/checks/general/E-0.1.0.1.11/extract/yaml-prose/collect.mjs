@@ -1,6 +1,5 @@
 import { isMap, isScalar, isSeq } from "yaml";
-
-export function visitYamlScalars(node, visit, path = []) {
+export default function visitYamlScalars(node, visit, path = []) {
   if (isMap(node)) {
     for (const item of node.items) {
       visitYamlScalars(item.value, visit, [...path, String(item.key.value).toLowerCase()]);

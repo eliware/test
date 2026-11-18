@@ -1,6 +1,5 @@
-import { npmCommand } from "../../shared/process/npm-command.mjs";
-
-export function resolveAuditExecutable({
+import npmCommand from "../../shared/process/npm-command.mjs";
+export default function resolveAuditExecutable({
   env = process.env,
   platform = process.platform,
   execPath = process.execPath,

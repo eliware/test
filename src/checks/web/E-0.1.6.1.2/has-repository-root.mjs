@@ -1,4 +1,4 @@
-export function hasRepositoryRoot(program, name, dirname, fileURLToPath) {
+export default function hasRepositoryRoot(program, name, dirname, fileURLToPath) {
   if (!dirname || !fileURLToPath) return false;
   return program.body.some(
     (item) =>

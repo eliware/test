@@ -1,6 +1,5 @@
-export function createRepositoryAstSourceReader(read) {
+export default function createRepositoryAstSourceReader(read) {
   const sourceReads = new Map();
-
   return function readSource(key, absoluteFile, suppliedSource) {
     if (suppliedSource !== undefined) return Promise.resolve(suppliedSource);
     const pendingRead = sourceReads.get(key);

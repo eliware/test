@@ -19,7 +19,10 @@ Validation continues, and the timeout does not change the aggregate exit code.
 If npm audit fails, the CLI reports severity counts and advisory details from npm's JSON report.
 Use an approved `stage:audit` exemption to allow listed advisory IDs until its expiry date.
 
-The audit rejects any unlisted issue at or above high severity.
+An expired exemption stops validation before the audit and Jest stages.
+An approved audit exemption suppresses matching advisories without printing a warning.
+
+The audit omits development dependencies and rejects any unlisted issue at or above high severity.
 
 The CLI runs these stages at the same time:
 

@@ -1,6 +1,5 @@
-import { validateAdapterHandlerPair } from "../../../application/shared/validate-adapter-handler-pair.mjs";
-
-export async function validateDiscordHandlerFiles(inventory, directory, names) {
+import validateAdapterHandlerPair from "../../../application/shared/validate-adapter-handler-pair.mjs";
+export default async function validateDiscordHandlerFiles(inventory, directory, names) {
   const errors = [];
   for (const name of names) {
     errors.push(

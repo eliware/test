@@ -1,7 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { stripJestProgressLines } from "./create/jest/console/strip-progress-lines.mjs";
-
-export async function sanitizeJestLog(path, fs = {}) {
+import stripJestProgressLines from "./create/jest/console/strip-progress-lines.mjs";
+export default async function sanitizeJestLog(path, fs = {}) {
   const read = fs.read ?? readFile;
   const write = fs.write ?? writeFile;
   const output = await read(path, "utf8");

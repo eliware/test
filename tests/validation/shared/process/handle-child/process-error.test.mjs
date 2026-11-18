@@ -1,10 +1,13 @@
 import { expect, jest, test } from "@jest/globals";
-import { createChildProcessErrorHandler } from "../../../../../src/validation/shared/process/handle-child/process-error.mjs";
-
+import createChildProcessErrorHandler from "../../../../../src/validation/shared/process/handle-child/process-error.mjs";
 test("settles once, stops process handlers, and redacts error details", () => {
   let settled = false;
-  const timeout = { stop: jest.fn() };
-  const termination = { cancel: jest.fn() };
+  const timeout = {
+    stop: jest.fn(),
+  };
+  const termination = {
+    cancel: jest.fn(),
+  };
   const reject = jest.fn();
   const handler = createChildProcessErrorHandler({
     isSettled: () => settled,
@@ -13,18 +16,17 @@ test("settles once, stops process handlers, and redacts error details", () => {
     },
     getTimeout: () => timeout,
     getTermination: () => termination,
-    output: { redactComplete: (text) => text.replace("private", "[REDACTED]") },
+    output: {
+      redactComplete: (text) => text.replace("private", "[REDACTED]"),
+    },
     reject,
   });
-
   handler(new Error("private failure"));
   handler("late failure");
-
   expect(timeout.stop).toHaveBeenCalledTimes(1);
   expect(termination.cancel).toHaveBeenCalledTimes(1);
   expect(reject).toHaveBeenCalledWith(new Error("[REDACTED] failure"));
 });
-
 test("handles non-Error and empty diagnostics when cleanup callbacks fail", () => {
   const reject = jest.fn();
   let settled = false;
@@ -43,7 +45,9 @@ test("handles non-Error and empty diagnostics when cleanup callbacks fail", () =
         throw new Error("cancel failure");
       },
     }),
-    output: { redactComplete: () => "" },
+    output: {
+      redactComplete: () => "",
+    },
     reject,
   });
   handler("launch failure");
@@ -51,7 +55,6 @@ test("handles non-Error and empty diagnostics when cleanup callbacks fail", () =
   handler(new Error("late"));
   expect(reject).toHaveBeenCalledTimes(1);
 });
-
 test("returns early when another event already settled the child", () => {
   const reject = jest.fn();
   const handler = createChildProcessErrorHandler({
@@ -59,13 +62,14 @@ test("returns early when another event already settled the child", () => {
     markSettled: jest.fn(),
     getTimeout: jest.fn(),
     getTermination: jest.fn(),
-    output: { redactComplete: jest.fn() },
+    output: {
+      redactComplete: jest.fn(),
+    },
     reject,
   });
   handler(new Error("late"));
   expect(reject).not.toHaveBeenCalled();
 });
-
 test("settles without timeout or termination handlers", () => {
   let settled = false;
   const reject = jest.fn();
@@ -76,7 +80,9 @@ test("settles without timeout or termination handlers", () => {
     },
     getTimeout: () => undefined,
     getTermination: () => undefined,
-    output: { redactComplete: (text) => text },
+    output: {
+      redactComplete: (text) => text,
+    },
     reject,
   });
   handler("spawn error");

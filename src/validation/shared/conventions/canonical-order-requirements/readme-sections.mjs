@@ -1,5 +1,4 @@
 import { canonicalProfileOrder } from "./profiles.mjs";
-
 export const readmeSectionsRequirements = {
   fields: {
     header: "text-list",
@@ -29,6 +28,16 @@ export const readmeSectionsRequirements = {
     profileSections: canonicalProfileOrder,
     sharedSections: ["Commands"],
   },
-  nestedMaps: { sharedSections: { Commands: ["profiles"] } },
-  nestedTypes: { sharedSections: { Commands: { profiles: "nonempty-text-list" } } },
+  nestedMaps: {
+    sharedSections: {
+      Commands: ["profiles"],
+    },
+  },
+  nestedTypes: {
+    sharedSections: {
+      Commands: {
+        profiles: "nonempty-text-list",
+      },
+    },
+  },
 };

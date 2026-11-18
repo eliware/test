@@ -1,5 +1,4 @@
-import { repoMapExemptionsMatch } from "./exemptions.mjs";
-
+import repoMapExemptionsMatch from "./exemptions.mjs";
 function list(value) {
   const values = Array.isArray(value)
     ? value
@@ -10,7 +9,6 @@ function list(value) {
     ? values
     : null;
 }
-
 function sameList(actual, expected) {
   return (
     Array.isArray(actual) &&
@@ -18,8 +16,7 @@ function sameList(actual, expected) {
     actual.every((item, index) => item === expected[index])
   );
 }
-
-export function validateRepoMapMetadata(packageJson, record) {
+export default function validateRepoMapMetadata(packageJson, record) {
   if (
     typeof record?.id !== "string" ||
     !/^E-\d+$/u.test(record.id) ||

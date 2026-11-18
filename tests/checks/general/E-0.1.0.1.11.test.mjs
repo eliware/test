@@ -1,8 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
-import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.11.mjs";
-
+import { ruleId } from "../../../src/checks/general/E-0.1.0.1.11.mjs";
+import run from "../../../src/checks/general/E-0.1.0.1.11.mjs";
 const emptyExamples = async () => new Set();
-
 test("checks prose files and reports unapproved terms with alternatives", async () => {
   const files = ["README.md", "image.bin", "docs/README.md", "tests/helper.mjs"];
   const inventory = {
@@ -10,8 +9,12 @@ test("checks prose files and reports unapproved terms with alternatives", async 
     readText: jest.fn(async () => "abrupt."),
   };
   const result = await run(
-    { repositoryInventory: inventory },
-    { loadExactExamples: emptyExamples },
+    {
+      repositoryInventory: inventory,
+    },
+    {
+      loadExactExamples: emptyExamples,
+    },
   );
   expect(result).toEqual({
     ruleId,
@@ -21,7 +24,6 @@ test("checks prose files and reports unapproved terms with alternatives", async 
   });
   expect(inventory.readText).toHaveBeenCalledTimes(2);
 });
-
 test("returns pass when supported repository files contain clean prose", async () => {
   await expect(
     run(
@@ -31,11 +33,16 @@ test("returns pass when supported repository files contain clean prose", async (
           readText: async () => "unlistedterm.",
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test("checks JSX files for human-readable prose", async () => {
   await expect(
     run(
@@ -45,14 +52,15 @@ test("checks JSX files for human-readable prose", async () => {
           readText: async () => "const view = <p>An abrupt change.</p>;",
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
   ).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining('src/view.jsx:1 uses "abrupt".'),
   });
 });
-
 test("accepts the standardized unlawful interference category", async () => {
   await expect(
     run(
@@ -62,11 +70,16 @@ test("accepts the standardized unlawful interference category", async () => {
           readText: async () => "Unlawful interference is a standardized aviation category.",
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
 });
-
 test.each([
   ["guide.md", "An abrupt change."],
   ["guide.txt", "An abrupt change."],
@@ -79,15 +92,34 @@ test.each([
 ])("checks prose in supported file format %s", async (path, source) => {
   await expect(
     run(
-      { repositoryInventory: { files: async () => [path], readText: async () => source } },
-      { loadExactExamples: emptyExamples },
+      {
+        repositoryInventory: {
+          files: async () => [path],
+          readText: async () => source,
+        },
+      },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining(`${path}:1`) });
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining(`${path}:1`),
+  });
 });
-
 test("counts sentences across static template interpolations", async () => {
-  const first = Array.from({ length: 13 }, (_, index) => `word${index + 1}`).join(" ");
-  const second = Array.from({ length: 13 }, (_, index) => `word${index + 14}`).join(" ");
+  const first = Array.from(
+    {
+      length: 13,
+    },
+    (_, index) => `word${index + 1}`,
+  ).join(" ");
+  const second = Array.from(
+    {
+      length: 13,
+    },
+    (_, index) => `word${index + 14}`,
+  ).join(" ");
   await expect(
     run(
       {
@@ -96,17 +128,22 @@ test("counts sentences across static template interpolations", async () => {
           readText: async () => `console.log(\`${first} ${second}\`);`,
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
   ).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining("sentence 1 has 26 words. Limit: 25."),
   });
 });
-
 test("uses bundled example loading when callers inject file access only", async () => {
   const list = jest.fn(async () => [
-    { name: "example.yaml", isDirectory: () => false, isFile: () => true },
+    {
+      name: "example.yaml",
+      isDirectory: () => false,
+      isFile: () => true,
+    },
   ]);
   const read = jest.fn(async () => 'examples: ["A canonical sentence."]');
   const result = await run(
@@ -116,19 +153,33 @@ test("uses bundled example loading when callers inject file access only", async 
         readText: async () => "A canonical sentence.",
       },
     },
-    { exampleFiles: { list, read } },
+    {
+      exampleFiles: {
+        list,
+        read,
+      },
+    },
   );
-  expect(result).toEqual({ ruleId, status: "pass", message: "" });
+  expect(result).toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
   expect(read).toHaveBeenCalledTimes(1);
 });
-
 test("reports inventory failures and missing inventory methods", async () => {
   await expect(run()).resolves.toEqual({
     ruleId,
     status: "fail",
     message: "Repository language files could not be inspected.",
   });
-  await expect(run({ repositoryInventory: { files: async () => [] } })).resolves.toMatchObject({
+  await expect(
+    run({
+      repositoryInventory: {
+        files: async () => [],
+      },
+    }),
+  ).resolves.toMatchObject({
     status: "fail",
     ruleId,
   });
@@ -142,14 +193,15 @@ test("reports inventory failures and missing inventory methods", async () => {
           readText: async () => "",
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
   ).resolves.toMatchObject({
     status: "fail",
     message: "Repository language files could not be inspected: list failed",
   });
 });
-
 test("reports file read failures", async () => {
   await expect(
     run(
@@ -161,7 +213,12 @@ test("reports file read failures", async () => {
           },
         },
       },
-      { loadExactExamples: emptyExamples },
+      {
+        loadExactExamples: emptyExamples,
+      },
     ),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("read failed") });
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("read failed"),
+  });
 });

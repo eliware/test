@@ -1,7 +1,11 @@
-import { executePreparedJestRun } from "../../../../execution/execute/prepared-jest-run.mjs";
-import { collectRedactionSecrets } from "../../../../../../shared/output/redaction/collect-redaction-secrets.mjs";
-
-export async function runJestWithConsoleLog(prepared, execute, outputLog, env = process.env) {
+import executePreparedJestRun from "../../../../execution/execute/prepared-jest-run.mjs";
+import collectRedactionSecrets from "../../../../../../shared/output/redaction/collect-redaction-secrets.mjs";
+export default async function runJestWithConsoleLog(
+  prepared,
+  execute,
+  outputLog,
+  env = process.env,
+) {
   outputLog.start();
   let result;
   try {
@@ -25,9 +29,16 @@ export async function runJestWithConsoleLog(prepared, execute, outputLog, env = 
     result = {
       ...result,
       ...(logResult.redacted
-        ? { outputRedacted: true, outputRedactionKinds: logResult.redactionKinds }
+        ? {
+            outputRedacted: true,
+            outputRedactionKinds: logResult.redactionKinds,
+          }
         : {}),
-      ...(logResult.writeError ? { outputLogError: true } : {}),
+      ...(logResult.writeError
+        ? {
+            outputLogError: true,
+          }
+        : {}),
     };
   }
   return result;

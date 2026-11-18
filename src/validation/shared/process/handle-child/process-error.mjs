@@ -1,4 +1,4 @@
-export function createChildProcessErrorHandler({
+export default function createChildProcessErrorHandler({
   isSettled,
   markSettled,
   getTimeout,

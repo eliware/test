@@ -1,12 +1,20 @@
 import { expect, test } from "@jest/globals";
 import { commonJsFindingsAst as ast } from "../../../../../test-fixtures/commonjs-findings-ast.mjs";
-import { collectCommonJsFindings } from "../../../../../src/checks/general/E-0.1.0.1.1/collect-commonjs/findings.mjs";
-
+import collectCommonJsFindings from "../../../../../src/checks/general/E-0.1.0.1.1/collect-commonjs/findings.mjs";
 test("finds CommonJS calls, exports, identifiers, and import.meta.require", () => {
   const findings = [];
   collectCommonJsFindings(ast, findings, "source.mjs");
   collectCommonJsFindings(null, findings, "source.mts");
-  collectCommonJsFindings({ type: "Program", loc: {}, start: 0, end: 1 }, findings, "source.mts");
+  collectCommonJsFindings(
+    {
+      type: "Program",
+      loc: {},
+      start: 0,
+      end: 1,
+    },
+    findings,
+    "source.mts",
+  );
   expect(findings).toEqual([
     "source.mjs: require()",
     "source.mjs: require()",
@@ -17,7 +25,6 @@ test("finds CommonJS calls, exports, identifiers, and import.meta.require", () =
     "source.mjs: import.meta.require()",
   ]);
 });
-
 test("finds computed module exports and require member calls", () => {
   const findings = [];
   collectCommonJsFindings(
@@ -26,23 +33,41 @@ test("finds computed module exports and require member calls", () => {
       body: [
         {
           type: "MemberExpression",
-          object: { type: "Identifier", name: "module" },
-          property: { type: "StringLiteral", value: "exports" },
-        },
-        {
-          type: "CallExpression",
-          callee: {
-            type: "MemberExpression",
-            object: { type: "Identifier", name: "require" },
-            property: { type: "Identifier", name: "resolve" },
+          object: {
+            type: "Identifier",
+            name: "module",
+          },
+          property: {
+            type: "StringLiteral",
+            value: "exports",
           },
         },
         {
           type: "CallExpression",
           callee: {
             type: "MemberExpression",
-            object: { type: "Identifier", name: "module" },
-            property: { type: "StringLiteral", value: "require" },
+            object: {
+              type: "Identifier",
+              name: "require",
+            },
+            property: {
+              type: "Identifier",
+              name: "resolve",
+            },
+          },
+        },
+        {
+          type: "CallExpression",
+          callee: {
+            type: "MemberExpression",
+            object: {
+              type: "Identifier",
+              name: "module",
+            },
+            property: {
+              type: "StringLiteral",
+              value: "require",
+            },
           },
         },
       ],
@@ -56,7 +81,6 @@ test("finds computed module exports and require member calls", () => {
     "source.mts: module.require()",
   ]);
 });
-
 test("finds TypeScript module syntax", () => {
   const findings = [];
   collectCommonJsFindings(
@@ -64,13 +88,30 @@ test("finds TypeScript module syntax", () => {
       type: "Program",
       body: [
         null,
-        { type: "VariableDeclarator", init: { type: "Identifier", name: "unrelated" } },
-        { type: "AssignmentExpression", left: {}, right: { type: "Identifier", name: "other" } },
+        {
+          type: "VariableDeclarator",
+          init: {
+            type: "Identifier",
+            name: "unrelated",
+          },
+        },
+        {
+          type: "AssignmentExpression",
+          left: {},
+          right: {
+            type: "Identifier",
+            name: "other",
+          },
+        },
         {
           type: "TSImportEqualsDeclaration",
-          moduleReference: { type: "TSExternalModuleReference" },
+          moduleReference: {
+            type: "TSExternalModuleReference",
+          },
         },
-        { type: "TSExportAssignment" },
+        {
+          type: "TSExportAssignment",
+        },
       ],
     },
     findings,
@@ -81,7 +122,6 @@ test("finds TypeScript module syntax", () => {
     "source.mts: TypeScript CommonJS module syntax",
   ]);
 });
-
 test("finds aliased require functions and computed module exports", () => {
   const findings = [];
   collectCommonJsFindings(
@@ -90,17 +130,35 @@ test("finds aliased require functions and computed module exports", () => {
       body: [
         {
           type: "VariableDeclarator",
-          id: { type: "Identifier", name: "load" },
-          init: { type: "Identifier", name: "require" },
+          id: {
+            type: "Identifier",
+            name: "load",
+          },
+          init: {
+            type: "Identifier",
+            name: "require",
+          },
         },
-        { type: "CallExpression", callee: { type: "Identifier", name: "load" } },
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "load",
+          },
+        },
         {
           type: "AssignmentExpression",
           left: {
             type: "MemberExpression",
             computed: true,
-            object: { type: "Identifier", name: "module" },
-            property: { type: "Identifier", name: "exportKey" },
+            object: {
+              type: "Identifier",
+              name: "module",
+            },
+            property: {
+              type: "Identifier",
+              name: "exportKey",
+            },
           },
         },
       ],
@@ -111,7 +169,6 @@ test("finds aliased require functions and computed module exports", () => {
   expect(findings).toContain("source.mjs: require()");
   expect(findings).toContain("source.mjs: CommonJS export");
 });
-
 test("finds exports through a destructured module alias", () => {
   const findings = [];
   collectCommonJsFindings(
@@ -122,18 +179,39 @@ test("finds exports through a destructured module alias", () => {
           type: "VariableDeclarator",
           id: {
             type: "ObjectPattern",
-            properties: [{ key: { name: "exports" }, value: { name: "out" } }],
+            properties: [
+              {
+                key: {
+                  name: "exports",
+                },
+                value: {
+                  name: "out",
+                },
+              },
+            ],
           },
-          init: { type: "Identifier", name: "module" },
+          init: {
+            type: "Identifier",
+            name: "module",
+          },
         },
         {
           type: "AssignmentExpression",
           left: {
             type: "MemberExpression",
-            object: { type: "Identifier", name: "out" },
-            property: { type: "Identifier", name: "value" },
+            object: {
+              type: "Identifier",
+              name: "out",
+            },
+            property: {
+              type: "Identifier",
+              name: "value",
+            },
           },
-          right: { type: "NumericLiteral", value: 1 },
+          right: {
+            type: "NumericLiteral",
+            value: 1,
+          },
         },
       ],
     },
@@ -142,7 +220,6 @@ test("finds exports through a destructured module alias", () => {
   );
   expect(findings).toContain("source.mjs: CommonJS export");
 });
-
 test("finds exports forwarded through module.exports aliases", () => {
   const findings = [];
   collectCommonJsFindings(
@@ -151,17 +228,32 @@ test("finds exports forwarded through module.exports aliases", () => {
       body: [
         {
           type: "VariableDeclarator",
-          id: { type: "Identifier", name: "out" },
+          id: {
+            type: "Identifier",
+            name: "out",
+          },
           init: {
             type: "MemberExpression",
-            object: { type: "Identifier", name: "module" },
-            property: { type: "Identifier", name: "exports" },
+            object: {
+              type: "Identifier",
+              name: "module",
+            },
+            property: {
+              type: "Identifier",
+              name: "exports",
+            },
           },
         },
         {
           type: "MemberExpression",
-          object: { type: "Identifier", name: "out" },
-          property: { type: "Identifier", name: "value" },
+          object: {
+            type: "Identifier",
+            name: "out",
+          },
+          property: {
+            type: "Identifier",
+            name: "value",
+          },
         },
       ],
     },

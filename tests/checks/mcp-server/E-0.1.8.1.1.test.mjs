@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/mcp-server/E-0.1.8.1.1.mjs";
+import { ruleId } from "../../../src/checks/mcp-server/E-0.1.8.1.1.mjs";
+import run from "../../../src/checks/mcp-server/E-0.1.8.1.1.mjs";
 import { createMcpToolFixture } from "../../../test-fixtures/mcp-server/E-0.1.8.1.1/tool-record-fixtures.mjs";
-
 test("accepts matching MCP tool adapters and handlers", async () => {
   await expect(
     run({
@@ -16,27 +16,39 @@ test("accepts matching MCP tool adapters and handlers", async () => {
     message: "",
   });
 });
-
 test("reports nested adapters and handlers with their paths", async () => {
-  const inventory = createMcpToolFixture({ adapters: ["echo"], handlers: ["echo"] });
+  const inventory = createMcpToolFixture({
+    adapters: ["echo"],
+    handlers: ["echo"],
+  });
   inventory.fileList.push("tools/nested/echo.mjs", "src/tools/nested/search.mjs");
-  const result = await run({ repositoryInventory: inventory });
-  expect(result).toMatchObject({ ruleId, status: "fail" });
+  const result = await run({
+    repositoryInventory: inventory,
+  });
+  expect(result).toMatchObject({
+    ruleId,
+    status: "fail",
+  });
   expect(result.message).toContain("tools/nested/echo.mjs must be directly under tools/.");
   expect(result.message).toContain(
     "src/tools/nested/search.mjs must be directly under src/tools/.",
   );
 });
-
 test("rejects a nested orphan beside a valid root-level pair", async () => {
-  const inventory = createMcpToolFixture({ adapters: ["echo"], handlers: ["echo"] });
+  const inventory = createMcpToolFixture({
+    adapters: ["echo"],
+    handlers: ["echo"],
+  });
   inventory.fileList.push("tools/extra/orphan.mjs");
-  await expect(run({ repositoryInventory: inventory })).resolves.toMatchObject({
+  await expect(
+    run({
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining("tools/extra/orphan.mjs must be directly under tools/"),
   });
 });
-
 test("reports missing repository inventory", async () => {
   await expect(run()).resolves.toEqual({
     ruleId,
@@ -44,7 +56,6 @@ test("reports missing repository inventory", async () => {
     message: "MCP tool files could not be inspected.",
   });
 });
-
 test("reports inventory failures", async () => {
   await expect(
     run({
@@ -62,8 +73,15 @@ test("reports inventory failures", async () => {
   });
 });
 test("reports tool contract failures", async () => {
-  const inventory = createMcpToolFixture({ adapters: [], handlers: ["orphan"] });
-  await expect(run({ repositoryInventory: inventory })).resolves.toMatchObject({
+  const inventory = createMcpToolFixture({
+    adapters: [],
+    handlers: ["orphan"],
+  });
+  await expect(
+    run({
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toMatchObject({
     ruleId,
     status: "fail",
     message: expect.stringContaining("tools/orphan.mjs is required."),

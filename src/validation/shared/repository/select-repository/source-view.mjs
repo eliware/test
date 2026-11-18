@@ -1,9 +1,7 @@
-import { isRepositoryFixturePath } from "../repository-inventory/path-filters.mjs";
-
+import isRepositoryFixturePath from "../repository-inventory/path-filters/is/repository-fixture-path.mjs";
 const sourceFile = /\.(?:mjs|js|cjs|ts|tsx|cts)$/iu;
 const coverageSourceFile = /^src\/.*\.(?:mjs|js|cjs)$/iu;
-
-export function selectRepositorySourceView(view, repositoryFiles) {
+export default function selectRepositorySourceView(view, repositoryFiles) {
   if (view === "source") return repositoryFiles.filter((path) => sourceFile.test(path));
   if (view === "coverageSource") {
     return repositoryFiles.filter(

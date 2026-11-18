@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validatePrettierArguments } from "../../../../src/validation/stages/format/validate-prettier-arguments.mjs";
-
+import validatePrettierArguments from "../../../../src/validation/stages/format/validate-prettier-arguments.mjs";
 test.each([
   "--write",
   "--write=true",
@@ -25,7 +24,6 @@ test.each([
 ])("rejects wrapper-owned or abbreviated option %s", (argument) => {
   expect(validatePrettierArguments([argument])).toContain(argument);
 });
-
 test("allows harmless forwarded options and rejects path operands that can narrow coverage", () => {
   expect(validatePrettierArguments(["--log-level=debug"])).toBeNull();
   expect(validatePrettierArguments(["-z"])).toBeNull();
@@ -34,7 +32,6 @@ test("allows harmless forwarded options and rejects path operands that can narro
     "wrapper-owned file coverage",
   );
 });
-
 test("rejects malformed argument collections", () => {
   expect(validatePrettierArguments(null)).toContain("array of strings");
   expect(validatePrettierArguments(["--log-level", 2])).toContain("array of strings");

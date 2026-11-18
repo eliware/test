@@ -1,17 +1,22 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-
 const validateLibraryExamples = jest.fn();
 const validateLibraryExamplesLink = jest.fn();
 jest.unstable_mockModule(
   "../../../src/checks/library/E-0.1.3.1.0/validate-library/examples.mjs",
-  () => ({ validateLibraryExamples }),
+  () => ({
+    validateLibraryExamples,
+    default: validateLibraryExamples,
+  }),
 );
 jest.unstable_mockModule(
   "../../../src/checks/library/E-0.1.3.1.0/validate-library/examples-link.mjs",
-  () => ({ validateLibraryExamplesLink }),
+  () => ({
+    validateLibraryExamplesLink,
+    default: validateLibraryExamplesLink,
+  }),
 );
-
-const { ruleId, run } = await import("../../../src/checks/library/E-0.1.3.1.0.mjs");
+const { ruleId } = await import("../../../src/checks/library/E-0.1.3.1.0.mjs"),
+  run = (await import("../../../src/checks/library/E-0.1.3.1.0.mjs")).default;
 const repositoryInventory = {
   readText: async (path) =>
     path === "AGENTS.md"
@@ -23,18 +28,20 @@ Prevent repeated full-suite runs during development.
 Run the full \`npm test\` suite for final validation before a commit, milestone, or release.`
       : "## API\n## Packaging\n## Examples",
 };
-
 beforeEach(() => {
   jest.resetAllMocks();
   validateLibraryExamples.mockResolvedValue([]);
   validateLibraryExamplesLink.mockResolvedValue([]);
 });
-
 test("checks library guidance and native ESM examples", async () => {
   await expect(
     run({
       root: "/repo",
-      packageJson: { eliware: { apply: ["general", "library"] } },
+      packageJson: {
+        eliware: {
+          apply: ["general", "library"],
+        },
+      },
       repositoryInventory,
     }),
   ).resolves.toEqual({
@@ -44,23 +51,32 @@ test("checks library guidance and native ESM examples", async () => {
   });
   const context = {
     root: "/repo",
-    packageJson: { eliware: { apply: ["general", "library"] } },
+    packageJson: {
+      eliware: {
+        apply: ["general", "library"],
+      },
+    },
     repositoryInventory,
   };
   expect(validateLibraryExamples).toHaveBeenCalledWith(context);
   expect(validateLibraryExamplesLink).toHaveBeenCalledWith(context);
 });
-
 test("reports example gaps", async () => {
   validateLibraryExamples.mockResolvedValueOnce(["Libraries must provide an example."]);
   validateLibraryExamplesLink.mockResolvedValueOnce(["README.md must link examples/README.md."]);
-  await expect(run({ repositoryInventory })).resolves.toEqual({
+  await expect(
+    run({
+      repositoryInventory,
+    }),
+  ).resolves.toEqual({
     ruleId,
     status: "fail",
     message: "Libraries must provide an example.\nREADME.md must link examples/README.md.",
   });
 });
-
 test("uses the default context when it is omitted", async () => {
-  await expect(run()).resolves.toMatchObject({ ruleId, status: "fail" });
+  await expect(run()).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+  });
 });

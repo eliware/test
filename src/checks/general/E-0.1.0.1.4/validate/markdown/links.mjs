@@ -1,8 +1,7 @@
-import { createLocalMarkdownReferenceValidator } from "../../create-local-markdown-reference-validator.mjs";
-import { findMarkdownFiles } from "../../find-markdown-files.mjs";
-import { validateMarkdownFiles } from "./validate-markdown-files.mjs";
-
-export async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
+import createLocalMarkdownReferenceValidator from "../../create-local-markdown-reference-validator.mjs";
+import findMarkdownFiles from "../../find-markdown-files.mjs";
+import validateMarkdownFiles from "./validate-markdown-files.mjs";
+export default async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
   const validateLocal = createLocalMarkdownReferenceValidator(root, dependencies);
   let files;
   try {

@@ -1,10 +1,9 @@
-import { fail, pass } from "../check-result.mjs";
-import { validateBrowserTooling } from "./E-0.1.6.1.2/validate/browser-tooling.mjs";
-import { validateWebBuild } from "./E-0.1.6.1.2/validate/web-build.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import validateBrowserTooling from "./E-0.1.6.1.2/validate/browser-tooling.mjs";
+import validateWebBuild from "./E-0.1.6.1.2/validate/web-build.mjs";
 export const ruleId = "E-0.1.6.1.2";
-
-export async function run(context = {}) {
+export default async function run(context = {}) {
   const packageJson = context.packageJson ?? {};
   let configText = "";
   if (typeof context.repositoryInventory?.readText === "function") {

@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
-import {
-  formatAggregateSuccess,
-  formatFocusedSuccess,
-  formatValidationSuccess,
-} from "../../../src/cli/write/success-summary.mjs";
-
-beforeEach(() => jest.useFakeTimers({ now: 5000 }));
+import formatAggregateSuccess from "../../../src/cli/write/success-summary/format/aggregate-success.mjs";
+import formatFocusedSuccess from "../../../src/cli/write/success-summary/format/focused-success.mjs";
+import formatValidationSuccess from "../../../src/cli/write/success-summary.mjs";
+beforeEach(() =>
+  jest.useFakeTimers({
+    now: 5000,
+  }),
+);
 afterEach(() => jest.useRealTimers());
-
 test.each([
   ["lint", "Lint mode passed | Exit-code: 0"],
   ["format", "Formatting completed | Exit-code: 0"],
@@ -17,7 +17,6 @@ test.each([
 ])("formats the successful %s mode", (mode, expected) => {
   expect(formatValidationSuccess(mode)).toBe(expected);
 });
-
 test.each([
   [formatAggregateSuccess, "Aggregate validation passed."],
   [formatFocusedSuccess, "Focused validation passed."],
@@ -28,7 +27,10 @@ test.each([
       {
         validationSummary: {
           checkCount: 42,
-          jestCounts: { testSuites: 8, tests: 120 },
+          jestCounts: {
+            testSuites: 8,
+            tests: 120,
+          },
           jestTimeMs: 1200,
         },
       },
@@ -42,7 +44,6 @@ test.each([
       "Exit-code: 0",
   );
 });
-
 test("uses zero counts when the validation summary is absent", () => {
   expect(formatAggregateSuccess({}, 5000)).toContain("Checks: 0 | Test suites: 0 | Tests: 0");
 });

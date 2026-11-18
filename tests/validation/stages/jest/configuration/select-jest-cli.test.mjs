@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { selectJestCli } from "../../../../../src/validation/stages/jest/configuration/select-jest-cli.mjs";
-
+import selectJestCli from "../../../../../src/validation/stages/jest/configuration/select-jest-cli.mjs";
 test("prefers consumer Jest and falls back to shared Jest when needed", () => {
   expect(
     selectJestCli(
@@ -15,7 +14,6 @@ test("prefers consumer Jest and falls back to shared Jest when needed", () => {
     ),
   ).toBe("shared/jest.js");
 });
-
 test("preserves consumer resolution errors when the shared fallback is unavailable", () => {
   const consumerError = new Error("Consumer Jest missing");
   expect(() =>
@@ -27,7 +25,6 @@ test("preserves consumer resolution errors when the shared fallback is unavailab
     ),
   ).toThrow(consumerError);
 });
-
 test("reports when neither resolver provides an executable", () => {
   expect(() =>
     selectJestCli(

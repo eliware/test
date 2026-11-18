@@ -1,8 +1,8 @@
-import { fail, pass } from "../../../../checks/check-result.mjs";
-import { parseActionableJestOutput } from "./parse/actionable-output.mjs";
-import { parseFailedJestProgressOutput } from "./parse/failed-progress-output.mjs";
-
-export function classifyJestResult(ruleId, result, timeoutDiagnostic) {
+import fail from "../../../../checks/check-result/fail.mjs";
+import pass from "../../../../checks/check-result.mjs";
+import parseActionableJestOutput from "./parse/actionable-output.mjs";
+import parseFailedJestProgressOutput from "./parse/failed-progress-output.mjs";
+export default function classifyJestResult(ruleId, result, timeoutDiagnostic) {
   if (result.outputRedacted)
     return fail(
       ruleId,
@@ -51,7 +51,6 @@ export function classifyJestResult(ruleId, result, timeoutDiagnostic) {
   }
   return pass(ruleId);
 }
-
 function formatJestFailure(message, result) {
   const processDetails = [
     result.code === null || result.code === undefined ? undefined : `exit code ${result.code}`,
@@ -70,7 +69,6 @@ function formatJestFailure(message, result) {
     .filter(Boolean)
     .join("\n");
 }
-
 function readJestSummary(result) {
   return [result.stdout, result.stderr]
     .flatMap((text) => String(text ?? "").split(/\r?\n/u))

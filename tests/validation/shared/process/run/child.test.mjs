@@ -2,9 +2,12 @@ import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 const spawn = jest.fn();
 const execFileSync = jest.fn();
-jest.unstable_mockModule("node:child_process", () => ({ spawn, execFileSync }));
-const { runChild } = await import("../../../../../src/validation/shared/process/run/child.mjs");
-
+jest.unstable_mockModule("node:child_process", () => ({
+  spawn,
+  execFileSync,
+}));
+const runChild = (await import("../../../../../src/validation/shared/process/run/child.mjs"))
+  .default;
 function fakeSpawn(output = {}) {
   return () => {
     const child = Object.assign(new EventEmitter(), {
@@ -22,44 +25,63 @@ function fakeSpawn(output = {}) {
     return child;
   };
 }
-
 test("spawns a child and returns captured process output", async () => {
   const output = [];
   await expect(
     runChild("mock-cli", [], {
-      spawnProcess: fakeSpawn({ stdout: "ok", stderr: "err" }),
+      spawnProcess: fakeSpawn({
+        stdout: "ok",
+        stderr: "err",
+      }),
       onStdout: (value) => output.push(`out:${value}`),
       onStderr: (value) => output.push(`err:${value}`),
     }),
-  ).resolves.toEqual({ code: 0, signal: null, stdout: "ok", stderr: "err" });
+  ).resolves.toEqual({
+    code: 0,
+    signal: null,
+    stdout: "ok",
+    stderr: "err",
+  });
   expect(output).toEqual(["out:ok", "err:err"]);
 });
-
 test("uses process defaults when options are omitted", async () => {
-  spawn.mockImplementation(fakeSpawn({ stdout: "default" }));
+  spawn.mockImplementation(
+    fakeSpawn({
+      stdout: "default",
+    }),
+  );
   await expect(runChild("mock-cli", [])).resolves.toEqual(
-    expect.objectContaining({ code: 0, stdout: "default" }),
+    expect.objectContaining({
+      code: 0,
+      stdout: "default",
+    }),
   );
   expect(spawn).toHaveBeenCalledTimes(1);
 });
-
 test("caps captured child output even when a larger limit is requested", async () => {
   const result = await runChild("mock-cli", [], {
     maxOutputLength: 2_000_000,
-    spawnProcess: fakeSpawn({ stdout: "x".repeat(1_100_000) }),
+    spawnProcess: fakeSpawn({
+      stdout: "x".repeat(1_100_000),
+    }),
   });
   expect(result.stdout.length).toBeGreaterThan(0);
   expect(result.stdout.length).toBeLessThanOrEqual(1_000_000);
 });
-
 test("handles children without streams and ignores errors after close", async () => {
   const child = new EventEmitter();
-  const result = runChild("ignored", [], { spawnProcess: () => child });
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+  });
   child.emit("close", 0, null);
   child.emit("error", new Error("late child error"));
-  await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
+  await expect(result).resolves.toEqual({
+    code: 0,
+    signal: null,
+    stdout: "",
+    stderr: "",
+  });
 });
-
 test("forwards suite-end progress to the configured callback", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -76,13 +98,16 @@ test("forwards suite-end progress to the configured callback", async () => {
   });
   child.stderr.emit("data", "progress\n");
   child.emit("close", 0, null);
-  await expect(result).resolves.toMatchObject({ code: 0 });
+  await expect(result).resolves.toMatchObject({
+    code: 0,
+  });
   expect(onSuiteEnd).toHaveBeenCalledWith("tests/example.test.mjs");
 });
-
 test("normalizes and redacts synchronous spawn failures before process setup", async () => {
   const createProgressTimeout = jest.fn();
-  const environment = { API_TOKEN: "private-token-value" };
+  const environment = {
+    API_TOKEN: "private-token-value",
+  };
   let spawnOptions;
   const result = runChild("ignored", [], {
     env: environment,
@@ -104,7 +129,6 @@ test("normalizes and redacts synchronous spawn failures before process setup", a
   expect(spawnOptions.env).not.toBe(environment);
   expect(environment.API_TOKEN).toBe("private-token-value");
 });
-
 test("normalizes non-Error synchronous spawn failures", async () => {
   await expect(
     runChild("ignored", [], {
@@ -121,12 +145,14 @@ test("normalizes non-Error synchronous spawn failures", async () => {
     }),
   ).rejects.toThrow("Child process could not be started.");
 });
-
 test("terminates a spawned child when progress-timeout setup fails", async () => {
-  const child = Object.assign(new EventEmitter(), { kill: jest.fn() });
+  const child = Object.assign(new EventEmitter(), {
+    kill: jest.fn(),
+  });
   const terminateChild = jest.fn(() => true);
-  const environment = { PATH: process.env.PATH };
-
+  const environment = {
+    PATH: process.env.PATH,
+  };
   await expect(
     runChild("ignored", [], {
       spawnProcess: () => child,
@@ -137,7 +163,6 @@ test("terminates a spawned child when progress-timeout setup fails", async () =>
       terminateChild,
     }),
   ).rejects.toThrow("timeout setup failed");
-
   expect(terminateChild).toHaveBeenCalledWith(
     child,
     process.platform,
@@ -149,7 +174,6 @@ test("terminates a spawned child when progress-timeout setup fails", async () =>
   expect(terminateChild.mock.calls[0][4]).not.toBe(environment);
   expect(child.kill).not.toHaveBeenCalled();
 });
-
 test("stops initialized timers when close-listener setup fails", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -164,7 +188,10 @@ test("stops initialized timers when close-listener setup fails", async () => {
   await expect(
     runChild("ignored", [], {
       spawnProcess: () => child,
-      createProgressTimeout: () => ({ reset: jest.fn(), stop }),
+      createProgressTimeout: () => ({
+        reset: jest.fn(),
+        stop,
+      }),
       terminateChild: () => true,
     }),
   ).rejects.toThrow("close listener setup failed");

@@ -1,4 +1,4 @@
-export async function completeCliValidation({
+export default async function completeCliValidation({
   resultCode,
   validationError,
   releaseLock,

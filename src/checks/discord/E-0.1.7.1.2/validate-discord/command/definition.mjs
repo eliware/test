@@ -1,8 +1,6 @@
 import { supportedDiscordLocales } from "../../supported-discord-locales.mjs";
-
 const commandName = /^[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$/u;
-
-export async function validateDiscordCommandDefinition(inventory, name) {
+export default async function validateDiscordCommandDefinition(inventory, name) {
   const path = `commands/${name}.json`;
   let definition;
   try {
@@ -23,7 +21,6 @@ export async function validateDiscordCommandDefinition(inventory, name) {
   }
   return errors;
 }
-
 function validDescription(value) {
   return typeof value === "string" && value.length >= 1 && value.length <= 100;
 }

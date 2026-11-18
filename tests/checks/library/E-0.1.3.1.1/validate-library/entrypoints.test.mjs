@@ -1,73 +1,103 @@
 import { expect, test } from "@jest/globals";
-import { validateLibraryEntrypoints } from "../../../../../src/checks/library/E-0.1.3.1.1/validate-library/entrypoints.mjs";
-
+import validateLibraryEntrypoints from "../../../../../src/checks/library/E-0.1.3.1.1/validate-library/entrypoints.mjs";
 test("accepts static runtime exports and paired declarations", async () => {
-  const stat = async () => ({ isFile: () => true });
+  const stat = async () => ({
+    isFile: () => true,
+  });
   await expect(
     validateLibraryEntrypoints(
       {
         packageJson: {
           main: "./src/index.mjs",
-          exports: { ".": { import: "./src/index.mjs", types: "./src/index.d.ts" } },
+          exports: {
+            ".": {
+              import: "./src/index.mjs",
+              types: "./src/index.d.ts",
+            },
+          },
           types: "./src/index.d.ts",
         },
       },
-      { stat },
+      {
+        stat,
+      },
     ),
   ).resolves.toEqual([]);
 });
-
 test("accepts condition exports for the root entrypoint", async () => {
-  const stat = async () => ({ isFile: () => true });
+  const stat = async () => ({
+    isFile: () => true,
+  });
   await expect(
     validateLibraryEntrypoints(
-      { packageJson: { main: "./src/index.mjs", exports: { import: "./src/index.mjs" } } },
-      { stat },
+      {
+        packageJson: {
+          main: "./src/index.mjs",
+          exports: {
+            import: "./src/index.mjs",
+          },
+        },
+      },
+      {
+        stat,
+      },
     ),
   ).resolves.toEqual([]);
 });
-
 test("checks declared and discovered declarations and internal barrels", async () => {
   const inventory = {
     files: async () => ["src/index.d.ts", "src/internal.d.ts", "src/internal.mjs"],
     readText: async () => 'export { value } from "../value.mjs";',
   };
-  const stat = async (path) => ({ isFile: () => !path.endsWith("internal.mjs") });
+  const stat = async (path) => ({
+    isFile: () => !path.endsWith("internal.mjs"),
+  });
   await expect(
     validateLibraryEntrypoints(
       {
         root: "/repo",
         packageJson: {
           main: "./src/index.mjs",
-          exports: { ".": { import: "./src/index.mjs", types: "./src/index.d.ts" } },
+          exports: {
+            ".": {
+              import: "./src/index.mjs",
+              types: "./src/index.d.ts",
+            },
+          },
         },
         repositoryInventory: inventory,
       },
-      { stat },
+      {
+        stat,
+      },
     ),
   ).resolves.toEqual([
     "Library declaration must sit beside its same-basename .mjs file: ./src/internal.d.ts.",
     "src/internal.mjs is an internal pure export barrel.",
   ]);
 });
-
 test("enforces the default method export rule for source modules", async () => {
   const inventory = {
     files: async () => ["src/worker.mjs"],
     readText: async () => "export function run() {}",
   };
-  const stat = async () => ({ isFile: () => true });
+  const stat = async () => ({
+    isFile: () => true,
+  });
   await expect(
     validateLibraryEntrypoints(
       {
-        packageJson: { main: "./src/index.mjs" },
+        packageJson: {
+          main: "./src/index.mjs",
+        },
         repositoryInventory: inventory,
       },
-      { stat },
+      {
+        stat,
+      },
     ),
   ).resolves.toContain("src/worker.mjs must use a default export for its method.");
 });
-
 test("uses defaults when no repository context is supplied", async () => {
   await expect(validateLibraryEntrypoints()).resolves.toEqual(
     expect.arrayContaining(["Libraries must declare a runtime main under src/."]),

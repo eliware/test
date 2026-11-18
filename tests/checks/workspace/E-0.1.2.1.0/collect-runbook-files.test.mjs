@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { collectRunbookFiles } from "../../../../src/checks/workspace/E-0.1.2.1.0/collect-runbook-files.mjs";
-
+import collectRunbookFiles from "../../../../src/checks/workspace/E-0.1.2.1.0/collect-runbook-files.mjs";
 test("collects YAML runbooks and reports other files", () => {
   expect(
     collectRunbookFiles([
@@ -19,7 +18,6 @@ test("collects YAML runbooks and reports other files", () => {
     ],
   });
 });
-
 test("returns empty results when no runbook directory exists", () => {
   expect(collectRunbookFiles(["README.md", "docs/guide.md"])).toEqual({
     runbooks: [],

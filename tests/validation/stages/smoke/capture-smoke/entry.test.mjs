@@ -1,19 +1,23 @@
 import { expect, test } from "@jest/globals";
-import { captureSmokePath } from "../../../../../src/validation/stages/smoke/capture-smoke/entry.mjs";
-
+import captureSmokePath from "../../../../../src/validation/stages/smoke/capture-smoke/entry.mjs";
 function missingFs() {
   return {
     lstat: async () => {
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      throw Object.assign(new Error("missing"), {
+        code: "ENOENT",
+      });
     },
   };
 }
-
 test("routes symlink capture to the symlink policy", async () => {
   const fs = {
-    lstat: async () => ({ isSymbolicLink: () => true }),
+    lstat: async () => ({
+      isSymbolicLink: () => true,
+    }),
     readlink: async () => "target",
-    stat: async () => ({ isDirectory: () => true }),
+    stat: async () => ({
+      isDirectory: () => true,
+    }),
   };
   await expect(captureSmokePath("link", "backup", fs, "win32")).resolves.toMatchObject({
     type: "symlink",
@@ -21,14 +25,12 @@ test("routes symlink capture to the symlink policy", async () => {
     linkType: "junction",
   });
 });
-
 test("records a missing path", async () => {
   await expect(captureSmokePath("missing", "backup", missingFs(), "linux")).resolves.toEqual({
     path: "missing",
     type: "missing",
   });
 });
-
 test("dispatches file and directory paths to their handlers", async () => {
   const fs = {
     cp: async () => {},
@@ -48,7 +50,6 @@ test("dispatches file and directory paths to their handlers", async () => {
     type: "directory",
   });
 });
-
 test("rejects unsupported entries and preserves filesystem errors", async () => {
   const unsupported = {
     lstat: async () => ({
@@ -60,6 +61,8 @@ test("rejects unsupported entries and preserves filesystem errors", async () => 
   await expect(captureSmokePath("socket", "backup", unsupported, "linux")).rejects.toThrow(
     "unsupported target path",
   );
-  const failed = { lstat: async () => Promise.reject(new Error("denied")) };
+  const failed = {
+    lstat: async () => Promise.reject(new Error("denied")),
+  };
   await expect(captureSmokePath("path", "backup", failed, "linux")).rejects.toThrow("denied");
 });

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { resolveWindowsPowerShellCoreExecutable } from "../../../../../src/validation/shared/process/resolve-windows/powershell-core-executable.mjs";
-
+import resolveWindowsPowerShellCoreExecutable from "../../../../../src/validation/shared/process/resolve-windows/powershell-core-executable.mjs";
 test("resolves PowerShell Core from PATH before its standard installation directory", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(
@@ -12,53 +11,56 @@ test("resolves PowerShell Core from PATH before its standard installation direct
     ),
   ).toBe("C:\\Tools\\pwsh.exe");
 });
-
 test("overrides the existing PATH key without changing its casing", () => {
   const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === "path") ?? "PATH";
   expect(
     resolveWindowsPowerShellCoreExecutable(
-      { [pathKey]: "C:\\Tools" },
+      {
+        [pathKey]: "C:\\Tools",
+      },
       (candidate) => candidate === "C:\\Tools\\pwsh.exe",
     ),
   ).toBe("C:\\Tools\\pwsh.exe");
 });
-
 test("uses an injected PATH key with different casing from the inherited key", () => {
   const inheritedPathKey = Object.keys(process.env).find((key) => key.toLowerCase() === "path");
   const injectedPathKey = inheritedPathKey === "PATH" ? "Path" : "PATH";
-
   expect(
     resolveWindowsPowerShellCoreExecutable(
-      { [injectedPathKey]: "C:\\Injected" },
+      {
+        [injectedPathKey]: "C:\\Injected",
+      },
       (candidate) => candidate === "C:\\Injected\\pwsh.exe",
     ),
   ).toBe("C:\\Injected\\pwsh.exe");
 });
-
 test("resolves PowerShell Core from a quoted PATH entry", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(
-      { Path: '"C:\\Program Files\\PowerShell\\7"' },
+      {
+        Path: '"C:\\Program Files\\PowerShell\\7"',
+      },
       (candidate) => candidate === "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
     ),
   ).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe");
 });
-
 test("resolves PowerShell Core from Program Files when it is absent from PATH", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(
-      { ProgramFiles: "C:\\Program Files" },
+      {
+        ProgramFiles: "C:\\Program Files",
+      },
       (candidate) => candidate === "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
     ),
   ).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe");
 });
-
 test("reports when PowerShell Core cannot be located", () => {
-  expect(() => resolveWindowsPowerShellCoreExecutable({ Path: ".;relative\\bin" })).toThrow(
-    "not found on PATH or in the standard Program Files location",
-  );
+  expect(() =>
+    resolveWindowsPowerShellCoreExecutable({
+      Path: ".;relative\\bin",
+    }),
+  ).toThrow("not found on PATH or in the standard Program Files location");
 });
-
 test("handles an environment with no PATH entry", () => {
   const originalPathEntries = Object.entries(process.env).filter(
     ([key]) => key.toLowerCase() === "path",

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { shouldSkipDocumentationPath } from "../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/path-policy.mjs";
-
+import shouldSkipDocumentationPath from "../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/path-policy/should-skip-documentation-path.mjs";
 test.each([
   ["docs/.git/file.md", false, true],
   ["docs/node_modules/file.md", true, true],

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findProtectedNegationMatches } from "../../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns/protected-negations/matched-names.mjs";
-
+import findProtectedNegationMatches from "../../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns/protected-negations/matched-names.mjs";
 test.each([
   ["!nested/coverage/", ["coverage"]],
   ["!nested/dist/", ["dist"]],

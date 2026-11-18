@@ -1,6 +1,5 @@
-import { normalizeRepositoryUrl } from "./normalize-repository-url.mjs";
-
-export async function validateGitOrigin(root, repositoryUrl, runGit) {
+import normalizeRepositoryUrl from "./normalize-repository-url.mjs";
+export default async function validateGitOrigin(root, repositoryUrl, runGit) {
   const expected = normalizeRepositoryUrl(repositoryUrl);
   if (!expected) return ["package.json.repository.url must identify a GitHub repository."];
   try {

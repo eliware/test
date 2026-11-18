@@ -1,4 +1,4 @@
-export function validateRunbookObject(value, schema, path, validateValue) {
+export default function validateRunbookObject(value, schema, path, validateValue) {
   if (!value || typeof value !== "object" || Array.isArray(value))
     return [`${path} must be an object.`];
   const errors = [];

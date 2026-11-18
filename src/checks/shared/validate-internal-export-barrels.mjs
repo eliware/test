@@ -1,7 +1,6 @@
 import { join, posix } from "node:path";
-import { isPureExportBarrel } from "./is/pure-export-barrel.mjs";
-
-export async function validateInternalExportBarrels(
+import isPureExportBarrel from "./is/pure-export-barrel.mjs";
+export default async function validateInternalExportBarrels(
   files,
   readText,
   packageJson,
@@ -25,7 +24,6 @@ export async function validateInternalExportBarrels(
   }
   return errors;
 }
-
 function collectPublicTargets(packageJson, options) {
   const library = options?.library ?? false;
   const declarationTargets = library
@@ -52,7 +50,6 @@ function collectPublicTargets(packageJson, options) {
       targets.add(posix.normalize(target.slice(2, -5) + ".mjs"));
   return targets;
 }
-
 function collectDeclarationExports(exportsValue) {
   if (typeof exportsValue === "string") return exportsValue.endsWith(".d.ts") ? [exportsValue] : [];
   if (Array.isArray(exportsValue)) return exportsValue.flatMap(collectDeclarationExports);

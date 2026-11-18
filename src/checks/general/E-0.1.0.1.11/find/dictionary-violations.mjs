@@ -1,7 +1,6 @@
-import { tokenizeWords } from "../word-tools.mjs";
-import { prepareDictionaryTrie } from "./prepare-dictionary-trie.mjs";
-
-export function findDictionaryViolations(path, block, dictionary) {
+import tokenizeWords from "../word-tools.mjs";
+import prepareDictionaryTrie from "./prepare-dictionary-trie.mjs";
+export default function findDictionaryViolations(path, block, dictionary) {
   const entries = prepareDictionaryTrie(dictionary);
   const tokens = tokenizeWords(block.text);
   const errors = [];

@@ -1,10 +1,11 @@
-import { runNpmOutdated } from "../../outdated/run-npm-outdated.mjs";
-import { createValidationStageResult } from "../../shared/create-validation-stage-result.mjs";
-
-export function createOutdatedRunner(runOutdated = runNpmOutdated) {
+import runNpmOutdated from "../../outdated/run-npm-outdated.mjs";
+import createValidationStageResult from "../../shared/create-validation-stage-result.mjs";
+export default function createOutdatedRunner(runOutdated = runNpmOutdated) {
   return async (context) => {
     try {
-      const value = await runOutdated(context.root, { env: context.env ?? process.env });
+      const value = await runOutdated(context.root, {
+        env: context.env ?? process.env,
+      });
       context.outdatedDependencies = value.dependencies;
       const message = value.outdated.length
         ? `Outdated packages: ${value.outdated.join(", ")}.`

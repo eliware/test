@@ -1,6 +1,9 @@
-import { readNestedGitignorePaths } from "./read-nested-gitignore-paths.mjs";
-
-export async function validateNestedGitIgnoreFiles(root, runGit, isPathExempt = () => false) {
+import readNestedGitignorePaths from "./read-nested-gitignore-paths.mjs";
+export default async function validateNestedGitIgnoreFiles(
+  root,
+  runGit,
+  isPathExempt = () => false,
+) {
   const result = await readNestedGitignorePaths(root, runGit);
   if (result.error) return [result.error];
   const nested = result.paths.filter(

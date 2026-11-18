@@ -1,9 +1,7 @@
-import { validateDiscordHandlerFiles } from "../handler-files.mjs";
-import { validateDiscordCommandDefinition } from "./definition.mjs";
-
+import validateDiscordHandlerFiles from "../handler-files.mjs";
+import validateDiscordCommandDefinition from "./definition.mjs";
 const commandDirectory = "commands";
-
-export async function validateDiscordCommandRecords(files, inventory) {
+export default async function validateDiscordCommandRecords(files, inventory) {
   const jsonNames = names(files, ".json");
   const moduleNames = names(files, ".mjs");
   const errors = files
@@ -17,14 +15,12 @@ export async function validateDiscordCommandRecords(files, inventory) {
     errors.push(...(await validateDiscordCommandDefinition(inventory, name)));
   return errors;
 }
-
 function names(files, extension) {
   return files
     .filter((path) => path.startsWith(`${commandDirectory}/`) && path.endsWith(extension))
     .map((path) => path.slice(commandDirectory.length + 1, -extension.length))
     .filter((name) => !name.includes("/"));
 }
-
 function mismatchedNames(jsonNames, moduleNames) {
   return [
     ...jsonNames

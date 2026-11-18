@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.6.mjs";
-
+import { ruleId } from "../../../src/checks/general/E-0.1.0.1.6.mjs";
+import run from "../../../src/checks/general/E-0.1.0.1.6.mjs";
 const inventory = {
   files: async () => [".knit/deploy.yaml", ".knit/secondary.mjs"],
   readText: async () =>
@@ -8,15 +8,17 @@ const inventory = {
 };
 const deployment = (commands) =>
   `version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands: ${commands}\n`;
-
 test("accepts the required Knit command prefix", async () => {
-  await expect(run({ repositoryInventory: inventory })).resolves.toEqual({
+  await expect(
+    run({
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("reports invalid Knit files and command lists", async () => {
   const result = await run({
     repositoryInventory: {
@@ -31,12 +33,20 @@ test("reports invalid Knit files and command lists", async () => {
   expect(result.message).toContain("must be an array of strings");
   expect(result.message).toContain("must not publish");
 });
-
 test("rejects missing inventory, missing files, and invalid YAML", async () => {
-  await expect(run()).resolves.toMatchObject({ status: "fail" });
+  await expect(run()).resolves.toMatchObject({
+    status: "fail",
+  });
   await expect(
-    run({ repositoryInventory: { files: async () => [], readText: async () => "" } }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("only YAML file") });
+    run({
+      repositoryInventory: {
+        files: async () => [],
+        readText: async () => "",
+      },
+    }),
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("only YAML file"),
+  });
   await expect(
     run({
       repositoryInventory: {
@@ -44,9 +54,10 @@ test("rejects missing inventory, missing files, and invalid YAML", async () => {
         readText: async () => "a: [",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("could not be parsed") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("could not be parsed"),
+  });
 });
-
 test("rejects multiple YAML documents and accepts declared package commands", async () => {
   await expect(
     run({
@@ -55,18 +66,25 @@ test("rejects multiple YAML documents and accepts declared package commands", as
         readText: async () => "commands: []\n---\ncommands: [codescope run]",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("exactly one document") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("exactly one document"),
+  });
   await expect(
     run({
       repositoryInventory: {
         files: async () => [".knit/deploy.yaml"],
         readText: async () => deployment("[git pull, npm ci, npm test, npm run validate]"),
       },
-      packageJson: { scripts: { validate: "codescope run" } },
+      packageJson: {
+        scripts: {
+          validate: "codescope run",
+        },
+      },
     }),
-  ).resolves.toMatchObject({ status: "pass" });
+  ).resolves.toMatchObject({
+    status: "pass",
+  });
 });
-
 test("rejects missing commands, non-string items, and publishing commands", async () => {
   const validate = (source) =>
     run({
@@ -95,9 +113,10 @@ test("rejects missing commands, non-string items, and publishing commands", asyn
   });
   await expect(
     validate(deployment("[git pull, npm ci, npm test, npm run validate]")),
-  ).resolves.toMatchObject({ message: expect.stringContaining("must name a script declared") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("must name a script declared"),
+  });
 });
-
 test("reports inventory read failures", async () => {
   await expect(
     run({
@@ -108,5 +127,7 @@ test("reports inventory read failures", async () => {
         readText: async () => "",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("could not be inspected: denied") });
+  ).resolves.toMatchObject({
+    message: expect.stringContaining("could not be inspected: denied"),
+  });
 });

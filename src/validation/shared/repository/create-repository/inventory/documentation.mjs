@@ -1,7 +1,6 @@
-import { inventoryDirectory } from "../../repository-inventory/paths.mjs";
-import { createDocumentationTraversalSelection } from "./documentation/select-traversal.mjs";
-
-export function createDocumentationFileView(root, entriesUnder) {
+import inventoryDirectory from "../../repository-inventory/paths/inventory-directory.mjs";
+import createDocumentationTraversalSelection from "./documentation/select-traversal.mjs";
+export default function createDocumentationFileView(root, entriesUnder) {
   return async function documentationFiles({
     directory = root,
     predicate = () => true,

@@ -1,9 +1,7 @@
 import { expect, test } from "@jest/globals";
-import { validateSpecificationIndexContent } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/index/content.mjs";
-
+import validateSpecificationIndexContent from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/index/content.mjs";
 const path = "specs/README.md";
 const expected = ["directives.yaml", "nested/README.md"];
-
 test("accepts navigation links in the expected order", () => {
   expect(
     validateSpecificationIndexContent(
@@ -13,7 +11,6 @@ test("accepts navigation links in the expected order", () => {
     ),
   ).toEqual([]);
 });
-
 test("rejects descriptive content, missing targets, and unexpected targets", () => {
   const errors = validateSpecificationIndexContent(
     "# Specs\n\nDescription\n- [Directives](directives.yaml)\n- [Other](other.yaml)",
@@ -24,7 +21,6 @@ test("rejects descriptive content, missing targets, and unexpected targets", () 
   expect(errors).toContain(`${path} must link nested/README.md.`);
   expect(errors).toContain(`${path} links to unexpected target other.yaml.`);
 });
-
 test("rejects duplicate links and links in the wrong order", () => {
   const errors = validateSpecificationIndexContent(
     "- [Nested](nested/README.md)\n- [Nested again](nested/README.md)",
@@ -32,7 +28,6 @@ test("rejects duplicate links and links in the wrong order", () => {
     expected,
   );
   expect(errors).toContain(`${path} must not duplicate index links.`);
-
   const orderErrors = validateSpecificationIndexContent(
     "- [Nested](nested/README.md)\n- [Directives](directives.yaml)",
     path,

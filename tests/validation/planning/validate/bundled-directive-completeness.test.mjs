@@ -1,11 +1,9 @@
 import { expect, test } from "@jest/globals";
 import packageMetadata from "../../../../package.json" with { type: "json" };
-import { validateBundledDirectiveCompleteness } from "../../../../src/validation/planning/validate/bundled-directive-completeness.mjs";
-
+import validateBundledDirectiveCompleteness from "../../../../src/validation/planning/validate/bundled-directive-completeness.mjs";
 const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
 const [conventionMajor, conventionMinor] = conventionVersion.split(".");
 const otherConventionVersion = `${conventionMajor}.${Number(conventionMinor) + 1}`;
-
 const check = (ruleId, enforcementMode = "deterministic", profile = "general") => ({
   ruleId,
   enforcementMode,
@@ -27,10 +25,22 @@ const catalog = {
       extends: [],
     },
   },
-  directives: { "E-0.1": "general", "A-0.1.1": "general", "E-0.1.130.7": "application" },
+  directives: {
+    "E-0.1": "general",
+    "A-0.1.1": "general",
+    "E-0.1.130.7": "application",
+  },
   rules: {
-    "E-0.1": { id: "E-0.1", dos: ["Do E-0.1."], donts: ["Don't E-0.1."] },
-    "A-0.1.1": { id: "A-0.1.1", dos: ["Do A-0.1.1."], donts: ["Don't A-0.1.1."] },
+    "E-0.1": {
+      id: "E-0.1",
+      dos: ["Do E-0.1."],
+      donts: ["Don't E-0.1."],
+    },
+    "A-0.1.1": {
+      id: "A-0.1.1",
+      dos: ["Do A-0.1.1."],
+      donts: ["Don't A-0.1.1."],
+    },
     "E-0.1.130.7": {
       id: "E-0.1.130.7",
       dos: ["Do E-0.1.130.7."],
@@ -38,13 +48,11 @@ const catalog = {
     },
   },
 };
-
 test("accepts every registered bundled directive", async () => {
   expect(
     validateBundledDirectiveCompleteness([check("E-0.1"), check("A-0.1.1")], ["general"], catalog),
   ).toBe(true);
 });
-
 test("accepts a shared check with a registered owner and required profiles", () => {
   expect(
     validateBundledDirectiveCompleteness(
@@ -61,17 +69,21 @@ test("accepts a shared check with a registered owner and required profiles", () 
     ),
   ).toBe(true);
 });
-
 test("rejects a shared check without declared profile requirements", () => {
   expect(() =>
     validateBundledDirectiveCompleteness(
-      [{ ...check("E-0.1"), modulePath: "shared/E-0.1.mjs", ownerProfile: "general" }],
+      [
+        {
+          ...check("E-0.1"),
+          modulePath: "shared/E-0.1.mjs",
+          ownerProfile: "general",
+        },
+      ],
       ["general"],
       catalog,
     ),
   ).toThrow("no matching catalog entry");
 });
-
 test("fails when the bundled catalog version does not match the package baseline", async () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["general"], {
@@ -80,7 +92,6 @@ test("fails when the bundled catalog version does not match the package baseline
     }),
   ).toThrow("missing or invalid");
 });
-
 test("handles an applied group without an catalog entry", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["unlisted"], {
@@ -91,17 +102,16 @@ test("handles an applied group without an catalog entry", () => {
     }),
   ).toThrow("Unknown bundled convention profiles");
 });
-
 test("rejects a catalog without profiles", () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([], [], { version: conventionVersion }),
+    validateBundledDirectiveCompleteness([], [], {
+      version: conventionVersion,
+    }),
   ).toThrow("missing or invalid");
 });
-
 test("uses the bundled catalog by default", () => {
   expect(validateBundledDirectiveCompleteness([], [])).toBe(true);
 });
-
 test("keeps catalog validation separate from deterministic enforcement status", () => {
   expect(
     validateBundledDirectiveCompleteness(
@@ -116,29 +126,30 @@ test("keeps catalog validation separate from deterministic enforcement status", 
     ),
   ).toBe(true);
 });
-
 test("rejects an invalid enforcement mode instead of treating it as an implemented check", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([check("E-0.1", "unknown")], ["general"], catalog),
   ).toThrow("valid enforcement mode");
 });
-
 test("rejects a deterministic check whose identity disagrees with its module path", () => {
   expect(() =>
     validateBundledDirectiveCompleteness(
-      [{ ...check("E-9"), modulePath: "general/E-0.1.mjs" }],
+      [
+        {
+          ...check("E-9"),
+          modulePath: "general/E-0.1.mjs",
+        },
+      ],
       ["general"],
       catalog,
     ),
   ).toThrow("no matching catalog entry");
 });
-
 test("rejects a check ID that is absent from the local convention specifications", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([check("E-0.1.999")], ["general"], catalog),
   ).toThrow("general/E-0.1.999.mjs (E-0.1.999)");
 });
-
 test("rejects a canonical check placed under the wrong profile", () => {
   expect(() =>
     validateBundledDirectiveCompleteness(
@@ -148,11 +159,15 @@ test("rejects a canonical check placed under the wrong profile", () => {
     ),
   ).toThrow("general/E-0.1.130.7.mjs (E-0.1.130.7)");
 });
-
 test("rejects unknown check profiles even when that profile is not selected", () => {
   expect(() =>
     validateBundledDirectiveCompleteness(
-      [{ ...check("E-0.1"), modulePath: "unknown/E-0.1.mjs" }],
+      [
+        {
+          ...check("E-0.1"),
+          modulePath: "unknown/E-0.1.mjs",
+        },
+      ],
       ["general"],
       catalog,
     ),

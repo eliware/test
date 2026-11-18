@@ -1,8 +1,7 @@
-import { isAlternativeTestOrCoverageTool } from "./is-alternative-test-or-coverage-tool.mjs";
-import { validateRunnerConfiguration } from "./runner-configuration.mjs";
-import { isAllowedHarnessTestTool } from "./test-tools/harness-exceptions.mjs";
-
-export function validateApplicationTestTools(packageJson = {}) {
+import isAlternativeTestOrCoverageTool from "./is-alternative-test-or-coverage-tool.mjs";
+import validateRunnerConfiguration from "./runner-configuration.mjs";
+import isAllowedHarnessTestTool from "./test-tools/harness-exceptions.mjs";
+export default function validateApplicationTestTools(packageJson = {}) {
   const sections = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
   const dependencies = sections.flatMap((section) => Object.entries(packageJson[section] ?? {}));
   const direct = dependencies

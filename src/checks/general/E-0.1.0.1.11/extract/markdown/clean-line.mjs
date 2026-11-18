@@ -1,6 +1,5 @@
-import { removeMarkdownHtmlComments } from "./html-comments.mjs";
-
-export function cleanMarkdownProseLine(rawLine, htmlComment) {
+import removeMarkdownHtmlComments from "./html-comments.mjs";
+export default function cleanMarkdownProseLine(rawLine, htmlComment) {
   const cleaned = removeMarkdownHtmlComments(rawLine, htmlComment);
   const text = cleaned.text
     .replace(/!?\[([^\]]*)\]\([^)]*\)/gu, "$1")
@@ -14,6 +13,8 @@ export function cleanMarkdownProseLine(rawLine, htmlComment) {
     .replace(/\|/gu, " ")
     .replace(/\s+/gu, " ")
     .trim();
-
-  return { text, htmlComment: cleaned.htmlComment };
+  return {
+    text,
+    htmlComment: cleaned.htmlComment,
+  };
 }

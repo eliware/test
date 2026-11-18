@@ -1,6 +1,5 @@
 import { join } from "node:path";
-
-export async function validateLibraryExamples(context = {}) {
+export default async function validateLibraryExamples(context = {}) {
   try {
     const files = await context.repositoryInventory.documentationFiles({
       directory: join(context.root ?? process.cwd(), "examples"),

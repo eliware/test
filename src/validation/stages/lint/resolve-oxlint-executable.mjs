@@ -1,8 +1,7 @@
 import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-
-export async function resolveOxlintExecutable(
+export default async function resolveOxlintExecutable(
   requireFactory = () => createRequire(import.meta.url),
   readPackage = readFile,
 ) {

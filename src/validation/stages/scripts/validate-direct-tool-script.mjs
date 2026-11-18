@@ -15,7 +15,6 @@ const TOOL_NAMES = {
     ["vue-tsc", "vue-tsc"],
   ]),
 };
-
 function firstCommandToken(script) {
   return script
     .trim()
@@ -24,8 +23,7 @@ function firstCommandToken(script) {
     .replace(/\.(?:cmd|exe|js|mjs)$/iu, "")
     .toLowerCase();
 }
-
-export function validateDirectToolScript(script, kind, packageJson = {}) {
+export default function validateDirectToolScript(script, kind, packageJson = {}) {
   if (typeof script !== "string" || !script.trim()) return `The ${kind} script must be nonempty.`;
   if (/[\r\n;&|<>`()]|\$\(|%[^%]+%/u.test(script))
     return `The ${kind} script must contain one command without chaining or redirection.`;

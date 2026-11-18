@@ -1,15 +1,18 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseBoundedYamlDocuments } from "../../../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import { listSpecificationEntries } from "../../../list-specification-entries.mjs";
-
-export async function readConsumerSpecificationFiles(root, options) {
+import parseBoundedYamlDocuments from "../../../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import listSpecificationEntries from "../../../list-specification-entries.mjs";
+export default async function readConsumerSpecificationFiles(root, options) {
   const { read = readFile, readdir } = options;
   let entries;
   try {
-    entries = await listSpecificationEntries(root, { list: readdir });
+    entries = await listSpecificationEntries(root, {
+      list: readdir,
+    });
   } catch (error) {
-    return { error: `Consumer specification discovery failed: ${error.message}` };
+    return {
+      error: `Consumer specification discovery failed: ${error.message}`,
+    };
   }
   const paths = entries.filter(({ path, type }) => type === "file" && /\.ya?ml$/iu.test(path));
   const directivePathExists = paths.some(({ path }) => path === "specs/directives.yaml");
@@ -49,12 +52,14 @@ export async function readConsumerSpecificationFiles(root, options) {
     }
     values.forEach((value, index) => {
       if (hasDirectives(value))
-        result.documents.push({ path: `${path} document ${index + 1}`, value });
+        result.documents.push({
+          path: `${path} document ${index + 1}`,
+          value,
+        });
     });
   }
   return result;
 }
-
 function hasDirectives(value) {
   return Boolean(
     value && typeof value === "object" && !Array.isArray(value) && "directives" in value,

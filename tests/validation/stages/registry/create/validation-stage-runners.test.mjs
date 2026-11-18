@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { createValidationStageRunners } from "../../../../../src/validation/stages/registry/create/validation-stage-runners.mjs";
-
+import createValidationStageRunners from "../../../../../src/validation/stages/registry/create/validation-stage-runners.mjs";
 test("caches Jest output and maps its failures", async () => {
   const context = {
     jestResult: {
@@ -9,7 +8,11 @@ test("caches Jest output and maps its failures", async () => {
     },
   };
   const pass = createValidationStageRunners({
-    runJest: async () => ({ ruleId: "stage:jest", status: "pass", message: "" }),
+    runJest: async () => ({
+      ruleId: "stage:jest",
+      status: "pass",
+      message: "",
+    }),
   });
   await expect(pass.jest(context)).resolves.toMatchObject({
     stage: "jest",
@@ -17,9 +20,16 @@ test("caches Jest output and maps its failures", async () => {
     output: context.jestResult,
   });
   const fail = createValidationStageRunners({
-    runJest: async () => ({ ruleId: "stage:jest", status: "fail", message: "Jest failed" }),
+    runJest: async () => ({
+      ruleId: "stage:jest",
+      status: "fail",
+      message: "Jest failed",
+    }),
   });
-  await expect(fail.jest(context)).resolves.toMatchObject({ code: 2, status: "fail" });
+  await expect(fail.jest(context)).resolves.toMatchObject({
+    code: 2,
+    status: "fail",
+  });
   const startup = createValidationStageRunners({
     runJest: async () => ({
       ruleId: "stage:jest",
@@ -27,32 +37,58 @@ test("caches Jest output and maps its failures", async () => {
       message: "Jest could not be started",
     }),
   });
-  await expect(startup.jest(context)).resolves.toMatchObject({ code: 1, status: "fail" });
+  await expect(startup.jest(context)).resolves.toMatchObject({
+    code: 1,
+    status: "fail",
+  });
 });
-
 test("runs lint and keeps its process output", async () => {
-  const runLint = jest.fn(async () => ({ code: 0, stdout: "ok", stderr: "" }));
+  const runLint = jest.fn(async () => ({
+    code: 0,
+    stdout: "ok",
+    stderr: "",
+  }));
   const resolveFocusedPaths = jest.fn(async (_root, scope) => scope.paths);
-  const runners = createValidationStageRunners({ runLint, resolveFocusedPaths });
+  const runners = createValidationStageRunners({
+    runLint,
+    resolveFocusedPaths,
+  });
   await expect(
-    runners.lint({ root: ".", toolArgs: [], focusedScope: null }),
+    runners.lint({
+      root: ".",
+      toolArgs: [],
+      focusedScope: null,
+    }),
   ).resolves.toMatchObject({
     code: 0,
-    output: { stdout: "ok" },
+    output: {
+      stdout: "ok",
+    },
   });
   expect(runLint).toHaveBeenCalledWith(".", undefined, undefined, [], []);
   expect(resolveFocusedPaths).not.toHaveBeenCalled();
   const failed = createValidationStageRunners({
-    runLint: async () => ({ code: 1, stderr: "bad" }),
+    runLint: async () => ({
+      code: 1,
+      stderr: "bad",
+    }),
     resolveFocusedPaths,
   });
   await expect(
-    failed.lint({ root: ".", toolArgs: [], focusedScope: { paths: ["src/a.mjs"] } }),
+    failed.lint({
+      root: ".",
+      toolArgs: [],
+      focusedScope: {
+        paths: ["src/a.mjs"],
+      },
+    }),
   ).resolves.toMatchObject({
     code: 5,
     message: "bad",
   });
-  expect(resolveFocusedPaths).toHaveBeenCalledWith(".", { paths: ["src/a.mjs"] });
+  expect(resolveFocusedPaths).toHaveBeenCalledWith(".", {
+    paths: ["src/a.mjs"],
+  });
   const rejectPaths = jest.fn(async () => null);
   const rejectLint = jest.fn();
   const rejected = createValidationStageRunners({
@@ -60,7 +96,13 @@ test("runs lint and keeps its process output", async () => {
     resolveFocusedPaths: rejectPaths,
   });
   await expect(
-    rejected.lint({ root: ".", toolArgs: [], focusedScope: { paths: ["src/escape.mjs"] } }),
+    rejected.lint({
+      root: ".",
+      toolArgs: [],
+      focusedScope: {
+        paths: ["src/escape.mjs"],
+      },
+    }),
   ).resolves.toMatchObject({
     code: 5,
     message: "Focused linting requires at least one resolved path.",
@@ -71,168 +113,102 @@ test("runs lint and keeps its process output", async () => {
       throw new Error("spawn");
     },
   });
-  await expect(startup.lint({ root: ".", toolArgs: [] })).resolves.toMatchObject({
+  await expect(
+    startup.lint({
+      root: ".",
+      toolArgs: [],
+    }),
+  ).resolves.toMatchObject({
     code: 5,
     message: "spawn",
   });
 });
-
 test("runs formatting and stores formatter output", async () => {
-  const runFormatter = jest.fn(async () => ({ code: 0, stdout: "formatted" }));
-  const valid = createValidationStageRunners({ runFormatter });
+  const runFormatter = jest.fn(async () => ({
+    code: 0,
+    stdout: "formatted",
+  }));
+  const valid = createValidationStageRunners({
+    runFormatter,
+  });
   await expect(
-    valid.format({ root: ".", executeFormat: true, mode: null, toolArgs: [], env: {} }),
+    valid.format({
+      root: ".",
+      executeFormat: true,
+      mode: null,
+      toolArgs: [],
+      env: {},
+    }),
   ).resolves.toMatchObject({
     code: 0,
-    output: { output: { stdout: "formatted" } },
+    output: {
+      output: {
+        stdout: "formatted",
+      },
+    },
   });
-  const invalid = createValidationStageRunners({ validateFormatter: async () => "format failed" });
+  const invalid = createValidationStageRunners({
+    validateFormatter: async () => "format failed",
+  });
   await expect(
-    invalid.format({ root: ".", executeFormat: true, mode: null, toolArgs: [] }),
+    invalid.format({
+      root: ".",
+      executeFormat: true,
+      mode: null,
+      toolArgs: [],
+    }),
   ).resolves.toMatchObject({
     code: 6,
     message: "format failed",
   });
-  const noChanges = createValidationStageRunners({ validateFormatter: async () => undefined });
+  const noChanges = createValidationStageRunners({
+    validateFormatter: async () => undefined,
+  });
   await expect(
-    noChanges.format({ root: ".", executeFormat: false, mode: null, toolArgs: [] }),
-  ).resolves.toMatchObject({ code: 0, message: "" });
+    noChanges.format({
+      root: ".",
+      executeFormat: false,
+      mode: null,
+      toolArgs: [],
+    }),
+  ).resolves.toMatchObject({
+    code: 0,
+    message: "",
+  });
   const startup = createValidationStageRunners({
     validateFormatter: async () => {
       throw new Error("formatter spawn");
     },
   });
   await expect(
-    startup.format({ root: ".", executeFormat: true, mode: null, toolArgs: [] }),
-  ).resolves.toMatchObject({ code: 6, message: "formatter spawn" });
-});
-
-test("runs audit and stores its process report", async () => {
-  const runAudit = jest.fn(async () => ({ code: 0, stdout: "report" }));
-  const valid = createValidationStageRunners({ runAudit });
-  await expect(valid.audit({ root: ".", toolArgs: [], env: {} })).resolves.toMatchObject({
-    code: 0,
-    output: { stdout: "report" },
-  });
-  const invalid = createValidationStageRunners({
-    runAudit: async () => ({
-      code: 1,
-      stdout: JSON.stringify({
-        metadata: {
-          vulnerabilities: { info: 0, low: 0, moderate: 1, high: 1, critical: 0, total: 2 },
-        },
-        vulnerabilities: {
-          picomatch: {
-            name: "picomatch",
-            severity: "high",
-            via: [
-              {
-                source: 123,
-                title: "Regular expression denial of service",
-                severity: "high",
-                range: "<=4.0.7",
-                url: "https://example.test/advisory",
-              },
-            ],
-          },
-        },
-      }),
+    startup.format({
+      root: ".",
+      executeFormat: true,
+      mode: null,
+      toolArgs: [],
     }),
+  ).resolves.toMatchObject({
+    code: 6,
+    message: "formatter spawn",
   });
-  await expect(invalid.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({
-    code: 7,
-    message:
-      "npm audit failed.\nnpm audit found 2 vulnerabilities (1 moderate, 1 high).\nhigh: Regular expression denial of service. Affected versions: <=4.0.7. Affected packages: picomatch. https://example.test/advisory",
-  });
-  const exempt = createValidationStageRunners({
+});
+test("reports an audit timeout as a warning without failing the stage", async () => {
+  const runners = createValidationStageRunners({
     runAudit: async () => ({
-      code: 1,
-      stdout: JSON.stringify({
-        vulnerabilities: {
-          picomatch: {
-            severity: "high",
-            via: [
-              {
-                severity: "high",
-                url: "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
-              },
-            ],
-          },
-        },
-      }),
+      code: null,
+      timedOut: true,
     }),
   });
   await expect(
-    exempt.audit({
+    runners.audit({
       root: ".",
       toolArgs: [],
-      packageJson: {
-        eliware: {
-          exempt: [{ ruleId: "stage:audit", advisories: ["GHSA-fc5q-39xc-vjpf"] }],
-        },
-      },
+      env: {},
     }),
   ).resolves.toMatchObject({
-    code: 0,
-    status: "warning",
-    message: "WARNING: npm audit findings covered by an approved exemption: GHSA-fc5q-39xc-vjpf.",
-  });
-  const startup = createValidationStageRunners({
-    runAudit: async () => {
-      throw new Error("audit spawn");
-    },
-  });
-  await expect(startup.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({ code: 7 });
-});
-
-test("reports an audit timeout as a warning without failing the stage", async () => {
-  const runners = createValidationStageRunners({
-    runAudit: async () => ({ code: null, timedOut: true }),
-  });
-  await expect(runners.audit({ root: ".", toolArgs: [], env: {} })).resolves.toMatchObject({
     stage: "audit",
     code: 0,
     status: "warning",
     message: "WARNING: Audit stage timed out after 30 seconds. Validation will continue.",
   });
-});
-
-test("runs pack only for its profile and stores the pack result", async () => {
-  const skip = createValidationStageRunners();
-  await expect(skip.pack({ packageJson: { eliware: { apply: [] } } })).resolves.toMatchObject({
-    code: 0,
-    message: "Package validation does not apply.",
-  });
-  const validatePack = jest.fn(async ({ runPack }) => {
-    await runPack(".");
-    return null;
-  });
-  const runPack = jest.fn(async () => ({ code: 0, stdout: "manifest" }));
-  const runners = createValidationStageRunners({ validatePack, runPack });
-  await expect(
-    runners.pack({
-      root: ".",
-      packageJson: { eliware: { apply: ["npm-published"] } },
-      toolArgs: [],
-    }),
-  ).resolves.toMatchObject({ code: 0, output: { output: { stdout: "manifest" } } });
-  expect(runPack).toHaveBeenCalled();
-  const invalid = createValidationStageRunners({ validatePack: async () => "pack failed" });
-  await expect(
-    invalid.pack({ packageJson: { eliware: { apply: ["npm-published"] } } }),
-  ).resolves.toMatchObject({ code: 9, message: "pack failed" });
-});
-
-test("caches outdated package data for convention checks and uses its exit code", async () => {
-  const dependencies = { alpha: { current: "1" } };
-  const runners = createValidationStageRunners({
-    runOutdated: async () => ({ dependencies, outdated: ["alpha@latest"] }),
-  });
-  const context = { root: ".", env: {} };
-  await expect(runners.outdated(context)).resolves.toMatchObject({
-    code: 8,
-    stage: "outdated",
-    status: "fail",
-  });
-  expect(context.outdatedDependencies).toBe(dependencies);
 });

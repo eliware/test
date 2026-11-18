@@ -1,4 +1,4 @@
-export function truncateChildOutputText(text, limit) {
+export default function truncateChildOutputText(text, limit) {
   let end = Math.min(limit, text.length);
   const beforeBoundary = text.charCodeAt(end - 1);
   const afterBoundary = text.charCodeAt(end);

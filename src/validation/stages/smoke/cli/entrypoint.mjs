@@ -1,12 +1,17 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runSmokeCli } from "../cli.mjs";
-
-export async function runSmokeCliEntrypoint({ moduleUrl, argvPath, args, run = runSmokeCli }) {
+import runSmokeCli from "../cli.mjs";
+export default async function runSmokeCliEntrypoint({
+  moduleUrl,
+  argvPath,
+  args,
+  run = runSmokeCli,
+}) {
   if (resolve(fileURLToPath(moduleUrl)) !== resolve(argvPath ?? "")) return;
-  process.exitCode = await run({ args });
+  process.exitCode = await run({
+    args,
+  });
 }
-
 await runSmokeCliEntrypoint({
   moduleUrl: import.meta.url,
   argvPath: process.argv[1],

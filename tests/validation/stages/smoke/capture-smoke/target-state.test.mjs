@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { captureSmokeTargetState } from "../../../../../src/validation/stages/smoke/capture-smoke/target-state.mjs";
+import captureSmokeTargetState from "../../../../../src/validation/stages/smoke/capture-smoke/target-state.mjs";
 function missingFs() {
   return {
     cp: async () => {},
@@ -11,7 +11,9 @@ function missingFs() {
     readFile: async () => Buffer.from(""),
     readlink: async () => "",
     rm: async () => {},
-    stat: async () => ({ isDirectory: () => false }),
+    stat: async () => ({
+      isDirectory: () => false,
+    }),
   };
 }
 test("coordinates a snapshot of all requested target paths", async () => {
@@ -39,7 +41,10 @@ test("uses default file system dependencies when a local storage path is supplie
       undefined,
       "C:/smoke/backup",
     ),
-  ).resolves.toMatchObject({ storage: "C:/smoke/backup", entries: expect.any(Array) });
+  ).resolves.toMatchObject({
+    storage: "C:/smoke/backup",
+    entries: expect.any(Array),
+  });
 });
 test("requires backup storage inside the smoke workspace", async () => {
   await expect(
@@ -64,9 +69,11 @@ test("cleans failed snapshots and returns the original filesystem error", async 
       "C:/smoke/backup",
     ),
   ).rejects.toThrow("read denied");
-  expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", { recursive: true, force: true });
+  expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", {
+    recursive: true,
+    force: true,
+  });
 });
-
 test("rechecks package parents before each snapshot path", async () => {
   let packageParentChecks = 0;
   const fs = {
@@ -76,7 +83,9 @@ test("rechecks package parents before each snapshot path", async () => {
         path.replaceAll("\\", "/") === "C:/consumer/node_modules/@eliware" &&
         ++packageParentChecks === 2
       )
-        return { isSymbolicLink: () => true };
+        return {
+          isSymbolicLink: () => true,
+        };
       const error = new Error("missing");
       error.code = "ENOENT";
       throw error;

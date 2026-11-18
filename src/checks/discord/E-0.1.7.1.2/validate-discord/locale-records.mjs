@@ -1,8 +1,6 @@
 import { supportedDiscordLocales } from "../supported-discord-locales.mjs";
-
 const localeDirectory = "locales";
-
-export async function validateDiscordLocaleRecords(files, inventory) {
+export default async function validateDiscordLocaleRecords(files, inventory) {
   const errors = files
     .filter((path) => path.startsWith(`${localeDirectory}/`) && path.endsWith(".json"))
     .filter((path) => path.slice(localeDirectory.length + 1).includes("/"))
@@ -33,18 +31,25 @@ export async function validateDiscordLocaleRecords(files, inventory) {
   }
   return errors;
 }
-
 async function readLocale(inventory, locale) {
   try {
     const value = JSON.parse(await inventory.readText(`${localeDirectory}/${locale}.json`));
     return value && typeof value === "object" && !Array.isArray(value)
-      ? { valid: true, keys: Object.keys(value).sort() }
-      : { valid: false, keys: [] };
+      ? {
+          valid: true,
+          keys: Object.keys(value).sort(),
+        }
+      : {
+          valid: false,
+          keys: [],
+        };
   } catch {
-    return { valid: false, keys: [] };
+    return {
+      valid: false,
+      keys: [],
+    };
   }
 }
-
 function sameKeys(left, right) {
   return left.length === right.length && left.every((key, index) => key === right[index]);
 }

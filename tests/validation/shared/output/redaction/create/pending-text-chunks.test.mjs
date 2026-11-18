@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { createPendingTextChunks } from "../../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
-
+import createPendingTextChunks from "../../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
 test("joins appended chunks and consumes prefixes across chunk boundaries", () => {
   const pending = createPendingTextChunks();
   pending.append("abc");
@@ -11,13 +10,18 @@ test("joins appended chunks and consumes prefixes across chunk boundaries", () =
   expect(pending.length).toBe(4);
   expect(pending.toString()).toBe("fghi");
 });
-
 test("reads boundary code units without joining the queue", () => {
   const pending = createPendingTextChunks();
   pending.append("left");
   pending.append("😀tail");
-  expect(pending.codeUnitsAtBoundary(5)).toEqual({ previous: 0xd83d, next: 0xde00 });
-  expect(pending.codeUnitsAtBoundary(-1)).toEqual({ previous: NaN, next: NaN });
+  expect(pending.codeUnitsAtBoundary(5)).toEqual({
+    previous: 0xd83d,
+    next: 0xde00,
+  });
+  expect(pending.codeUnitsAtBoundary(-1)).toEqual({
+    previous: NaN,
+    next: NaN,
+  });
   expect(pending.codeUnitsAtBoundary(pending.length + 1)).toEqual({
     previous: NaN,
     next: NaN,
@@ -33,22 +37,22 @@ test("reads boundary code units without joining the queue", () => {
   });
   expect(pending.toString()).toBe("tail");
 });
-
 test("reads code units correctly after repeatedly consuming part of the head chunk", () => {
   const pending = createPendingTextChunks();
   pending.append("prefix");
   pending.append("\ud83d\ude00tail");
-
   expect(pending.takePrefix(3)).toBe("pre");
   expect(pending.takePrefix(3)).toBe("fix");
-  expect(pending.codeUnitsAtBoundary(1)).toEqual({ previous: 0xd83d, next: 0xde00 });
+  expect(pending.codeUnitsAtBoundary(1)).toEqual({
+    previous: 0xd83d,
+    next: 0xde00,
+  });
   expect(pending.takePrefix(2)).toBe("😀");
   expect(pending.codeUnitsAtBoundary(0)).toEqual({
     previous: NaN,
     next: "t".charCodeAt(0),
   });
 });
-
 test("clears chunks and safely handles empty prefix operations", () => {
   const pending = createPendingTextChunks();
   pending.append("");
@@ -57,9 +61,11 @@ test("clears chunks and safely handles empty prefix operations", () => {
   pending.clear();
   expect(pending.length).toBe(0);
   expect(pending.toString()).toBe("");
-  expect(pending.codeUnitsAtBoundary(0)).toEqual({ previous: NaN, next: NaN });
+  expect(pending.codeUnitsAtBoundary(0)).toEqual({
+    previous: NaN,
+    next: NaN,
+  });
 });
-
 test("reads adjacent code units across a chunk boundary", () => {
   const pending = createPendingTextChunks();
   pending.append("a");
@@ -69,7 +75,6 @@ test("reads adjacent code units across a chunk boundary", () => {
     next: "b".charCodeAt(0),
   });
 });
-
 test("compacts consumed chunk prefixes after many small writes", () => {
   const pending = createPendingTextChunks();
   for (let index = 0; index < 1100; index += 1) {
@@ -79,7 +84,6 @@ test("compacts consumed chunk prefixes after many small writes", () => {
   expect(pending.length).toBe(0);
   expect(pending.toString()).toBe("");
 });
-
 test("joins a large number of retained tiny chunks without argument spreading", () => {
   const pending = createPendingTextChunks();
   for (let index = 0; index < 50_000; index += 1) pending.append("x");

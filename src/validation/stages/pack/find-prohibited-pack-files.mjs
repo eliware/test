@@ -1,5 +1,4 @@
-import { isSensitivePath } from "../../../checks/general/E-0.1.0.1.8/validate/tracked/is/sensitive-path.mjs";
-
+import isSensitivePath from "../../../checks/general/E-0.1.0.1.8/validate/tracked/is/sensitive-path.mjs";
 const prohibitedNames = new Set([
   "tests",
   "test",
@@ -24,8 +23,7 @@ const prohibitedNames = new Set([
   "bun.lockb",
   ".npmrc",
 ]);
-
-export function findProhibitedPackFiles(paths = []) {
+export default function findProhibitedPackFiles(paths = []) {
   return paths.filter((path) => {
     const segments = path.toLowerCase().replaceAll("\\", "/").split("/");
     const nonEnvironmentSegments = segments.filter((segment) => !isEnvironmentFile(segment));
@@ -36,11 +34,9 @@ export function findProhibitedPackFiles(paths = []) {
     );
   });
 }
-
 function isEnvironmentFile(segment) {
   return /^\.env(?:$|\.)/u.test(segment) || segment === ".envrc";
 }
-
 function isPackSecretName(segment) {
   const fileName = segment.replace(/\.[^.]+$/u, "");
   const sourceFile = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/u.test(segment);

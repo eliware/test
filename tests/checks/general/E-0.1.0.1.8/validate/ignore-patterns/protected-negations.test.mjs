@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findProtectedNegations } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns/protected-negations.mjs";
-
+import findProtectedNegations from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns/protected-negations.mjs";
 const requiredRules = [
   "node_modules/",
   ".git/",
@@ -13,7 +12,6 @@ const requiredRules = [
   ".DS_Store",
   "Thumbs.db",
 ];
-
 test("finds later negations that restore protected directories and files", () => {
   expect(
     findProtectedNegations([
@@ -32,7 +30,6 @@ test("finds later negations that restore protected directories and files", () =>
     "!nested/deep/Thumbs.db",
   ]);
 });
-
 test("ignores empty and earlier negations", () => {
   expect(findProtectedNegations(["!", "!nested/node_modules/", ...requiredRules])).toEqual([]);
 });

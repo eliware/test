@@ -1,3 +1,3 @@
-export function selectExecutionChecks(checks, focusedScope) {
+export default function selectExecutionChecks(checks, focusedScope) {
   return focusedScope ? checks.filter(({ focusedSafe }) => focusedSafe === true) : checks;
 }

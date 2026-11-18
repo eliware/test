@@ -1,4 +1,4 @@
-export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
+export default async function validateGhcrAgentsSection(inventory, packageJson = {}) {
   if (!inventory?.readText) return ["AGENTS.md could not be inspected."];
   try {
     const lines = (await inventory.readText("AGENTS.md")).split(/\r?\n/u);

@@ -1,5 +1,4 @@
-import { memberName } from "./member-name.mjs";
-
+import memberName from "./member-name.mjs";
 const domTextProperties = new Set([
   "ariaLabel",
   "innerText",
@@ -7,7 +6,6 @@ const domTextProperties = new Set([
   "textContent",
   "title",
 ]);
-
-export function isUserFacingOutputProperty(target) {
+export default function isUserFacingOutputProperty(target) {
   return target?.type === "MemberExpression" && domTextProperties.has(memberName(target));
 }

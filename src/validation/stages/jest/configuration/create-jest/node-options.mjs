@@ -1,6 +1,5 @@
 const allowedOptions = new Set(["--experimental-vm-modules", "--no-warnings", "--trace-warnings"]);
-
-export function createJestNodeOptions(value = "") {
+export default function createJestNodeOptions(value = "") {
   if (typeof value === "string" && /["'\\]/u.test(value)) {
     throw new Error("Unsupported inherited NODE_OPTIONS for the Jest validation process.");
   }
@@ -20,7 +19,6 @@ export function createJestNodeOptions(value = "") {
   }
   return [...options].join(" ");
 }
-
 function isAllowedOption(option) {
   const [name, value] = option.split("=", 2);
   if (!allowedOptions.has(name)) return false;

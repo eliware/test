@@ -1,9 +1,8 @@
-import { validateInternalExportBarrels } from "../../../../shared/validate-internal-export-barrels.mjs";
-import { validateImplementationPlacement } from "../implementation-placement.mjs";
-import { validateApplicationTests } from "./tests.mjs";
-import { validateSingleDefaultMethods } from "../../../../shared/single-default-methods.mjs";
-
-export async function validateApplicationLayout(context = {}) {
+import validateInternalExportBarrels from "../../../../shared/validate-internal-export-barrels.mjs";
+import validateImplementationPlacement from "../implementation-placement.mjs";
+import validateApplicationTests from "./tests.mjs";
+import validateSingleDefaultMethods from "../../../../shared/single-default-methods.mjs";
+export default async function validateApplicationLayout(context = {}) {
   const files = await context.repositoryInventory.files("all");
   const read = context.repositoryInventory.readText;
   const root = context.root ?? process.cwd();

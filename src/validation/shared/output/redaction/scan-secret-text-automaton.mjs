@@ -1,5 +1,16 @@
-export function scanSecretTextAutomaton(nodes, text, maxScanWork, initialState = 0, offset = 0) {
-  const matchEnds = Array.from({ length: text.length + 1 }, () => 0);
+export default function scanSecretTextAutomaton(
+  nodes,
+  text,
+  maxScanWork,
+  initialState = 0,
+  offset = 0,
+) {
+  const matchEnds = Array.from(
+    {
+      length: text.length + 1,
+    },
+    () => 0,
+  );
   const matches = [];
   let state = initialState;
   let work = 0;
@@ -23,9 +34,17 @@ export function scanSecretTextAutomaton(nodes, text, maxScanWork, initialState =
         if (work > maxScanWork) return null;
         const start = index - length + 1;
         matchEnds[start] = Math.max(matchEnds[start], index + 1);
-        matches.push({ start: offset + start, end: offset + index + 1 });
+        matches.push({
+          start: offset + start,
+          end: offset + index + 1,
+        });
       }
     }
   }
-  return { matchEnds, matches, state, work };
+  return {
+    matchEnds,
+    matches,
+    state,
+    work,
+  };
 }

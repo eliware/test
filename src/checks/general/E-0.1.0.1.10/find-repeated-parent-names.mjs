@@ -1,4 +1,4 @@
-export function findRepeatedParentNames(files) {
+export default function findRepeatedParentNames(files) {
   return files.filter((path) => {
     const normalized = path.replaceAll("\\", "/");
     const separator = normalized.lastIndexOf("/");

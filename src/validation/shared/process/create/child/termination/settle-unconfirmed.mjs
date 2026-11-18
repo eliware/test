@@ -1,4 +1,4 @@
-export function createUnconfirmedTerminationSettlement({
+export default function createUnconfirmedTerminationSettlement({
   isSettled,
   markSettled,
   timeout,

@@ -1,12 +1,10 @@
-import { cleanMarkdownProseLine } from "./markdown/clean-line.mjs";
-import { createProseParagraphCollector } from "./paragraph-collector.mjs";
-
-export function extractMarkdownProse(source) {
+import cleanMarkdownProseLine from "./markdown/clean-line.mjs";
+import createProseParagraphCollector from "./paragraph-collector.mjs";
+export default function extractMarkdownProse(source) {
   const lines = source.replace(/\r\n?/gu, "\n").split("\n");
   const paragraphs = createProseParagraphCollector();
   let fence = null;
   let htmlComment = false;
-
   for (const [index, rawLine] of lines.entries()) {
     const marker = rawLine.match(/^\s{0,3}(`{3,}|~{3,})/u)?.[1];
     if (marker) {

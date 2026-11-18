@@ -1,8 +1,7 @@
-import { validateProductionCoveragePolicy } from "../../production-coverage-policy.mjs";
-import { validateTestToolReferences } from "../../test-tool-references.mjs";
-import { isPureExportBarrel } from "../../../../../shared/is/pure-export-barrel.mjs";
-
-export function validateJestSourceFilePolicy(path, content, options = {}) {
+import validateProductionCoveragePolicy from "../../production-coverage-policy.mjs";
+import validateTestToolReferences from "../../test-tool-references.mjs";
+import isPureExportBarrel from "../../../../../shared/is/pure-export-barrel.mjs";
+export default function validateJestSourceFilePolicy(path, content, options = {}) {
   const errors = [];
   const toolError = validateTestToolReferences(path, content, options.harness);
   const coverageError = validateProductionCoveragePolicy(path, content, {

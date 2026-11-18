@@ -1,8 +1,6 @@
-import { memberName } from "../member-name.mjs";
-
+import memberName from "../member-name.mjs";
 const consoleMethods = new Set(["error", "info", "log", "warn"]);
-
-export function isConsoleOutputCall(callee) {
+export default function isConsoleOutputCall(callee) {
   return (
     callee?.type === "MemberExpression" &&
     callee.object?.type === "Identifier" &&

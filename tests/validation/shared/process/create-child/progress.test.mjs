@@ -1,11 +1,15 @@
 import { expect, jest, test } from "@jest/globals";
-import { createChildProgress } from "../../../../../src/validation/shared/process/create-child/progress.mjs";
-
+import createChildProgress from "../../../../../src/validation/shared/process/create-child/progress.mjs";
 test("connects suite callbacks and resets the progress timeout", () => {
   const start = jest.fn(() => true);
   const end = jest.fn(() => true);
   const reset = jest.fn();
-  const timeoutController = { suiteTimeout: () => ({ start, end }) };
+  const timeoutController = {
+    suiteTimeout: () => ({
+      start,
+      end,
+    }),
+  };
   const progress = createChildProgress(
     {
       isSettled: () => false,
@@ -16,7 +20,9 @@ test("connects suite callbacks and resets the progress timeout", () => {
       },
     },
     timeoutController,
-    { reset },
+    {
+      reset,
+    },
     {},
   );
   progress.push("progress\n");
@@ -24,14 +30,18 @@ test("connects suite callbacks and resets the progress timeout", () => {
   expect(end).toHaveBeenCalledWith("suite");
   expect(reset).toHaveBeenCalled();
 });
-
 test("uses caller callbacks and skips timer resets after settlement", () => {
   const start = jest.fn();
   const end = jest.fn();
   const reset = jest.fn();
   const onSuiteStart = jest.fn();
   const onSuiteEnd = jest.fn();
-  const timeoutController = { suiteTimeout: () => ({ start, end }) };
+  const timeoutController = {
+    suiteTimeout: () => ({
+      start,
+      end,
+    }),
+  };
   const progress = createChildProgress(
     {
       isSettled: () => true,
@@ -44,7 +54,9 @@ test("uses caller callbacks and skips timer resets after settlement", () => {
       },
     },
     timeoutController,
-    { reset },
+    {
+      reset,
+    },
     {},
   );
   progress.push("progress\n");

@@ -1,10 +1,10 @@
-import { visitAst } from "../../../../visit-ast.mjs";
-import { collectMockedModules } from "../../../../test-write-policy/collect/mocked-modules.mjs";
-import { collectHttpBindings } from "./bindings.mjs";
-import { collectMockedClients } from "./mocked-clients.mjs";
-import { isInjectedHttpClient, targetsLocalhost } from "./targets.mjs";
-
-export function findHttpClientViolations(ast) {
+import visitAst from "../../../../visit-ast.mjs";
+import collectMockedModules from "../../../../test-write-policy/collect/mocked-modules.mjs";
+import collectHttpBindings from "./bindings.mjs";
+import collectMockedClients from "./mocked-clients.mjs";
+import isInjectedHttpClient from "./targets/is-injected-http-client.mjs";
+import targetsLocalhost from "./targets.mjs";
+export default function findHttpClientViolations(ast) {
   const bindings = collectHttpBindings(ast);
   const mocks = collectMockedModules(ast);
   const mockedClients = collectMockedClients(ast);
@@ -24,15 +24,12 @@ export function findHttpClientViolations(ast) {
   });
   return [...new Set(findings)];
 }
-
 function isRequestCall(node) {
   return node.type === "CallExpression" && ["get", "request"].includes(memberName(node.callee));
 }
-
 function getModuleName(callee, bindings) {
   return bindings.get(rootName(callee.object)) ?? bindings.get(callee.name);
 }
-
 function memberName(node) {
   return node?.type === "MemberExpression" || node?.type === "OptionalMemberExpression"
     ? node.computed
@@ -40,7 +37,6 @@ function memberName(node) {
       : node.property.name
     : node?.name;
 }
-
 function rootName(node) {
   if (node?.type === "Identifier") return node.name;
   if (["MemberExpression", "OptionalMemberExpression"].includes(node?.type))

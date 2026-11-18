@@ -5,7 +5,6 @@ function sameList(actual, expected) {
     actual.every((item, index) => item === expected[index])
   );
 }
-
 function sameValue(actual, expected) {
   if (Array.isArray(actual) || Array.isArray(expected))
     return (
@@ -24,8 +23,7 @@ function sameValue(actual, expected) {
   }
   return actual === expected;
 }
-
-export function repoMapExemptionsMatch(packageJson, record) {
+export default function repoMapExemptionsMatch(packageJson, record) {
   const packageExemptions = Object.hasOwn(packageJson?.eliware ?? {}, "exempt")
     ? packageJson.eliware.exempt
     : [];

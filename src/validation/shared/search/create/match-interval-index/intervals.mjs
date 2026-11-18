@@ -1,15 +1,13 @@
-import { createOrderedMatchStartIndex } from "../ordered-match-start-index.mjs";
-import { createActiveStarts } from "./active-starts.mjs";
-import { createEndEntryStore } from "./end-entry-store.mjs";
-
-export function createMatchIntervals() {
+import createOrderedMatchStartIndex from "../ordered-match-start-index.mjs";
+import createActiveStarts from "./active-starts.mjs";
+import createEndEntryStore from "./end-entry-store.mjs";
+export default function createMatchIntervals() {
   const matchEndsByStart = new Map();
   const orderedMatchStarts = createOrderedMatchStartIndex((start) => matchEndsByStart.has(start));
   const activeStarts = createActiveStarts();
   const endEntries = createEndEntryStore(matchEndsByStart, () =>
     orderedMatchStarts.discardInactive(),
   );
-
   function add(matches) {
     for (const { start, end } of matches) {
       const previousEnd = matchEndsByStart.get(start) ?? 0;
@@ -20,7 +18,6 @@ export function createMatchIntervals() {
       activeStarts.set(start, end);
     }
   }
-
   function materialize(start, length) {
     const matches = [];
     matches.length = length + 1;
@@ -31,7 +28,6 @@ export function createMatchIntervals() {
     }
     return matches;
   }
-
   function materializeEntries(start, length) {
     const matches = new Map();
     for (const matchStart of orderedMatchStarts.range(start, start + length)) {
@@ -40,7 +36,6 @@ export function createMatchIntervals() {
     }
     return matches;
   }
-
   return Object.freeze({
     add,
     earliestCrossing: activeStarts.earliestCrossing,

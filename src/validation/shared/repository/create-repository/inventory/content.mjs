@@ -1,16 +1,18 @@
-import { createRepositoryAstCache } from "../../../ast/create-repository-ast/cache.mjs";
-import { createRepositoryFileContentCache } from "../file-content-cache.mjs";
-import { createRepositoryParsedContentCache } from "../parsed-content-cache.mjs";
-
-export function createRepositoryContentCache(root, read, parseSource) {
+import createRepositoryAstCache from "../../../ast/create-repository-ast/cache.mjs";
+import createRepositoryFileContentCache from "../file-content-cache.mjs";
+import createRepositoryParsedContentCache from "../parsed-content-cache.mjs";
+export default function createRepositoryContentCache(root, read, parseSource) {
   const content = createRepositoryFileContentCache(root, read);
-
   return {
     ...content,
     readParsed: createRepositoryParsedContentCache(root, content.readText),
     parseAst: createRepositoryAstCache({
       read: content.readText,
-      ...(parseSource ? { parseSource } : {}),
+      ...(parseSource
+        ? {
+            parseSource,
+          }
+        : {}),
     }),
   };
 }

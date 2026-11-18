@@ -1,10 +1,9 @@
-import { findInvalidJestTestAliases } from "../../find/invalid-jest-test-aliases.mjs";
-import { collectModuleShadowedNames } from "../module-shadowed-jest-names.mjs";
-import { collectJestDescribeNames } from "./describe-names.mjs";
-import { collectExecutableJestTestAliases } from "../executable-jest-test-aliases.mjs";
-import { collectImportedJestTestBindings } from "./import-bindings.mjs";
-
-export function collectJestTestNames(program) {
+import findInvalidJestTestAliases from "../../find/invalid-jest-test-aliases.mjs";
+import collectModuleShadowedNames from "../module-shadowed-jest-names.mjs";
+import collectJestDescribeNames from "./describe-names.mjs";
+import collectExecutableJestTestAliases from "../executable-jest-test-aliases.mjs";
+import collectImportedJestTestBindings from "./import-bindings.mjs";
+export default function collectJestTestNames(program) {
   const names = {
     callbacks: new Set(["test", "it"]),
     namespaces: new Set(),

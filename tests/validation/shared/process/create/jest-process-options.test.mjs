@@ -1,19 +1,21 @@
 import { expect, jest, test } from "@jest/globals";
-import { createJestProcessOptions } from "../../../../../src/validation/shared/process/create/jest-process-options.mjs";
-
+import createJestProcessOptions from "../../../../../src/validation/shared/process/create/jest-process-options.mjs";
 test("assembles the Jest process configuration and forwards timeout diagnostics", () => {
   const onTimeout = jest.fn();
   const options = createJestProcessOptions("C:/fixture", [], {
-    env: { NODE_OPTIONS: "--no-warnings" },
+    env: {
+      NODE_OPTIONS: "--no-warnings",
+    },
     onTimeout,
   });
-
   expect(options).toMatchObject({
     cwd: "C:/fixture",
     progressPattern: /^\[eliware-test-progress\]/m,
     progressTimeoutMs: 15_000,
     suiteTimeoutMs: 10_000,
-    env: { NODE_OPTIONS: "--no-warnings --experimental-vm-modules" },
+    env: {
+      NODE_OPTIONS: "--no-warnings --experimental-vm-modules",
+    },
   });
   expect(options.resetOnAnyOutput).toBeUndefined();
   expect(options.maxOutputLength).toBe(1_000_000);
@@ -23,24 +25,24 @@ test("assembles the Jest process configuration and forwards timeout diagnostics"
     "Test suite tests/example.test.mjs timed out after 15 seconds without progress.",
   );
 });
-
 test("enables expanded output and forwards stderr callback in debug mode", () => {
   const onStderr = jest.fn();
-  const options = createJestProcessOptions("C:/fixture", ["--debug-timing"], { onStderr });
-
+  const options = createJestProcessOptions("C:/fixture", ["--debug-timing"], {
+    onStderr,
+  });
   expect(options.maxOutputLength).toBe(1_000_000);
   expect(options.onStderr).toBe(onStderr);
 });
-
 test("reports the suite that exceeds the ten second limit", () => {
   const onTimeout = jest.fn();
-  const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
+  const options = createJestProcessOptions("C:/fixture", [], {
+    onTimeout,
+  });
   options.onSuiteTimeout("tests/slow.test.mjs");
   expect(onTimeout).toHaveBeenCalledWith(
     "Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.",
   );
 });
-
 test("streams concise suite progress and separates it from the enclosing check line", () => {
   const output = [];
   const beginNestedOutput = jest.fn();
@@ -52,51 +54,44 @@ test("streams concise suite progress and separates it from the enclosing check l
   options.onProgress(
     '[eliware-test-progress] {"event":"result","path":"tests/a.test.mjs","duration":"0.212","failed":false,"failures":[],"unexpectedOutput":[]}\n',
   );
-
   expect(beginNestedOutput).toHaveBeenCalledTimes(1);
   expect(output.join("")).toBe("[0.000s] tests/a.test.mjs... PASS - 0.212s\n");
   expect(options.maxProgressLineLength).toBe(Number.MAX_SAFE_INTEGER);
 });
-
 test("writes reporter failure details to the terminal output", () => {
   const output = [];
   const options = createJestProcessOptions("C:/fixture", [], {
     writeOutput: (text) => output.push(text),
   });
-
   options.onProgress(
     '[eliware-test-progress] {"event":"result","path":"tests/fail.test.mjs","duration":"0.1","failed":true,"failures":["Expected: 1\\nReceived: 2"],"unexpectedOutput":[]}\n',
   );
   expect(output.join("")).toContain("Expected: 1");
 });
-
 test("passes the run-scoped console report path to Jest's reporter", () => {
   const options = createJestProcessOptions("C:/fixture", [], {
     consoleReportFile: "C:/fixture/coverage/jest-console-events.json",
   });
-
   expect(options.env.ELIWARE_TEST_JEST_CONSOLE_REPORT).toBe(
     "C:/fixture/coverage/jest-console-events.json",
   );
 });
-
 test("forwards raw stdout and stderr handlers", () => {
   const onRawStdout = jest.fn();
   const onRawStderr = jest.fn();
-  const options = createJestProcessOptions("C:/fixture", [], { onRawStdout, onRawStderr });
-
+  const options = createJestProcessOptions("C:/fixture", [], {
+    onRawStdout,
+    onRawStderr,
+  });
   expect(options.onRawStdout).toBe(onRawStdout);
   expect(options.onRawStderr).toBe(onRawStderr);
 });
-
 test("supports omitted options and optional timeout callbacks", () => {
   const options = createJestProcessOptions("C:/fixture");
-
   expect(options.cwd).toBe("C:/fixture");
   expect(options.maxOutputLength).toBe(1_000_000);
   expect(() => options.onTimeout()).not.toThrow();
 });
-
 test("uses the supplied consumer repository root as Jest's working directory", () => {
   const root = "C:/consumer repository";
   expect(createJestProcessOptions(root).cwd).toBe(root);

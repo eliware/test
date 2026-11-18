@@ -1,6 +1,5 @@
-import { npmCommand } from "../../shared/process/npm-command.mjs";
-
-export function resolvePackExecutable(
+import npmCommand from "../../shared/process/npm-command.mjs";
+export default function resolvePackExecutable(
   env = process.env,
   platform = process.platform,
   execPath = process.execPath,

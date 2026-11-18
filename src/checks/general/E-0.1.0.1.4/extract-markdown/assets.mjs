@@ -1,12 +1,8 @@
-import { removeMarkdownCode } from "./remove-markdown-code.mjs";
-import {
-  collectMarkdownReferenceDefinitions,
-  extractMarkdownReferenceUses,
-} from "./references.mjs";
-
+import removeMarkdownCode from "./remove-markdown-code.mjs";
+import collectMarkdownReferenceDefinitions from "./references.mjs";
+import extractMarkdownReferenceUses from "./references/extract-markdown-reference-uses.mjs";
 const referencePattern = /!\[([^\]]*)\](?:\[([^\]]*)\])?/gu;
-
-export function extractMarkdownAssets(content) {
+export default function extractMarkdownAssets(content) {
   const markdown = removeMarkdownCode(content);
   const definitions = collectMarkdownReferenceDefinitions(markdown);
   const assets = [
@@ -20,9 +16,10 @@ export function extractMarkdownAssets(content) {
   assets.push(...extractMarkdownReferenceUses(markdown, definitions, referencePattern));
   return assets
     .sort((left, right) => left.index - right.index)
-    .map(({ reference }) => ({ reference }));
+    .map(({ reference }) => ({
+      reference,
+    }));
 }
-
 function stripAngleDestination(value) {
   if (!value) return value;
   return value.startsWith("<") ? value.slice(1, -1) : value;

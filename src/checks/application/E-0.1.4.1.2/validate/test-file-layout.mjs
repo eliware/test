@@ -1,4 +1,4 @@
-export function validateTestFileLayout(files) {
+export default function validateTestFileLayout(files) {
   const forbidden = files.filter((path) =>
     /^tests\/(?:.*\/)?(?:artifacts|coverage|test-results|__snapshots__)(?:\/|$)/u.test(path),
   );

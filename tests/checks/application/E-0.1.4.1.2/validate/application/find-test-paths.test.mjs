@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findApplicationTestPaths } from "../../../../../../src/checks/application/E-0.1.4.1.2/validate/application/find-test-paths.mjs";
-
+import findApplicationTestPaths from "../../../../../../src/checks/application/E-0.1.4.1.2/validate/application/find-test-paths.mjs";
 test("selects only Jest test paths", () => {
   expect(
     findApplicationTestPaths([

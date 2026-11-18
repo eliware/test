@@ -1,6 +1,5 @@
-import { visitAst } from "../../../visit-ast.mjs";
-
-export function collectJestSpyCalls(ast) {
+import visitAst from "../../../visit-ast.mjs";
+export default function collectJestSpyCalls(ast) {
   const spies = [];
   visitAst(ast, (node) => {
     if (node.type !== "CallExpression") return;

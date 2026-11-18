@@ -1,21 +1,20 @@
 import { expect, test } from "@jest/globals";
-import { validateCanonicalPublisherWorkflow } from "../../../../../src/checks/shared/publish-workflow/validate/canonical-publisher-workflow.mjs";
-
+import validateCanonicalPublisherWorkflow from "../../../../../src/checks/shared/publish-workflow/validate/canonical-publisher-workflow.mjs";
 const workflowPath = ".github/workflows/npm.yaml";
 const canonicalPath = new URL("../../../../../specs/workflows/npm.yaml", import.meta.url);
 const npmWorkflow = `jobs:\n  validate:\n    permissions:\n      contents: read\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n`;
 const ghcrWorkflow = `jobs:\n  publish:\n    permissions:\n      packages: write\n    steps:\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: \${{ github.actor }}\n          password: \${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v7\n`;
-
 function inventory({ files = [workflowPath], text = npmWorkflow } = {}) {
-  return { files: async () => files, readText: async () => text };
+  return {
+    files: async () => files,
+    readText: async () => text,
+  };
 }
-
 test("accepts exact canonical workflow bytes", async () => {
   await expect(
     validateCanonicalPublisherWorkflow(inventory(), "npm-published", () => npmWorkflow),
   ).resolves.toEqual([]);
 });
-
 test("validates OIDC permission in the bundled npm workflow", async () => {
   const withoutPublisherPermission = npmWorkflow.replace("      id-token: write\n", "");
   await expect(
@@ -26,18 +25,22 @@ test("validates OIDC permission in the bundled npm workflow", async () => {
     ),
   ).resolves.toEqual(["specs/workflows/npm.yaml publish job must grant id-token: write."]);
 });
-
 test.each([`${npmWorkflow}\r`, npmWorkflow.trimEnd(), `${npmWorkflow} `])(
   "rejects a byte difference in the canonical workflow: %p",
   async (text) => {
     await expect(
-      validateCanonicalPublisherWorkflow(inventory({ text }), "npm-published", () => npmWorkflow),
+      validateCanonicalPublisherWorkflow(
+        inventory({
+          text,
+        }),
+        "npm-published",
+        () => npmWorkflow,
+      ),
     ).resolves.toEqual([
       ".github/workflows/npm.yaml must match the bundled Eliware Test file specs/workflows/npm.yaml byte for byte.",
     ]);
   },
 );
-
 test("resolves each canonical file from the workflow ordering document", async () => {
   const read = (url) => {
     expect(url.href).toBe(canonicalPath.href);
@@ -48,7 +51,10 @@ test("resolves each canonical file from the workflow ordering document", async (
   ).resolves.toEqual([]);
   await expect(
     validateCanonicalPublisherWorkflow(
-      inventory({ files: [".github/workflows/ghcr.yaml"], text: ghcrWorkflow }),
+      inventory({
+        files: [".github/workflows/ghcr.yaml"],
+        text: ghcrWorkflow,
+      }),
       "ghcr-published",
       (url) => {
         expect(url.pathname).toMatch(/specs\/workflows\/ghcr\.yaml$/u);
@@ -57,12 +63,14 @@ test("resolves each canonical file from the workflow ordering document", async (
     ),
   ).resolves.toEqual([]);
 });
-
 test("rejects a GHCR canonical workflow without registry authentication", async () => {
   const invalidWorkflow = `jobs:\n  publish:\n    permissions:\n      packages: read\n    steps: []\n`;
   await expect(
     validateCanonicalPublisherWorkflow(
-      inventory({ files: [".github/workflows/ghcr.yaml"], text: invalidWorkflow }),
+      inventory({
+        files: [".github/workflows/ghcr.yaml"],
+        text: invalidWorkflow,
+      }),
       "ghcr-published",
       () => invalidWorkflow,
     ),
@@ -71,17 +79,25 @@ test("rejects a GHCR canonical workflow without registry authentication", async 
     "specs/workflows/ghcr.yaml publish job must log in with docker/login-action@v3.",
   ]);
 });
-
 test("reports missing files, unavailable inventories, and read errors", async () => {
   await expect(
-    validateCanonicalPublisherWorkflow(inventory({ files: [] }), "npm-published", () => ""),
+    validateCanonicalPublisherWorkflow(
+      inventory({
+        files: [],
+      }),
+      "npm-published",
+      () => "",
+    ),
   ).resolves.toEqual([".github/workflows/npm.yaml is required."]);
   await expect(validateCanonicalPublisherWorkflow({}, "npm-published")).resolves.toEqual([
     ".github/workflows/npm.yaml could not be inspected.",
   ]);
   await expect(
     validateCanonicalPublisherWorkflow(
-      { files: async () => [workflowPath], readText: async () => "" },
+      {
+        files: async () => [workflowPath],
+        readText: async () => "",
+      },
       "npm-published",
       () => {
         throw new Error("denied");

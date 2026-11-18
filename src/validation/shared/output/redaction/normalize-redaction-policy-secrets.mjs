@@ -1,8 +1,7 @@
 const MAX_POLICY_SECRET_COUNT = 10_000;
 const MAX_POLICY_SECRET_INPUT_COUNT = 10_000;
 const MAX_POLICY_SECRET_LENGTH = 166_666;
-
-export function normalizeRedactionPolicySecrets(secrets) {
+export default function normalizeRedactionPolicySecrets(secrets) {
   const uniqueSecrets = new Set();
   let totalSecretLength = 0;
   let secretInputCount = 0;

@@ -14,6 +14,8 @@
 - Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, and Prettier to 3.10.1.
 - Update locked transitive dependencies.
 - Show npm audit severity counts and advisory details when the audit stage fails.
+- Omit development dependencies from npm audit checks.
+- Apply approved npm audit exemptions without printing a warning.
 - Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
 - Skip Git-ignored paths and every `artifacts/` directory during repository validation.
 - Require `.gitignore` to ignore local environment files and allow `.env.example`.

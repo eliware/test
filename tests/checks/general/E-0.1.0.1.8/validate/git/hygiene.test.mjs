@@ -1,16 +1,23 @@
 import { expect, jest, test } from "@jest/globals";
 import { requiredIgnoreCases } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
-
 const execFile = jest.fn();
 const runMockGit = jest.fn(async (_command, args) => {
-  if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-  return { stdout: Buffer.from("") };
+  if (args.includes("check-ignore"))
+    return {
+      stdout: ignoredPaths(),
+    };
+  return {
+    stdout: Buffer.from(""),
+  };
 });
 execFile[Symbol.for("nodejs.util.promisify.custom")] = runMockGit;
-jest.unstable_mockModule("node:child_process", () => ({ execFile }));
-const { validateGitHygiene } =
-  await import("../../../../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs");
-
+jest.unstable_mockModule("node:child_process", () => ({
+  execFile,
+  default: execFile,
+}));
+const validateGitHygiene = (
+  await import("../../../../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs")
+).default;
 const ignoredPaths = (excludedPath) =>
   requiredIgnoreCases
     .filter(([path, shouldIgnore]) => shouldIgnore && path !== excludedPath)
@@ -20,7 +27,6 @@ const ignoredPaths = (excludedPath) =>
       return `.gitignore:1:${pattern}\t${path}`;
     })
     .join("\n");
-
 const ignoreRules = `node_modules/
 .git/
 coverage/
@@ -35,29 +41,39 @@ Thumbs.db
 !.env.example
 !**/.env.example`;
 const validIgnoreRules = ignoreRules;
-
 test("uses the default Git runner and default exit code through a mocked executable", async () => {
   await expect(
-    validateGitHygiene("repo", undefined, { readText: async () => validIgnoreRules }),
+    validateGitHygiene("repo", undefined, {
+      readText: async () => validIgnoreRules,
+    }),
   ).resolves.toEqual([]);
   expect(runMockGit).toHaveBeenCalled();
 });
-
 test("checks deep generated paths without checking environment names", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("check-ignore"))
-      return { stdout: ignoredPaths("nested/deep/layer/four/coverage/item.txt") };
-    return { stdout: Buffer.from("") };
+      return {
+        stdout: ignoredPaths("nested/deep/layer/four/coverage/item.txt"),
+      };
+    return {
+      stdout: Buffer.from(""),
+    };
   };
   await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => validIgnoreRules }),
+    validateGitHygiene("repo", runGit, {
+      readText: async () => validIgnoreRules,
+    }),
   ).resolves.toContain("nested/deep/layer/four/coverage/item.txt must be ignored.");
 });
-
 test("reports an unreadable ignore file", async () => {
   const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    return { stdout: Buffer.from("") };
+    if (args.includes("check-ignore"))
+      return {
+        stdout: ignoredPaths(),
+      };
+    return {
+      stdout: Buffer.from(""),
+    };
   };
   const errors = await validateGitHygiene("repo", runGit, {
     readText: async () => {
@@ -66,29 +82,43 @@ test("reports an unreadable ignore file", async () => {
   });
   expect(errors).toContain(".gitignore could not be read to check required ignore rules.");
 });
-
 test("reads the repository ignore file by default", async () => {
   const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    return { stdout: Buffer.from("") };
+    if (args.includes("check-ignore"))
+      return {
+        stdout: ignoredPaths(),
+      };
+    return {
+      stdout: Buffer.from(""),
+    };
   };
   await expect(validateGitHygiene(process.cwd(), runGit)).resolves.toEqual([]);
 });
-
 test("accepts string output from Git commands", async () => {
   const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { code: 0, stdout: ignoredPaths() };
-    return { code: 0, stdout: "" };
+    if (args.includes("check-ignore"))
+      return {
+        code: 0,
+        stdout: ignoredPaths(),
+      };
+    return {
+      code: 0,
+      stdout: "",
+    };
   };
   await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => validIgnoreRules }),
+    validateGitHygiene("repo", runGit, {
+      readText: async () => validIgnoreRules,
+    }),
   ).resolves.toEqual([]);
 });
-
 test("reports the required ignore rule that is missing from Git output", async () => {
   const missingPath = "nested/node_modules/item.txt";
   const runGit = async (_command, args) => {
-    if (!args.includes("check-ignore")) return { stdout: Buffer.from("") };
+    if (!args.includes("check-ignore"))
+      return {
+        stdout: Buffer.from(""),
+      };
     return {
       code: 0,
       stdout: requiredIgnoreCases
@@ -102,29 +132,40 @@ test("reports the required ignore rule that is missing from Git output", async (
     };
   };
   await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+    validateGitHygiene("repo", runGit, {
+      readText: async () => ignoreRules,
+    }),
   ).resolves.toContain(`${missingPath} must be ignored.`);
 });
-
 test("reports malformed Git index output through the Git hygiene coordinator", async () => {
   const runGit = async (_command, args) =>
     args.includes("--stage")
-      ? { stdout: Buffer.from("120000 invalid 0\tlink\0") }
+      ? {
+          stdout: Buffer.from("120000 invalid 0\tlink\0"),
+        }
       : args.includes("--ignored")
-        ? { stdout: Buffer.from("/absolute/path\0") }
-        : { code: 0, stdout: "" };
+        ? {
+            stdout: Buffer.from("/absolute/path\0"),
+          }
+        : {
+            code: 0,
+            stdout: "",
+          };
   const errors = await validateGitHygiene("repo", runGit, {
     readText: async () => ignoreRules,
   });
   expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
   expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
-
 test("reports missing Git through the Git hygiene coordinator", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("check-ignore"))
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
-    return { stdout: Buffer.from("") };
+      throw Object.assign(new Error("missing"), {
+        code: "ENOENT",
+      });
+    return {
+      stdout: Buffer.from(""),
+    };
   };
   const errors = await validateGitHygiene("repo", runGit, {
     readText: async () => ignoreRules,

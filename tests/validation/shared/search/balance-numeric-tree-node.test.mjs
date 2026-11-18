@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { rebalanceBalancedNumericTreeNode } from "../../../../src/validation/shared/search/balance-numeric-tree-node.mjs";
-
+import rebalanceBalancedNumericTreeNode from "../../../../src/validation/shared/search/balance-numeric-tree-node.mjs";
 function node(value, left = null, right = null) {
   return {
     value,
@@ -10,7 +9,6 @@ function node(value, left = null, right = null) {
     size: (left?.size ?? 0) + (right?.size ?? 0) + 1,
   };
 }
-
 test.each([
   ["left-left", node(3, node(2, node(1)))],
   ["right-right", node(1, null, node(2, null, node(3)))],

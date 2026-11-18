@@ -1,4 +1,4 @@
-export function validateCiWorkflowEvents(document) {
+export default function validateCiWorkflowEvents(document) {
   const errors = [];
   rejectUnknownKeys(
     document,
@@ -26,7 +26,6 @@ export function validateCiWorkflowEvents(document) {
   rejectUnknownKeys(document.concurrency, ["group", "cancel-in-progress"], "concurrency", errors);
   return errors;
 }
-
 function rejectUnknownKeys(value, allowed, label, errors) {
   const unknown = Object.keys(value ?? {}).filter((key) => !allowed.includes(key));
   if (unknown.length) errors.push(`ci.yaml ${label} has unsupported keys: ${unknown.join(", ")}.`);

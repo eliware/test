@@ -1,9 +1,8 @@
-import { fail, pass } from "../check-result.mjs";
-import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import validateProfileDocumentation from "../../validation/shared/conventions/validate/profile/documentation.mjs";
 export const ruleId = "E-0.1.6.1.0";
-
-export async function run({ repositoryInventory } = {}) {
+export default async function run({ repositoryInventory } = {}) {
   const errors = await validateProfileDocumentation("web", repositoryInventory);
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

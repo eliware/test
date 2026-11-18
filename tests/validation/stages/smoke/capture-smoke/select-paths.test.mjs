@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { join } from "node:path";
-import { selectSmokePaths } from "../../../../../src/validation/stages/smoke/capture-smoke/select-paths.mjs";
-
+import selectSmokePaths from "../../../../../src/validation/stages/smoke/capture-smoke/select-paths.mjs";
 test("selects and deduplicates package and binary paths", () => {
   expect(selectSmokePaths("repo", "@eliware/test", ["eliware-test", "eliware-test"])).toEqual([
     join("repo", "package.json"),

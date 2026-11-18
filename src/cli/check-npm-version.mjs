@@ -1,9 +1,8 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import semver from "semver";
-import { npmCommand } from "../validation/shared/process/npm-command.mjs";
-
-export async function checkNpmVersion({
+import npmCommand from "../validation/shared/process/npm-command.mjs";
+export default async function checkNpmVersion({
   executeProcess = execFile,
   platform = process.platform,
   env = process.env,
@@ -29,14 +28,20 @@ export async function checkNpmVersion({
       executeProcess(
         command,
         [...prefix, "--version"],
-        { encoding: "utf8", windowsHide: true, cwd: workingDirectory, env: { ...env } },
+        {
+          encoding: "utf8",
+          windowsHide: true,
+          cwd: workingDirectory,
+          env: {
+            ...env,
+          },
+        },
         (error, stdout) => (error ? reject(error) : resolve(stdout)),
       );
     });
   } catch {
     return "Cannot determine the active npm version. Install npm 12 or later.";
   }
-
   const version = semver.valid(String(output).trim());
   if (!version) return "Cannot determine the active npm version. Install npm 12 or later.";
   if (semver.major(version) < 12) {

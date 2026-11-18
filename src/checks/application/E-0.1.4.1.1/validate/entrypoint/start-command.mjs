@@ -1,4 +1,4 @@
-export function validateStartCommand(packageJson, entrypoints) {
+export default function validateStartCommand(packageJson, entrypoints) {
   if (packageJson.scripts?.start === undefined) return null;
   const start = packageJson.scripts.start;
   if (typeof start !== "string") return "package.json start must be a command string.";
@@ -12,7 +12,6 @@ export function validateStartCommand(packageJson, entrypoints) {
     ? null
     : "package.json start must contain a standalone token for a declared entrypoint.";
 }
-
 function removeOptionalQuotes(token) {
   const first = token[0];
   const last = token.at(-1);
@@ -22,7 +21,6 @@ function removeOptionalQuotes(token) {
   if (first !== last || token.length < 2) return null;
   return token.slice(1, -1);
 }
-
 function canonicalToken(value) {
   const path = value.replaceAll("\\", "/").replace(/^\.\//u, "");
   return path.split("/").some((segment) => segment === ".." || segment === ".") ? value : path;

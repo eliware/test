@@ -1,6 +1,5 @@
-import { resolveWindowsSystemExecutable } from "../resolve-windows/system-executable.mjs";
-import { resolveWindowsPowerShellCoreExecutable } from "../resolve-windows/powershell-core-executable.mjs";
-
+import resolveWindowsSystemExecutable from "../resolve-windows/system-executable.mjs";
+import resolveWindowsPowerShellCoreExecutable from "../resolve-windows/powershell-core-executable.mjs";
 export const windowsProcessTreeFallbackScript =
   "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
   "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
@@ -10,8 +9,7 @@ export const windowsProcessTreeFallbackScript =
   "} while($changed); for($index=$descendants.Count-1; $index -ge 0; $index--) { " +
   "Stop-Process -Id $descendants[$index] -Force -ErrorAction SilentlyContinue }; " +
   "Stop-Process -Id $root -Force -ErrorAction SilentlyContinue";
-
-export function runWindowsProcessTreeFallback(
+export default function runWindowsProcessTreeFallback(
   pid,
   env,
   execute,
@@ -19,7 +17,13 @@ export function runWindowsProcessTreeFallback(
   resolvePowerShellCore = resolveWindowsPowerShellCoreExecutable,
 ) {
   const args = ["-NoProfile", "-NonInteractive", "-Command", windowsProcessTreeFallbackScript];
-  const commandOptions = { ...options, env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) } };
+  const commandOptions = {
+    ...options,
+    env: {
+      ...env,
+      ELIWARE_TEST_PROCESS_ID: String(pid),
+    },
+  };
   try {
     execute(
       resolveWindowsSystemExecutable(

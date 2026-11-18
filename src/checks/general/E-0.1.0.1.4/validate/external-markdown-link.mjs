@@ -1,4 +1,4 @@
-export function validateExternalLink(value) {
+export default function validateExternalLink(value) {
   if (value.startsWith("//"))
     return `Documentation link is invalid: ${value.replace(/^(\/\/)[^/@]*@/u, "$1[REDACTED]@")}.`;
   if (/^mailto:/iu.test(value))

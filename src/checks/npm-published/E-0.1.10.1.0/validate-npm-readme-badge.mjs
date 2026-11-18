@@ -1,4 +1,4 @@
-export function validateNpmReadmeBadge(readme, packageJson = {}) {
+export default function validateNpmReadmeBadge(readme, packageJson = {}) {
   const name = packageJson?.name;
   const repositoryValue =
     typeof packageJson?.repository === "string"

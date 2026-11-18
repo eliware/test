@@ -1,4 +1,4 @@
-export function validateInformationalArguments(argumentsList) {
+export default function validateInformationalArguments(argumentsList) {
   if (argumentsList.includes("--help") && argumentsList.includes("--version"))
     throw new Error("--help and --version cannot be used together.");
   const informational = argumentsList.filter(

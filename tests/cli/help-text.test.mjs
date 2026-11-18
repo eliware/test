@@ -20,7 +20,7 @@ test("lists command syntax, options, purposes, and defaults", () => {
       "  --format-check checks Prettier output without writing files.",
       "  Both format modes use repository scope and accept supported Prettier options.",
       "  Do not pass paths or options that change formatting mode, configuration, or file scope.",
-      "  --audit runs npm audit with JSON output and high severity as its defaults.",
+      "  --audit runs npm audit with development dependencies omitted, JSON output, and high severity.",
       "  Audit accepts --no-fund and --no-progress. Both npm notices are enabled by default.",
       "  --pack runs npm pack with scripts disabled, dry-run enabled, and JSON output.",
       "  Pack accepts npm pack options, including --loglevel=<level>.",

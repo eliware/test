@@ -1,7 +1,6 @@
-import { assertCheckResult } from "../../../../checks/check-result.mjs";
-import { scopeCheckContext } from "../../scope-check-context.mjs";
-
-export async function executeConventionCheck(check, context, exemptPaths = []) {
+import assertCheckResult from "../../../../checks/check-result/assert-check-result.mjs";
+import scopeCheckContext from "../../scope-check-context.mjs";
+export default async function executeConventionCheck(check, context, exemptPaths = []) {
   if (typeof check.run !== "function")
     throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);
   context.timing?.start?.(check.ruleId);

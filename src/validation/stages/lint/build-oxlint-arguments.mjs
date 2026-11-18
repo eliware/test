@@ -1,4 +1,4 @@
-export function buildOxlintArguments(extraArgs = [], paths = []) {
+export default function buildOxlintArguments(extraArgs = [], paths = []) {
   return [
     "--deny-warnings",
     "--no-error-on-unmatched-pattern",

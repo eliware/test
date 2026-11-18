@@ -1,0 +1,51 @@
+import createActiveSuiteTracker from "../../active-suite.mjs";
+const JEST_LINES = [
+  /^(?:PASS|FAIL)\s/,
+  /^Test Suites:/,
+  /^Tests:/,
+  /^Snapshots:/,
+  /^Time:/,
+  /^Ran all test suites/,
+  /^Coverage summary/,
+  /^File\s+\|/,
+  /^[\s|%_.-]+$/,
+  /^\s*(?:All files|[^\s|]+)\s+\|/,
+  /^\s*(?:Expected|Received|Difference):/,
+  /^\s*at\s/,
+  /^\s*[✓√✕×○]\s/,
+  /^\s*●\s/,
+  /^\s*>\s/,
+  /^\s*Node\.js\s+v/,
+  /^\s*Test Suites:/,
+  /^\s*Tests:/,
+  /^\s*Snapshots:/,
+  /^\[REDACTED\].+\(\d+(?:\.\d+)?\s(?:ms|s)\)$/u,
+];
+const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
+function findUnexpectedJestLineRecords(text) {
+  const lines = text.split(/\r?\n/);
+  const completeLines = text.endsWith("…") ? lines.slice(0, -1) : lines;
+  const activeSuite = createActiveSuiteTracker();
+  return completeLines.flatMap((rawLine) => {
+    const line = rawLine.replace(ANSI_ESCAPE, "").trim();
+    const record = isUnexpectedLine(line)
+      ? [
+          {
+            line,
+            suite: activeSuite.current(),
+          },
+        ]
+      : [];
+    activeSuite.observe(line);
+    return record;
+  });
+}
+function isUnexpectedLine(line) {
+  return Boolean(
+    line &&
+    !/^\[?eliware-test-progress\]?\s/u.test(line) &&
+    !/^\[?eliware-test\]?\s/u.test(line) &&
+    !JEST_LINES.some((pattern) => pattern.test(line)),
+  );
+}
+export default findUnexpectedJestLineRecords;

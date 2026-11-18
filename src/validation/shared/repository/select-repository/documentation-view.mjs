@@ -1,8 +1,6 @@
-import { isGeneratedRepositoryPath } from "../repository-inventory/path-filters.mjs";
-
+import isGeneratedRepositoryPath from "../repository-inventory/path-filters/is/generated-repository-path.mjs";
 const documentationFile = /\.(?:json|md)$/iu;
-
-export function selectRepositoryDocumentationView(view, allFiles) {
+export default function selectRepositoryDocumentationView(view, allFiles) {
   if (view === "documentation") {
     return allFiles.filter(
       (path) => documentationFile.test(path) && !isGeneratedRepositoryPath(path),

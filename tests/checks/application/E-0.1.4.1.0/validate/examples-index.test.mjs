@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateExamplesIndex } from "../../../../../src/checks/application/E-0.1.4.1.0/validate/examples-index.mjs";
-
+import validateExamplesIndex from "../../../../../src/checks/application/E-0.1.4.1.0/validate/examples-index.mjs";
 test("skips the examples index when no JavaScript example exists", async () => {
   await expect(
     validateExamplesIndex({
@@ -10,7 +9,6 @@ test("skips the examples index when no JavaScript example exists", async () => {
     }),
   ).resolves.toEqual([]);
 });
-
 test("indexes maintained JavaScript examples and excludes generated paths", async () => {
   const inventory = {
     documentationFiles: async ({ includeGenerated = false, predicate }) => {
@@ -22,30 +20,38 @@ test("indexes maintained JavaScript examples and excludes generated paths", asyn
     readText: async () => "[a](a.mjs)\n[b](nested/b.js)",
   };
   await expect(
-    validateExamplesIndex({ root: "repo", repositoryInventory: inventory }),
+    validateExamplesIndex({
+      root: "repo",
+      repositoryInventory: inventory,
+    }),
   ).resolves.toEqual([]);
 });
-
 test("reports an unavailable repository inventory", async () => {
   const inventory = {
     documentationFiles: async () => {
       throw new Error("read failed");
     },
   };
-  await expect(validateExamplesIndex({ repositoryInventory: inventory })).resolves.toEqual([
-    "examples/ could not be inspected for JavaScript examples.",
-  ]);
+  await expect(
+    validateExamplesIndex({
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toEqual(["examples/ could not be inspected for JavaScript examples."]);
 });
-
 test("accepts a missing examples directory", async () => {
   const inventory = {
     documentationFiles: async () => {
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      throw Object.assign(new Error("missing"), {
+        code: "ENOENT",
+      });
     },
   };
-  await expect(validateExamplesIndex({ repositoryInventory: inventory })).resolves.toEqual([]);
+  await expect(
+    validateExamplesIndex({
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toEqual([]);
 });
-
 test("requires an examples index when examples exist", async () => {
   await expect(
     validateExamplesIndex({

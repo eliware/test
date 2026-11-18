@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { loadBundledConventionDocuments } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled/convention/loader.mjs";
-
+import loadBundledConventionDocuments from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled/convention/loader.mjs";
 test("loads nested convention YAML and skips profile policy files", async () => {
   const read = jest.fn(async (path) =>
     String(path).endsWith("general-deterministic.yaml")
@@ -10,10 +9,22 @@ test("loads nested convention YAML and skips profile policy files", async () => 
   const documents = await loadBundledConventionDocuments({
     root: "/suite",
     entries: [
-      { path: "specs/conventions/general-deterministic.yaml", type: "file" },
-      { path: "specs/conventions/nested/application-semantic.yml", type: "file" },
-      { path: "specs/conventions/ordering/profile-combinations.yaml", type: "file" },
-      { path: "specs/conventions/README.md", type: "file" },
+      {
+        path: "specs/conventions/general-deterministic.yaml",
+        type: "file",
+      },
+      {
+        path: "specs/conventions/nested/application-semantic.yml",
+        type: "file",
+      },
+      {
+        path: "specs/conventions/ordering/profile-combinations.yaml",
+        type: "file",
+      },
+      {
+        path: "specs/conventions/README.md",
+        type: "file",
+      },
     ],
     read,
   });

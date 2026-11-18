@@ -1,4 +1,4 @@
-export function hasDuplicateAggregateStage(command) {
+export default function hasDuplicateAggregateStage(command) {
   if (typeof command !== "string") return false;
   return [
     /(?:^|[\s;&|])(?:npm|pnpm|yarn|bun)\s+(?:(?:--[^\s]+)\s+)*(?:run\s+)?(?:test|lint|audit|format(?::check)?|pack|outdated|typecheck|build)(?=$|\s)/iu,

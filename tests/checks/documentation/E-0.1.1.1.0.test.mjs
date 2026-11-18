@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/documentation/E-0.1.1.1.0.mjs";
-
+import { ruleId } from "../../../src/checks/documentation/E-0.1.1.1.0.mjs";
+import run from "../../../src/checks/documentation/E-0.1.1.1.0.mjs";
 test("requires documentation profile sections", async () => {
   const repositoryInventory = {
     readText: async (path) =>
@@ -8,22 +8,32 @@ test("requires documentation profile sections", async () => {
         ? "## Documentation"
         : "## Scope\n## Navigation\n## Contribution\n## Documentation validation",
   };
-  await expect(run({ repositoryInventory })).resolves.toEqual({
+  await expect(
+    run({
+      repositoryInventory,
+    }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("reports missing documentation profile sections", async () => {
-  const repositoryInventory = { readText: async () => "" };
-  await expect(run({ repositoryInventory })).resolves.toMatchObject({
+  const repositoryInventory = {
+    readText: async () => "",
+  };
+  await expect(
+    run({
+      repositoryInventory,
+    }),
+  ).resolves.toMatchObject({
     ruleId,
     status: "fail",
     message: expect.stringContaining("AGENTS.md must include: ## Documentation"),
   });
 });
-
 test("uses default arguments and reports a missing inventory", async () => {
-  await expect(run()).resolves.toMatchObject({ status: "fail" });
+  await expect(run()).resolves.toMatchObject({
+    status: "fail",
+  });
 });

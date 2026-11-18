@@ -1,4 +1,4 @@
-export function isSafeReportingCommand(command) {
+export default function isSafeReportingCommand(command) {
   if (typeof command !== "string" || /[\r\n\\]/u.test(command)) return false;
   const match = command.trimStart().match(/^(?:echo|printf)(?=\s|$)/u);
   if (!match) return false;

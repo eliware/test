@@ -1,4 +1,4 @@
-export function createChildCloseHandler({
+export default function createChildCloseHandler({
   isSettled,
   markSettled,
   flushOutput,

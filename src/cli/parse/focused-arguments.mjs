@@ -1,9 +1,7 @@
-import { parseJestArguments } from "./jest-arguments.mjs";
-
+import parseJestArguments from "./jest-arguments.mjs";
 const testPathPattern = /^tests[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu;
 const absolutePathPattern = /^(?:[A-Za-z]:[\\/]|\/|\\\\)/u;
-
-export function parseFocusedArguments(args = []) {
+export default function parseFocusedArguments(args = []) {
   const parsed = parseJestArguments(args);
   return {
     positional: parsed.positional,
@@ -12,14 +10,4 @@ export function parseFocusedArguments(args = []) {
       (argument) => testPathPattern.test(argument) || absolutePathPattern.test(argument),
     ),
   };
-}
-
-export function focusedPathFrom(args = []) {
-  return focusedPathsFrom(args)[0];
-}
-
-export function focusedPathsFrom(args = []) {
-  return parseFocusedArguments(args).positional.filter((argument) =>
-    /^tests(?:[\\/]|$)/iu.test(argument),
-  );
 }

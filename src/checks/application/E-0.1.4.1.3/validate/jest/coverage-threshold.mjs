@@ -1,6 +1,5 @@
 const metrics = ["branches", "functions", "lines", "statements"];
-
-export function validateJestCoverageThreshold(coverageThreshold) {
+export default function validateJestCoverageThreshold(coverageThreshold) {
   const errors = [];
   const threshold = coverageThreshold?.global;
   if (JSON.stringify(Object.keys(coverageThreshold ?? {}).sort()) !== '["global"]')

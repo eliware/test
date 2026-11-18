@@ -1,4 +1,4 @@
-export function wireChildOutput(child, output, progress) {
+export default function wireChildOutput(child, output, progress) {
   child.stdout?.on("data", (chunk) => {
     progress.push(chunk);
     output.stdout(chunk);

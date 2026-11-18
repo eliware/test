@@ -1,3 +1,3 @@
-export function addShadowedJestDescribe(name, shadowed, names) {
+export default function addShadowedJestDescribe(name, shadowed, names) {
   if (names.describes?.has(name)) shadowed.describes.add(name);
 }

@@ -1,6 +1,5 @@
-import { memberName } from "../member-name.mjs";
-
-export function isProcessOutputCall(callee) {
+import memberName from "../member-name.mjs";
+export default function isProcessOutputCall(callee) {
   return (
     callee?.type === "MemberExpression" &&
     callee.object?.type === "MemberExpression" &&

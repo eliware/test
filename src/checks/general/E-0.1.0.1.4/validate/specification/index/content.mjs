@@ -1,7 +1,6 @@
-import { extractMarkdownLinks } from "../../../extract-markdown/links.mjs";
-import { isNavigationOnlyIndex } from "./navigation-only.mjs";
-
-export function validateSpecificationIndexContent(content, path, expected) {
+import extractMarkdownLinks from "../../../extract-markdown/links.mjs";
+import isNavigationOnlyIndex from "./navigation-only.mjs";
+export default function validateSpecificationIndexContent(content, path, expected) {
   const errors = [];
   if (!isNavigationOnlyIndex(content)) errors.push(`${path} must be a navigation-only index.`);
   const actual = extractMarkdownLinks(content).map(({ reference }) => reference);

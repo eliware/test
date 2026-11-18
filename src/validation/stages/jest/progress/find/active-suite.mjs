@@ -1,4 +1,4 @@
-export function createActiveSuiteTracker(initialSuite = "unknown test suite") {
+export default function createActiveSuiteTracker(initialSuite = "unknown test suite") {
   let activeSuite = initialSuite;
   return {
     current() {

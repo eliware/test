@@ -1,4 +1,4 @@
-export function createSecretSearchWorkBudget(limit) {
+export default function createSecretSearchWorkBudget(limit) {
   let consumed = 0;
   return (work) => {
     consumed += work;

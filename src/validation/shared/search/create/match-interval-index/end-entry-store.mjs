@@ -1,13 +1,14 @@
-export function createEndEntryStore(matchEndsByStart, discardInactive) {
+export default function createEndEntryStore(matchEndsByStart, discardInactive) {
   const entries = [];
   let head = 0;
   let staleCount = 0;
-
   function add(start, end, previousEnd) {
     if (previousEnd > 0) staleCount += 1;
-    entries.push({ start, end });
+    entries.push({
+      start,
+      end,
+    });
   }
-
   function discardThrough(boundary) {
     while (head < entries.length && entries[head].end <= boundary) {
       const { start, end } = entries[head++];
@@ -21,7 +22,6 @@ export function createEndEntryStore(matchEndsByStart, discardInactive) {
       head = 0;
     }
   }
-
   function compactStaleEntries() {
     let writeIndex = head;
     for (let readIndex = head; readIndex < entries.length; readIndex += 1) {
@@ -32,6 +32,8 @@ export function createEndEntryStore(matchEndsByStart, discardInactive) {
     entries.length = writeIndex;
     staleCount = 0;
   }
-
-  return Object.freeze({ add, discardThrough });
+  return Object.freeze({
+    add,
+    discardThrough,
+  });
 }

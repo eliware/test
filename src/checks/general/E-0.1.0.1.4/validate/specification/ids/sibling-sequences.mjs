@@ -1,4 +1,4 @@
-export function validateSiblingSequences(ruleIds) {
+export default function validateSiblingSequences(ruleIds) {
   const groups = new Map();
   for (const ruleId of ruleIds) {
     const parts = ruleId.split(".");

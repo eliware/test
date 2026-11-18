@@ -1,7 +1,6 @@
-export function validateNpmPublishPermissions(workflow, path = "specs/workflows/npm.yaml") {
+export default function validateNpmPublishPermissions(workflow, path = "specs/workflows/npm.yaml") {
   const errors = [];
   const jobs = workflow?.jobs;
-
   if (workflow?.permissions?.["id-token"] === "write") {
     errors.push(`${path} must not grant id-token: write at the workflow level.`);
   }

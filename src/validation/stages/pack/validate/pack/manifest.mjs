@@ -1,8 +1,7 @@
-import { readPackManifest } from "../../read-pack-manifest.mjs";
-import { validatePackedEntrypoints } from "../packed/entrypoints.mjs";
-import { validatePackManifestContent } from "./manifest-content.mjs";
-
-export function validatePackManifest(stdout, files, packageName, packageJson = {}) {
+import readPackManifest from "../../read-pack-manifest.mjs";
+import validatePackedEntrypoints from "../packed/entrypoints.mjs";
+import validatePackManifestContent from "./manifest-content.mjs";
+export default function validatePackManifest(stdout, files, packageName, packageJson = {}) {
   const parsed = readPackManifest(stdout, packageName);
   if (parsed.error) return parsed.error;
   const { entry } = parsed;

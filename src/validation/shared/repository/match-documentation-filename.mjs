@@ -1,4 +1,4 @@
-export function matchesDocumentationFilename(predicate, name) {
+export default function matchesDocumentationFilename(predicate, name) {
   try {
     return predicate(name);
   } catch (error) {

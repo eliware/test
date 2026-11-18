@@ -1,8 +1,7 @@
-import { findRepositoryEntries } from "../find-repository-files.mjs";
-import { inventoryDirectory } from "../repository-inventory/paths.mjs";
-import { normalizeRepositoryInventoryRecords } from "../normalize-repository/inventory-records.mjs";
-
-export function createRepositoryScopedEntryReader({
+import findRepositoryEntries from "../find-repository-files.mjs";
+import inventoryDirectory from "../repository-inventory/paths/inventory-directory.mjs";
+import normalizeRepositoryInventoryRecords from "../normalize-repository/inventory-records.mjs";
+export default function createRepositoryScopedEntryReader({
   root,
   findEntries,
   readDirectoryCached,
@@ -12,7 +11,6 @@ export function createRepositoryScopedEntryReader({
   expandedDirectories,
 }) {
   const { entries, subtreeEntries, hasFullDiscovery } = entryReader;
-
   return async function entriesUnder(directory = root, fileFilter = null, traversal = {}) {
     const base = inventoryDirectory(
       root,
@@ -74,7 +72,6 @@ export function createRepositoryScopedEntryReader({
     const fullRecords = await entries();
     return fullRecords.filter(({ path }) => path === base || path.startsWith(`${base}/`));
   };
-
   function filterSubtree(records, base, fileFilter) {
     return records.filter(
       ({ path, type }) =>

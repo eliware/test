@@ -1,7 +1,6 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validateAgentsCompositionOrder(content, packageJson = {}) {
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validateAgentsCompositionOrder(content, packageJson = {}) {
   const order = readCanonicalOrder("agents-sections.yaml");
   const allHeadings = new Set(Object.values(order.profileHeadings));
   const actual = removeMarkdownCode(content)
@@ -17,7 +16,6 @@ export function validateAgentsCompositionOrder(content, packageJson = {}) {
     ? []
     : ["AGENTS.md profile headings must use canonical order after Changes."];
 }
-
 function isSubsequence(actual, expected) {
   const indexes = actual.map((heading) => expected.indexOf(heading));
   return indexes.every(

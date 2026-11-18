@@ -66,8 +66,7 @@ const valueOptions = new Set([
   "-t",
   "-o",
 ]);
-
-export function parseJestArguments(args = []) {
+export default function parseJestArguments(args = []) {
   const positional = [];
   const optionValues = new Set();
   const afterSeparator = [];
@@ -84,5 +83,9 @@ export function parseJestArguments(args = []) {
     else if (separated) afterSeparator.push(argument);
     else if (!optionValues.has(argument)) positional.push(argument);
   }
-  return { positional, optionValues, afterSeparator };
+  return {
+    positional,
+    optionValues,
+    afterSeparator,
+  };
 }

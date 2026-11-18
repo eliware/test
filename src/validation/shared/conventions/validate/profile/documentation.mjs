@@ -1,8 +1,7 @@
-import { removeMarkdownCode } from "../../../../../checks/general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../read-canonical-order.mjs";
-import { validateProfileTestGuidance } from "./test-guidance.mjs";
-
-export async function validateProfileDocumentation(
+import removeMarkdownCode from "../../../../../checks/general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../read-canonical-order.mjs";
+import validateProfileTestGuidance from "./test-guidance.mjs";
+export default async function validateProfileDocumentation(
   profile,
   inventory,
   readOrder = readCanonicalOrder,
@@ -24,12 +23,10 @@ export async function validateProfileDocumentation(
   }
   return errors;
 }
-
 async function validateHeading(inventory, path, heading) {
   const errors = await validateHeadings(inventory, path, [heading]);
   return errors[0] ?? null;
 }
-
 async function validateHeadings(inventory, path, headings) {
   let content;
   try {

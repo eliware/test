@@ -1,9 +1,7 @@
-import { validatePackageIdentity } from "./identity.mjs";
-import { validatePackageVersion } from "./version.mjs";
-
+import validatePackageIdentity from "./identity.mjs";
+import validatePackageVersion from "./version.mjs";
 const nonempty = (value) => typeof value === "string" && value.trim().length > 0;
-
-export function validatePackageMetadata(packageJson) {
+export default function validatePackageMetadata(packageJson) {
   const errors = [...validatePackageIdentity(packageJson), ...validatePackageVersion(packageJson)];
   if (!nonempty(packageJson?.description))
     errors.push("package.json.description must be nonempty.");

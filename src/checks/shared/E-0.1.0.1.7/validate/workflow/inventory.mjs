@@ -1,8 +1,6 @@
-import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-
+import readCanonicalOrder from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
 const workflowPath = ".github/workflows/ci.yaml";
-
-export async function validateWorkflowInventory(inventory, packageJson = {}) {
+export default async function validateWorkflowInventory(inventory, packageJson = {}) {
   if (!inventory?.files) return ["GitHub workflow files could not be inspected."];
   try {
     const files = (await inventory.files("all")).filter((path) =>

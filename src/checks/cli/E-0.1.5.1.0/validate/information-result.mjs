@@ -1,6 +1,10 @@
-import { validateCliVersionResult } from "./version-result.mjs";
-
-export function validateCliInformationResult({ entrypoint, argument, result, packageVersion }) {
+import validateCliVersionResult from "./version-result.mjs";
+export default function validateCliInformationResult({
+  entrypoint,
+  argument,
+  result,
+  packageVersion,
+}) {
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
   if (result.code !== 0 || result.signal != null)
     return [`CLI entrypoint ${entrypoint} must exit 0 for ${argument}.`];

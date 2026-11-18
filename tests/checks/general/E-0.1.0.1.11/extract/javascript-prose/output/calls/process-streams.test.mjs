@@ -1,14 +1,18 @@
 import { expect, test } from "@jest/globals";
-import { isProcessOutputCall } from "../../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/calls/process-streams.mjs";
-
+import isProcessOutputCall from "../../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/calls/process-streams.mjs";
 const call = (object, property) => ({
   type: "MemberExpression",
   object,
-  property: { type: "Identifier", name: property },
+  property: {
+    type: "Identifier",
+    name: property,
+  },
   computed: false,
 });
-const identifier = (name) => ({ type: "Identifier", name });
-
+const identifier = (name) => ({
+  type: "Identifier",
+  name,
+});
 test.each([
   [call(call(identifier("process"), "stdout"), "write"), true],
   [call(call(identifier("process"), "stderr"), "write"), true],

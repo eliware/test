@@ -1,6 +1,13 @@
-export function buildSecretTextAutomaton(secrets, maxBuildWork) {
+export default function buildSecretTextAutomaton(secrets, maxBuildWork) {
   let buildWork = 0;
-  const nodes = [{ transitions: new Map(), failure: 0, outputLink: 0, lengths: [] }];
+  const nodes = [
+    {
+      transitions: new Map(),
+      failure: 0,
+      outputLink: 0,
+      lengths: [],
+    },
+  ];
   for (const secret of secrets) {
     let state = 0;
     for (let index = 0; index < secret.length; index += 1) {
@@ -11,13 +18,17 @@ export function buildSecretTextAutomaton(secrets, maxBuildWork) {
       if (next === undefined) {
         next = nodes.length;
         nodes[state].transitions.set(character, next);
-        nodes.push({ transitions: new Map(), failure: 0, outputLink: 0, lengths: [] });
+        nodes.push({
+          transitions: new Map(),
+          failure: 0,
+          outputLink: 0,
+          lengths: [],
+        });
       }
       state = next;
     }
     nodes[state].lengths.push(secret.length);
   }
-
   const queue = [...nodes[0].transitions.values()];
   for (const state of queue) nodes[state].failure = 0;
   for (let index = 0; index < queue.length; index += 1) {

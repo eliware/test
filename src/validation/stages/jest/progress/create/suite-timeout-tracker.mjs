@@ -1,4 +1,4 @@
-export function createSuiteTimeoutTracker(options, createTimeout, getTermination) {
+export default function createSuiteTimeoutTracker(options, createTimeout, getTermination) {
   const timeouts = new Map();
   return {
     start(path) {

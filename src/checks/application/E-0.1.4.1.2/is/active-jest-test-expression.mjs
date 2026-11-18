@@ -1,4 +1,4 @@
-export function isActiveJestTestExpression(node, names) {
+export default function isActiveJestTestExpression(node, names) {
   if (node?.type === "Identifier") return names.callbacks.has(node.name);
   if (node?.type === "CallExpression") return isActiveJestTestExpression(node.callee, names);
   if (node?.type !== "MemberExpression") return false;

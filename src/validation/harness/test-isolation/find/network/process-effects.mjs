@@ -1,6 +1,5 @@
-import { visitAst } from "../../../visit-ast.mjs";
-
-export function findProcessEffectViolations(ast) {
+import visitAst from "../../../visit-ast.mjs";
+export default function findProcessEffectViolations(ast) {
   const findings = [];
   const aliases = collectProcessAliases(ast);
   visitAst(ast, (node) => {
@@ -9,9 +8,11 @@ export function findProcessEffectViolations(ast) {
   });
   return [...new Set(findings)];
 }
-
 function collectProcessAliases(ast) {
-  const aliases = { processObjects: new Set(), processMethods: new Set() };
+  const aliases = {
+    processObjects: new Set(),
+    processMethods: new Set(),
+  };
   visitAst(ast, (node) => {
     if (node.type !== "VariableDeclarator" || node.id?.type !== "Identifier") return;
     if (node.init?.name === "process") aliases.processObjects.add(node.id.name);
@@ -19,7 +20,6 @@ function collectProcessAliases(ast) {
   });
   return aliases;
 }
-
 function isDirectProcessEffect(node, processObjects, processMethods) {
   if (node.type !== "CallExpression") return false;
   if (node.callee?.type === "Identifier") return processMethods.has(node.callee.name);

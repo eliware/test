@@ -1,15 +1,19 @@
-import { dispatchInformationalCommand } from "../dispatch-informational-command.mjs";
-import { reportCliError } from "../report-cli-error.mjs";
-import { acquireValidationLock } from "../acquire-validation-lock.mjs";
-import { completeCliValidation } from "../complete-cli-validation.mjs";
-import { runNpmPrerequisite } from "./npm-prerequisite.mjs";
+import dispatchInformationalCommand from "../dispatch-informational-command.mjs";
+import reportCliError from "../report-cli-error.mjs";
+import acquireValidationLock from "../acquire-validation-lock.mjs";
+import completeCliValidation from "../complete-cli-validation.mjs";
+import runNpmPrerequisite from "./npm-prerequisite.mjs";
 import { join } from "node:path";
-import { executeCliValidation } from "./execute-cli-validation.mjs";
-import { createStageTimer } from "../timing/create/stage-timer.mjs";
-import { createTimingLog } from "../timing/create/timing-log.mjs";
-import { selectTimingOutput } from "../select-timing-output.mjs";
-
-export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
+import executeCliValidation from "./execute-cli-validation.mjs";
+import createStageTimer from "../timing/create/stage-timer.mjs";
+import createTimingLog from "../timing/create/timing-log.mjs";
+import selectTimingOutput from "../select-timing-output.mjs";
+export default async function runCli(
+  args,
+  write = console.log,
+  root = process.cwd(),
+  options = {},
+) {
   let releaseLock;
   try {
     const informationalResult = dispatchInformationalCommand(args, write);

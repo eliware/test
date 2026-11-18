@@ -1,9 +1,8 @@
 import { join } from "node:path";
-import { readRepositoryText } from "../../../../validation/shared/repository/read/repository-text.mjs";
-import { extractMarkdownLinks } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
-import { validateMarkdownIndex } from "./markdown-index.mjs";
-
-export async function validateDocumentationIndexes(context = {}) {
+import readRepositoryText from "../../../../validation/shared/repository/read/repository-text.mjs";
+import extractMarkdownLinks from "../../E-0.1.0.1.4/extract-markdown/links.mjs";
+import validateMarkdownIndex from "./markdown-index.mjs";
+export default async function validateDocumentationIndexes(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
   let paths;

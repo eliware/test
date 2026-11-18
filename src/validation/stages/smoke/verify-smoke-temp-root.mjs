@@ -1,8 +1,7 @@
 import { lstat, realpath, rmdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { isFreshSmokeTempChild } from "./validate/fresh-temp-root.mjs";
-
-export async function verifySmokeTempRoot(
+import isFreshSmokeTempChild from "./validate/fresh-temp-root.mjs";
+export default async function verifySmokeTempRoot(
   root,
   createdPath,
   inspect = lstat,
@@ -13,11 +12,14 @@ export async function verifySmokeTempRoot(
   try {
     path = resolve(createdPath);
   } catch {
-    return { error: "Temporary smoke directory must be a fresh child of the source checkout." };
+    return {
+      error: "Temporary smoke directory must be a fresh child of the source checkout.",
+    };
   }
   if (!isFreshSmokeTempChild(resolve(root), path))
-    return { error: "Temporary smoke directory must be a fresh child of the source checkout." };
-
+    return {
+      error: "Temporary smoke directory must be a fresh child of the source checkout.",
+    };
   try {
     const identity = await inspect(path);
     if (identity.isSymbolicLink())
@@ -30,7 +32,10 @@ export async function verifySmokeTempRoot(
       return {
         error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${path}.`,
       };
-    return { path, identity };
+    return {
+      path,
+      identity,
+    };
   } catch (error) {
     try {
       await remove(path);

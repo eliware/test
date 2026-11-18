@@ -1,9 +1,13 @@
 import { expect, jest, test } from "@jest/globals";
-import { createRepositoryEntryReader } from "../../../../../../src/validation/shared/repository/create-repository/entry/reader.mjs";
-
+import createRepositoryEntryReader from "../../../../../../src/validation/shared/repository/create-repository/entry/reader.mjs";
 function createReaderState() {
   let revision = 0;
-  let records = [{ path: "one.mjs", type: "file" }];
+  let records = [
+    {
+      path: "one.mjs",
+      type: "file",
+    },
+  ];
   const findEntries = jest.fn(async () => records);
   const readDirectoryCached = jest.fn(async () => []);
   readDirectoryCached.getRevision = () => revision;
@@ -27,56 +31,71 @@ function createReaderState() {
     },
   };
 }
-
 test("reuses full entries while directory versions stay unchanged", async () => {
   const { reader, findEntries, readDirectoryCached } = createReaderState();
   expect(reader.hasFullDiscovery()).toBe(false);
   const initial = await reader.entries();
   expect(reader.hasFullDiscovery()).toBe(true);
-
   const refresh = reader.entries();
   expect(reader.entries()).toBe(refresh);
   await expect(refresh).resolves.toBe(initial);
   expect(findEntries).toHaveBeenCalledTimes(1);
   expect(readDirectoryCached).toHaveBeenCalledWith("/repo");
 });
-
 test("rediscovers when directory versions change", async () => {
   const { reader, findEntries, replaceRecords } = createReaderState();
   await reader.entries();
-  replaceRecords([{ path: "two.mjs", type: "file" }]);
-
-  await expect(reader.entries()).resolves.toEqual([{ path: "two.mjs", type: "file" }]);
+  replaceRecords([
+    {
+      path: "two.mjs",
+      type: "file",
+    },
+  ]);
+  await expect(reader.entries()).resolves.toEqual([
+    {
+      path: "two.mjs",
+      type: "file",
+    },
+  ]);
   expect(findEntries).toHaveBeenCalledTimes(2);
 });
-
 test("rediscovers when a previously indexed directory disappears", async () => {
   const { reader, findEntries, readDirectoryCached } = createReaderState();
   await reader.entries();
   readDirectoryCached.mockRejectedValueOnce(
-    Object.assign(new Error("directory removed"), { code: "ENOENT" }),
+    Object.assign(new Error("directory removed"), {
+      code: "ENOENT",
+    }),
   );
   findEntries.mockResolvedValueOnce([]);
-
   await expect(reader.entries()).resolves.toEqual([]);
   expect(findEntries).toHaveBeenCalledTimes(2);
   expect(readDirectoryCached.forget).toHaveBeenCalledWith("/repo");
 });
-
 test("propagates refresh failures other than a missing directory", async () => {
   const { reader, findEntries, readDirectoryCached, replaceRecords } = createReaderState();
   await reader.entries();
-  replaceRecords([{ path: "after-recovery.mjs", type: "file" }]);
+  replaceRecords([
+    {
+      path: "after-recovery.mjs",
+      type: "file",
+    },
+  ]);
   readDirectoryCached.mockRejectedValueOnce(
-    Object.assign(new Error("permission denied"), { code: "EACCES" }),
+    Object.assign(new Error("permission denied"), {
+      code: "EACCES",
+    }),
   );
-
   await expect(reader.entries()).rejects.toThrow("permission denied");
-  await expect(reader.entries()).resolves.toEqual([{ path: "after-recovery.mjs", type: "file" }]);
+  await expect(reader.entries()).resolves.toEqual([
+    {
+      path: "after-recovery.mjs",
+      type: "file",
+    },
+  ]);
   expect(findEntries).toHaveBeenCalledTimes(2);
   expect(readDirectoryCached.forget).toHaveBeenCalledWith("/repo");
 });
-
 test("refreshes tracked directories in parallel", async () => {
   let revision = 0;
   let active = 0;
@@ -102,14 +121,22 @@ test("refreshes tracked directories in parallel", async () => {
   await reader.entries();
   expect(maximumActive).toBe(3);
 });
-
 test("retries discovery after a transient refresh failure", async () => {
   const { reader, findEntries, replaceRecords } = createReaderState();
   await reader.entries();
-  replaceRecords([{ path: "recovered.mjs", type: "file" }]);
+  replaceRecords([
+    {
+      path: "recovered.mjs",
+      type: "file",
+    },
+  ]);
   findEntries.mockRejectedValueOnce(new Error("temporary read failure"));
-
   await expect(reader.entries()).rejects.toThrow("temporary read failure");
-  await expect(reader.entries()).resolves.toEqual([{ path: "recovered.mjs", type: "file" }]);
+  await expect(reader.entries()).resolves.toEqual([
+    {
+      path: "recovered.mjs",
+      type: "file",
+    },
+  ]);
   expect(findEntries).toHaveBeenCalledTimes(3);
 });

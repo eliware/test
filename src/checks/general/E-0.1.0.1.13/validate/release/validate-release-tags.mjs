@@ -1,11 +1,9 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readReleaseTags } from "./read-release-tags.mjs";
-import { releaseVersionFromHeading } from "./notes/version/from-heading.mjs";
-
+import readReleaseTags from "./read-release-tags.mjs";
+import releaseVersionFromHeading from "./notes/version/from-heading/release-version-from-heading.mjs";
 const executeFile = promisify(execFile);
-
-export async function validateReleaseTagVersions(
+export default async function validateReleaseTagVersions(
   root,
   entries,
   packageVersion,
@@ -20,7 +18,6 @@ export async function validateReleaseTagVersions(
     ),
   ];
   if (!historicalVersions.length) return [];
-
   const result = await readReleaseTags(root, runGit);
   if (result.error) return [result.error];
   return historicalVersions

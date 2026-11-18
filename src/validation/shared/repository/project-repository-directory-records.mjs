@@ -1,6 +1,5 @@
 import { basename } from "node:path";
-
-export function projectRepositoryDirectoryRecords(records) {
+export default function projectRepositoryDirectoryRecords(records) {
   return records.map((record) => ({
     name: basename(record.path),
     path: record.path,

@@ -1,6 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { validateMarkdownReferences } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/markdown/references.mjs";
-
+import validateMarkdownReferences from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/markdown/references.mjs";
 test("validates local links, assets, and external links", async () => {
   const validateLocal = jest.fn(async () => null);
   await expect(
@@ -12,7 +11,6 @@ test("validates local links, assets, and external links", async () => {
   ).resolves.toEqual([]);
   expect(validateLocal).toHaveBeenCalledTimes(2);
 });
-
 test("reports unresolved and invalid references", async () => {
   const errors = await validateMarkdownReferences(
     "README.md",
@@ -24,7 +22,6 @@ test("reports unresolved and invalid references", async () => {
     "Documentation link is invalid: http://github.com/owner/repo. in README.md.",
   );
 });
-
 test("returns local reference errors", async () => {
   await expect(
     validateMarkdownReferences(

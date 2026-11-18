@@ -1,10 +1,9 @@
-import { fail, pass } from "../check-result.mjs";
-import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
-import { validateNpmReadmeBadge } from "./E-0.1.10.1.0/validate-npm-readme-badge.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import validateProfileDocumentation from "../../validation/shared/conventions/validate/profile/documentation.mjs";
+import validateNpmReadmeBadge from "./E-0.1.10.1.0/validate-npm-readme-badge.mjs";
 export const ruleId = "E-0.1.10.1.0";
-
-export async function run(context = {}) {
+export default async function run(context = {}) {
   const errors = await validateProfileDocumentation("npm-published", context.repositoryInventory);
   try {
     const readme = await context.repositoryInventory.readText("README.md");

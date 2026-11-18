@@ -1,9 +1,8 @@
 import { spawn } from "node:child_process";
-import { buildNpmScriptArguments } from "./build-npm-script-arguments.mjs";
-import { execute } from "../../shared/process/execute-child-process.mjs";
-import { npmCommand } from "../../shared/process/npm-command.mjs";
-
-export async function runNpmScript(
+import buildNpmScriptArguments from "./build-npm-script-arguments.mjs";
+import execute from "../../shared/process/execute-child-process.mjs";
+import npmCommand from "../../shared/process/npm-command.mjs";
+export default async function runNpmScript(
   root,
   scriptName,
   run,
@@ -23,6 +22,8 @@ export async function runNpmScript(
   const executeScript = run ?? ((...args) => execute(...args, spawnProcess));
   return executeScript(command, [...prefix, ...buildNpmScriptArguments(scriptName)], {
     cwd: root,
-    env: { ...env },
+    env: {
+      ...env,
+    },
   });
 }

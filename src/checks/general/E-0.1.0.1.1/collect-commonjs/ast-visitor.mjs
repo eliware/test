@@ -1,4 +1,4 @@
-export function visitCommonJsAst(root, visit) {
+export default function visitCommonJsAst(root, visit) {
   if (!root || typeof root !== "object") return;
   visit(root);
   for (const [key, value] of Object.entries(root)) {

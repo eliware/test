@@ -1,9 +1,8 @@
 import { lstat, readFile, rm } from "node:fs/promises";
-import { validateInstalledSmokePackage } from "./install-smoke-candidate/installed-package.mjs";
-import { installSmokePackage } from "./install-smoke-candidate/package-install.mjs";
-import { runSmokeConsumerTest } from "./install-smoke-candidate/consumer-test.mjs";
-
-export async function installSmokeCandidate({
+import validateInstalledSmokePackage from "./install-smoke-candidate/installed-package.mjs";
+import installSmokePackage from "./install-smoke-candidate/package-install.mjs";
+import runSmokeConsumerTest from "./install-smoke-candidate/consumer-test.mjs";
+export default async function installSmokeCandidate({
   targetRoot,
   packageJson,
   tarball,

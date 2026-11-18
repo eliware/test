@@ -1,4 +1,4 @@
-export function stripNonProseText(text) {
+export default function stripNonProseText(text) {
   return String(text)
     .replace(/`[^`]*`/gu, " ")
     .replace(/--[\w-]+\s+[A-Z][A-Z0-9_-]*\b/gu, " ")

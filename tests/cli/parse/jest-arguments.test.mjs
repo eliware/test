@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { parseJestArguments } from "../../../src/cli/parse/jest-arguments.mjs";
-
+import parseJestArguments from "../../../src/cli/parse/jest-arguments.mjs";
 test("separates option values, positional arguments, and arguments after the separator", () => {
   expect(
     parseJestArguments([
@@ -17,7 +16,6 @@ test("separates option values, positional arguments, and arguments after the sep
     afterSeparator: ["forwarded-value"],
   });
 });
-
 test("handles empty and non-string argument values", () => {
   expect(parseJestArguments()).toEqual({
     positional: [],

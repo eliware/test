@@ -1,12 +1,10 @@
 import { readFileSync } from "node:fs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { parseBoundedYamlValue } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import { validateNpmPublishPermissions } from "./npm-publish-permissions.mjs";
-import { validateGhcrAuthentication } from "./ghcr-authentication.mjs";
-
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+import parseBoundedYamlValue from "../../../../validation/shared/yaml/parse-bounded-yaml-documents/parse-bounded-yaml-value.mjs";
+import validateNpmPublishPermissions from "./npm-publish-permissions.mjs";
+import validateGhcrAuthentication from "./ghcr-authentication.mjs";
 const workflowDirectory = new URL("../../../../../specs/workflows/", import.meta.url);
-
-export async function validateCanonicalPublisherWorkflow(
+export default async function validateCanonicalPublisherWorkflow(
   inventory,
   profile,
   readCanonical = (url) => readFileSync(url, "utf8"),

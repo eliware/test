@@ -1,4 +1,4 @@
-export function isModuleLoadCall(node) {
+export default function isModuleLoadCall(node) {
   const callee = node.callee;
   return (
     node.type === "CallExpression" &&

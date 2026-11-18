@@ -1,8 +1,7 @@
 function waitSynchronously(milliseconds) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 }
-
-export function waitForProcessExit(pid, isRunning, options = {}) {
+export default function waitForProcessExit(pid, isRunning, options = {}) {
   const timeoutMs = options.timeoutMs ?? 1_000;
   const intervalMs = options.intervalMs ?? 25;
   const now = options.now ?? Date.now;

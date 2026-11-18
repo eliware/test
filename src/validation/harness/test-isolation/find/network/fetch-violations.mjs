@@ -1,7 +1,6 @@
-import { visitAst } from "../../../visit-ast.mjs";
-import { collectJestSpyCalls } from "../mocks/collect-jest-spy-calls.mjs";
-
-export function findFetchViolations(ast) {
+import visitAst from "../../../visit-ast.mjs";
+import collectJestSpyCalls from "../mocks/collect-jest-spy-calls.mjs";
+export default function findFetchViolations(ast) {
   const findings = [];
   const aliases = collectFetchAliases(ast);
   const fetchSpies = collectFetchSpies(ast);
@@ -11,7 +10,6 @@ export function findFetchViolations(ast) {
   });
   return [...new Set(findings)];
 }
-
 function collectFetchAliases(ast) {
   const aliases = new Map();
   visitAst(ast, (node) => {
@@ -24,7 +22,6 @@ function collectFetchAliases(ast) {
   });
   return aliases;
 }
-
 function collectFetchSpies(ast) {
   const spies = [];
   for (const { target, property, position } of collectJestSpyCalls(ast)) {
@@ -33,11 +30,13 @@ function collectFetchSpies(ast) {
       ["global", "globalThis", "window"].includes(target.name) &&
       property === "fetch"
     )
-      spies.push({ target: target.name, position });
+      spies.push({
+        target: target.name,
+        position,
+      });
   }
   return spies;
 }
-
 function isExternalFetch(node, aliases, fetchSpies) {
   if (node.type !== "CallExpression") return false;
   const target = fetchTarget(node.callee, aliases);
@@ -55,7 +54,6 @@ function isExternalFetch(node, aliases, fetchSpies) {
     return true;
   }
 }
-
 function fetchTarget(callee, aliases) {
   if (callee?.name === "fetch" || aliases.has(callee?.name)) return "globalThis";
   if (
@@ -66,7 +64,6 @@ function fetchTarget(callee, aliases) {
     return callee.object.name;
   return undefined;
 }
-
 function spyMatches(spyTarget, fetchTargetName) {
   if (fetchTargetName === "globalThis") return ["global", "globalThis"].includes(spyTarget);
   return spyTarget === fetchTargetName;

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { readDiagnosticOptions } from "../../../src/cli/read/diagnostic-options.mjs";
-
+import readDiagnosticOptions from "../../../src/cli/read/diagnostic-options.mjs";
 test("maps modes and preserves tool arguments for downstream policy validation", () => {
   expect(readDiagnosticOptions(["tests/example.test.mjs"]).jestArgs).toEqual([
     "tests/example.test.mjs",
@@ -13,11 +12,9 @@ test("maps modes and preserves tool arguments for downstream policy validation",
   expect(readDiagnosticOptions(["--audit", "--no-fund"]).toolArgs).toEqual(["--no-fund"]);
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
 });
-
 test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });
-
 test("preserves the delegation separator and its following arguments for policy validation", () => {
   expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
   expect(readDiagnosticOptions(["--audit", "--no-fund", "--", "--no-progress"]).toolArgs).toEqual([
@@ -25,17 +22,14 @@ test("preserves the delegation separator and its following arguments for policy 
     "--no-progress",
   ]);
 });
-
 test("rejects conflicting informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--version"])).toThrow(
     "--help and --version cannot be used together",
   );
 });
-
 test("rejects repeated informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--help"])).toThrow("cannot be repeated");
 });
-
 test("does not treat option values as focused paths and preserves them for Jest", () => {
   expect(
     readDiagnosticOptions([
@@ -47,7 +41,6 @@ test("does not treat option values as focused paths and preserves them for Jest"
     jestArgs: ["--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
-
 test("recognizes values for common Jest options", () => {
   expect(
     readDiagnosticOptions([
@@ -59,23 +52,19 @@ test("recognizes values for common Jest options", () => {
     jestArgs: ["--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
-
 test("does not treat values for Jest options as forwarded test paths", () => {
   expect(() =>
     readDiagnosticOptions(["--", "--coveragePathIgnorePatterns", "tests/example.test.mjs"]),
   ).not.toThrow();
 });
-
 test("rejects non-string arguments", () => {
   expect(() => readDiagnosticOptions([null])).toThrow("Unsupported validation argument");
 });
-
 test("rejects informational commands combined with validation", () => {
   expect(() => readDiagnosticOptions(["--help", "--lint"])).toThrow(
     "Informational commands cannot be combined",
   );
 });
-
 test("rejects focused Jest paths combined with tool modes", () => {
   expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow(
     "cannot be combined",
@@ -84,17 +73,14 @@ test("rejects focused Jest paths combined with tool modes", () => {
     "cannot be combined",
   );
 });
-
 test("rejects absolute paths forwarded after the separator", () => {
   expect(() => readDiagnosticOptions(["--", "C:\\repo\\tests\\example.test.mjs"])).toThrow(
     "before the -- separator",
   );
 });
-
 test("rejects wrapper arguments placed before a tool mode", () => {
   expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow("must follow --audit");
 });
-
 test("accepts debug timing once before a mode and rejects ambiguous placements", () => {
   expect(readDiagnosticOptions(["--debug-timing", "--lint"]).mode).toBe("lint");
   expect(() => readDiagnosticOptions(["--debug-timing", "--debug-timing"])).toThrow(

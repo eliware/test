@@ -1,6 +1,5 @@
-import { validatePackArguments } from "./validate/pack/arguments.mjs";
-
-export function buildPackArguments(extraArgs = []) {
+import validatePackArguments from "./validate/pack/arguments.mjs";
+export default function buildPackArguments(extraArgs = []) {
   const error = validatePackArguments(extraArgs);
   if (error) throw new Error(error);
   const safeArgs = extraArgs.filter((argument) => argument !== "--ignore-scripts");

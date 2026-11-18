@@ -1,6 +1,5 @@
-import { isValidReleaseDate } from "./notes/version/order.mjs";
-
-export function validateReleaseDateHistory(dates) {
+import isValidReleaseDate from "./notes/version/order.mjs";
+export default function validateReleaseDateHistory(dates) {
   const errors = dates.flatMap((date) =>
     isValidReleaseDate(date) ? [] : [`Release date is invalid: ${date}.`],
   );

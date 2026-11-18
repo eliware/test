@@ -1,8 +1,7 @@
 import { fileMutationApis, temporaryDirectoryApis } from "../api-names.mjs";
-import { visitAst } from "../../visit-ast.mjs";
-import { collectFilesystemBindings } from "./bindings.mjs";
-
-export function findFilesystemApiViolations(ast, filePath) {
+import visitAst from "../../visit-ast.mjs";
+import collectFilesystemBindings from "./bindings.mjs";
+export default function findFilesystemApiViolations(ast, filePath) {
   const { namespaceBindings, restrictedBindings } = collectFilesystemBindings(ast);
   const violations = [];
   const bindingsByNode = new Map();
@@ -19,7 +18,6 @@ export function findFilesystemApiViolations(ast, filePath) {
   });
   return violations;
 }
-
 function inspectMember(node, namespaceBindings, violations, filePath) {
   const property = node.computed ? node.property.value : node.property.name;
   const namespace = rootIdentifier(node.object);
@@ -29,14 +27,12 @@ function inspectMember(node, namespaceBindings, violations, filePath) {
   )
     addViolation(violations, filePath, node, `use of ${property}`);
 }
-
 function rootIdentifier(node) {
   if (node?.type === "Identifier") return node.name;
   if (node?.type === "MemberExpression" || node?.type === "OptionalMemberExpression")
     return rootIdentifier(node.object);
   return undefined;
 }
-
 function addViolation(violations, filePath, node, detail) {
   violations.push(
     `${filePath}:${node.loc.start.line} uses a test API that creates files or temporary directories: ${detail}.`,

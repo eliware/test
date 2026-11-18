@@ -1,18 +1,11 @@
-import {
-  collectBalancedNumericTreeRange,
-  collectBalancedNumericTreeValues,
-} from "../collect-balanced-numeric-tree-values.mjs";
-import {
-  insertBalancedNumericTreeNode,
-  removeBalancedNumericTreeMinimum,
-} from "../mutate-balanced-numeric-tree.mjs";
-import {
-  rebalanceBalancedNumericTreeNode,
-  sizeBalancedNumericTreeNode,
-} from "../balance-numeric-tree-node.mjs";
-import { assertFiniteTreeNumber } from "../validate/finite-number.mjs";
-
-export function createBalancedNumericTree() {
+import collectBalancedNumericTreeRange from "../collect-balanced-numeric-tree-values/collect-balanced-numeric-tree-range.mjs";
+import collectBalancedNumericTreeValues from "../collect-balanced-numeric-tree-values.mjs";
+import insertBalancedNumericTreeNode from "../mutate-balanced-numeric-tree.mjs";
+import removeBalancedNumericTreeMinimum from "../mutate-balanced-numeric-tree/remove-balanced-numeric-tree-minimum.mjs";
+import rebalanceBalancedNumericTreeNode from "../balance-numeric-tree-node.mjs";
+import sizeBalancedNumericTreeNode from "../balance-numeric-tree-node/size-balanced-numeric-tree-node.mjs";
+import assertFiniteTreeNumber from "../validate/finite-number.mjs";
+export default function createBalancedNumericTree() {
   let root = null;
   function insert(value) {
     assertFiniteTreeNumber(value, "insert");
@@ -50,5 +43,12 @@ export function createBalancedNumericTree() {
     assertFiniteTreeNumber(maximum, "range");
     return collectBalancedNumericTreeRange(root, minimum, maximum);
   }
-  return Object.freeze({ insert, removeMinimum, minimum, lowerBound, values, range });
+  return Object.freeze({
+    insert,
+    removeMinimum,
+    minimum,
+    lowerBound,
+    values,
+    range,
+  });
 }

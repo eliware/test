@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { resolve } from "node:path";
-import { npmCommand } from "../../../../src/validation/shared/process/npm-command.mjs";
-
+import npmCommand from "../../../../src/validation/shared/process/npm-command.mjs";
 test("selects the platform npm executable or npm exec path", () => {
   expect(npmCommand("linux", "")).toEqual(["npm", []]);
   expect(npmCommand("linux", "C:\\npm\\npm-cli.js")).toEqual(["npm", []]);
@@ -95,7 +94,6 @@ test("selects the platform npm executable or npm exec path", () => {
     "POSIX-style npm_execpath on Windows",
   );
 });
-
 test("uses platform defaults when no npm executable override is set", () => {
   const previous = process.env.npm_execpath;
   delete process.env.npm_execpath;
@@ -112,7 +110,6 @@ test("uses platform defaults when no npm executable override is set", () => {
     else process.env.npm_execpath = previous;
   }
 });
-
 test("resolves a relative Windows npm executable from the repository root", () => {
   expect(
     npmCommand(

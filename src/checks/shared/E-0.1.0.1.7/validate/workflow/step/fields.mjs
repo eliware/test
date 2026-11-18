@@ -1,7 +1,6 @@
-import { readCanonicalOrder } from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { validateRequiredWorkflowStepConditions } from "./required-conditions.mjs";
-
-export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
+import readCanonicalOrder from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import validateRequiredWorkflowStepConditions from "./required-conditions.mjs";
+export default function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
   const errors = [];
   const checkoutOptions = readCanonicalOrder("ci-workflow.yaml").checkoutOptions;
   const npmTest = steps.findIndex((step) => step?.run === "npm test");

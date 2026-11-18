@@ -1,4 +1,4 @@
-export function validateWebAssetMetadata(packageJson = {}) {
+export default function validateWebAssetMetadata(packageJson = {}) {
   const eliware = packageJson?.eliware ?? {};
   return ["webRoot", "webAssetExcludes"]
     .filter((key) => Object.hasOwn(eliware, key))

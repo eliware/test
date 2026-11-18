@@ -1,5 +1,4 @@
-import { collectBindingNames } from "./binding-names.mjs";
-
+import collectBindingNames from "./binding-names.mjs";
 const nestedScopes = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
@@ -7,8 +6,7 @@ const nestedScopes = new Set([
   "ClassDeclaration",
   "ClassExpression",
 ]);
-
-export function collectHoistedVarNames(node, add) {
+export default function collectHoistedVarNames(node, add) {
   if (!node || typeof node !== "object") return;
   if (nestedScopes.has(node.type)) return;
   if (node.type === "VariableDeclaration") {

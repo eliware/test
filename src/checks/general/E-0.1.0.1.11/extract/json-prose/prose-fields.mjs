@@ -14,7 +14,6 @@ const proseFields = new Set([
   "notes",
   "content",
 ]);
-
-export function isJsonProseField(field) {
+export default function isJsonProseField(field) {
   return proseFields.has(field);
 }

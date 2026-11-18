@@ -1,6 +1,5 @@
-import { createChildProgressHandler } from "../handle-child/progress.mjs";
-
-export function createChildProgress(options, timeoutController, timeout, output) {
+import createChildProgressHandler from "../handle-child/progress/create-child-progress-handler.mjs";
+export default function createChildProgress(options, timeoutController, timeout, output) {
   const resetProgressTimer = () => {
     if (!options.isSettled()) timeout.reset();
   };

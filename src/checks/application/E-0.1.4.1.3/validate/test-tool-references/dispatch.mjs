@@ -1,10 +1,9 @@
-import { detectTestToolUse } from "../../detect-test-tool-use.mjs";
-import { findTestToolReferencesInText } from "../find-test-tool-references-in-text.mjs";
-import { hasProhibitedMarkdownCommandReferences } from "./markdown/command-references.mjs";
-import { hasProhibitedPackageScriptReferences } from "./package-script/references.mjs";
-import { hasProhibitedYamlCommandReferences } from "./yaml/command-references.mjs";
-
-export function getTestToolReferenceChecker(path) {
+import detectTestToolUse from "../../detect-test-tool-use.mjs";
+import findTestToolReferencesInText from "../find-test-tool-references-in-text.mjs";
+import hasProhibitedMarkdownCommandReferences from "./markdown/command-references.mjs";
+import hasProhibitedPackageScriptReferences from "./package-script/references.mjs";
+import hasProhibitedYamlCommandReferences from "./yaml/command-references.mjs";
+export default function getTestToolReferenceChecker(path) {
   if (path === "package.json") return hasProhibitedPackageScriptReferences;
   if (/\.ya?ml$/iu.test(path)) return hasProhibitedYamlCommandReferences;
   if (/\.(?:sh|ps1|py)$/iu.test(path)) return findTestToolReferencesInText;

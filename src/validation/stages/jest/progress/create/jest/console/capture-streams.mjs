@@ -1,9 +1,11 @@
-export function createJestOutputCapture({ maxLength }) {
-  const output = { stdout: [], stderr: [] };
+export default function createJestOutputCapture({ maxLength }) {
+  const output = {
+    stdout: [],
+    stderr: [],
+  };
   const chunks = [];
   let length = 0;
   let truncated = false;
-
   return {
     append(stream, chunk) {
       if (!Object.hasOwn(output, stream) || truncated) return "";
@@ -18,7 +20,11 @@ export function createJestOutputCapture({ maxLength }) {
       return value;
     },
     snapshot() {
-      return { output, captured: chunks.join(""), truncated };
+      return {
+        output,
+        captured: chunks.join(""),
+        truncated,
+      };
     },
   };
 }

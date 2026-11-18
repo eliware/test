@@ -1,14 +1,12 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { findFileHandleWriteViolations } from "../../../../src/validation/harness/test-write-policy/find-file-handle-write-violations.mjs";
-
+import findFileHandleWriteViolations from "../../../../src/validation/harness/test-write-policy/find-file-handle-write-violations.mjs";
 test("finds write calls on injected file handles", () => {
   const ast = parse("async function save(fileHandle) { await fileHandle.writeFile('x'); }");
   expect(findFileHandleWriteViolations(ast, "tests/example.test.mjs")).toEqual([
     "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of writeFile.",
   ]);
 });
-
 test("allows mocked file handles but not unverified injected handles", () => {
   const ast = parse(
     'const fileHandle = { write: jest.fn() }; fileHandle.write("x"); const handle = createHandle(); async function save(handle) { handle.writeFile("x"); stream.write("x"); }',

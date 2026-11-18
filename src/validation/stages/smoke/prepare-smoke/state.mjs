@@ -1,4 +1,4 @@
-export async function prepareSmokeState({
+export default async function prepareSmokeState({
   targetRoot,
   packageJson,
   binNames,

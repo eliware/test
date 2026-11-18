@@ -1,8 +1,10 @@
 import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-
-export async function resolvePrettierExecutable({ resolvePackage, readPackage = readFile } = {}) {
+export default async function resolvePrettierExecutable({
+  resolvePackage,
+  readPackage = readFile,
+} = {}) {
   const resolvePackageFromEsm = createRequire(import.meta.url);
   const packagePath = (resolvePackage ?? resolvePackageFromEsm.resolve.bind(resolvePackageFromEsm))(
     "prettier/package.json",

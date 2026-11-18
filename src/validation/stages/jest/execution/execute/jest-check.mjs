@@ -1,13 +1,12 @@
 import { join } from "node:path";
-import { runJest } from "../run/jest.mjs";
-import { runChild } from "../../../../shared/process/run/child.mjs";
-import { createJestCheckOptions } from "../../configuration/create-jest/check-options.mjs";
-import { sanitizeJestLog } from "../../progress/sanitize-jest-log.mjs";
-import { focusedPathsFrom } from "../../../../../cli/parse/focused-arguments.mjs";
-import { findIgnoredRepositoryPaths } from "../../../../shared/repository/find-repository-files.mjs";
-import { isIgnoredRepositoryPath } from "../../../../shared/repository/repository-inventory/path-filters.mjs";
-
-export async function executeJestCheck(context) {
+import runJest from "../run/jest.mjs";
+import runChild from "../../../../shared/process/run/child.mjs";
+import createJestCheckOptions from "../../configuration/create-jest/check-options.mjs";
+import sanitizeJestLog from "../../progress/sanitize-jest-log.mjs";
+import focusedPathsFrom from "../../../../../cli/parse/focused-arguments/focused/paths-from.mjs";
+import findIgnoredRepositoryPaths from "../../../../shared/repository/find-repository-files/find/ignored-repository-paths.mjs";
+import isIgnoredRepositoryPath from "../../../../shared/repository/repository-inventory/path-filters/is/ignored-repository-path.mjs";
+export default async function executeJestCheck(context) {
   let startedAt;
   let timeoutDiagnostic;
   try {
@@ -20,7 +19,14 @@ export async function executeJestCheck(context) {
         (path) => !isIgnoredRepositoryPath(path, ignoredPaths),
       );
       if (retainedPaths.length === 0)
-        return { skipped: true, result: { code: 0, stdout: "", stderr: "" } };
+        return {
+          skipped: true,
+          result: {
+            code: 0,
+            stdout: "",
+            stderr: "",
+          },
+        };
       const retained = new Set(retainedPaths);
       const focused = new Set(focusedPaths);
       jestArgs = args.filter((argument) => !focused.has(argument) || retained.has(argument));
@@ -37,8 +43,16 @@ export async function executeJestCheck(context) {
       throw new Error("Jest did not start before the results were returned.");
     if (!(result.timedOut && result.terminationConfirmed === false))
       await sanitizeJestLog(join(context.root, "coverage", "jest.log"), context.sanitizeLogFs);
-    return { result: { ...result, startedAt }, timeoutDiagnostic };
+    return {
+      result: {
+        ...result,
+        startedAt,
+      },
+      timeoutDiagnostic,
+    };
   } catch (error) {
-    return { error };
+    return {
+      error,
+    };
   }
 }

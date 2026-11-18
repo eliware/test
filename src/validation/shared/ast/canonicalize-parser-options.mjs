@@ -1,6 +1,5 @@
 export const uncacheableParserOptions = Symbol("uncacheable parser options");
-
-export function canonicalizeParserOptions(value, seen = new Set()) {
+export default function canonicalizeParserOptions(value, seen = new Set()) {
   if (value === null) return ["null"];
   if (value === undefined) return ["undefined"];
   if (typeof value === "string" || typeof value === "boolean") return [typeof value, value];
@@ -10,7 +9,6 @@ export function canonicalizeParserOptions(value, seen = new Set()) {
       : uncacheableParserOptions;
   if (typeof value !== "object" || seen.has(value)) return uncacheableParserOptions;
   seen.add(value);
-
   if (Array.isArray(value)) {
     const keys = Reflect.ownKeys(value);
     if (keys.length !== value.length + 1) return uncacheableParserOptions;
@@ -23,7 +21,6 @@ export function canonicalizeParserOptions(value, seen = new Set()) {
     }
     return ["array", items];
   }
-
   const prototype = Object.getPrototypeOf(value);
   if (prototype !== Object.prototype && prototype !== null) return uncacheableParserOptions;
   const keys = Reflect.ownKeys(value);

@@ -1,11 +1,10 @@
 import { readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compareRuleIds } from "../compare-rule-ids.mjs";
-import { discoverCheckTree } from "./check-tree.mjs";
-
+import compareRuleIds from "../compare-rule-ids.mjs";
+import discoverCheckTree from "./check-tree.mjs";
 const checksRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../checks");
-export async function discoverChecks(
+export default async function discoverChecks(
   groups,
   { root = checksRoot, readDirectory = readdir, importCheck = (url) => import(url) } = {},
 ) {
@@ -14,7 +13,9 @@ export async function discoverChecks(
   for (const group of groups) {
     const groupRoot = join(root, group);
     try {
-      await readDirectory(groupRoot, { withFileTypes: true });
+      await readDirectory(groupRoot, {
+        withFileTypes: true,
+      });
     } catch {
       throw new Error(`Unknown convention group: ${group}`);
     }
@@ -31,21 +32,4 @@ export async function discoverChecks(
     }
   }
   return discovered.sort((left, right) => compareRuleIds(left.ruleId, right.ruleId));
-}
-
-export async function discoverAllChecks(options = {}) {
-  const root = options.root ?? checksRoot;
-  const readDirectory = options.readDirectory ?? readdir;
-  let entries;
-  try {
-    entries = await readDirectory(root, { withFileTypes: true });
-  } catch (error) {
-    if (options.root === undefined && error?.code === "ENOENT") return [];
-    throw error;
-  }
-  const groups = entries
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-    .map((entry) => entry.name)
-    .sort();
-  return discoverChecks(groups, { ...options, root, readDirectory });
 }

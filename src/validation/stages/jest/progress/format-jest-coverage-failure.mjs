@@ -1,16 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { relative, join } from "node:path";
-
 function lineOf(location) {
   return location?.start?.line ?? location?.line;
 }
-
 function statementGaps(statementMap, counts) {
   return Object.entries(statementMap ?? {})
     .filter(([id]) => counts?.[id] === 0)
     .map(([id, location]) => `statement ${id} at line ${lineOf(location) ?? "unknown"}`);
 }
-
 function uncoveredLines(statementMap, counts) {
   const lines = new Map();
   for (const [id, location] of Object.entries(statementMap ?? {})) {
@@ -19,7 +16,6 @@ function uncoveredLines(statementMap, counts) {
   }
   return [...lines].filter(([, count]) => count === 0).map(([line]) => line);
 }
-
 function branchGaps(branchMap, counts) {
   return Object.entries(branchMap ?? {}).flatMap(([id, branch]) =>
     (counts?.[id] ?? []).flatMap((count, path) =>
@@ -31,13 +27,11 @@ function branchGaps(branchMap, counts) {
     ),
   );
 }
-
 function functionGaps(functionMap, counts) {
   return Object.entries(functionMap ?? {})
     .filter(([id]) => counts?.[id] === 0)
     .map(([, fn]) => `${fn.name || "anonymous"} at line ${lineOf(fn.loc) ?? fn.line}`);
 }
-
 function formatFile(file, data, root) {
   const displayPath = root ? relative(root, file).replaceAll("\\", "/") || file : file;
   const statements = statementGaps(data.statementMap, data.s);
@@ -52,8 +46,7 @@ function formatFile(file, data, root) {
     ...(functions.length ? [`  functions uncovered at: ${functions.join("; ")}`] : []),
   ];
 }
-
-export async function formatJestCoverageFailure(result, root, read = readFile) {
+export default async function formatJestCoverageFailure(result, root, read = readFile) {
   if (!result?.coverageDirectory)
     return "Coverage details unavailable: Jest did not keep its coverage directory.";
   let coverage;

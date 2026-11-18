@@ -1,13 +1,19 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validateAgentsStructure(content, specificationHeadings = new Set()) {
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import readCanonicalOrder from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validateAgentsStructure(content, specificationHeadings = new Set()) {
   const firstContentLine = content.split(/\r?\n/u).find((line) => line.trim() !== "");
   if (firstContentLine !== "# AGENTS.md") return ["AGENTS.md must begin with # AGENTS.md."];
   const markdown = removeMarkdownCode(content);
   const lines = markdown.split(/\r?\n/u);
   const sections = lines.flatMap((line, index) =>
-    /^##\s+/u.test(line) ? [{ index, heading: line.slice(3).trim() }] : [],
+    /^##\s+/u.test(line)
+      ? [
+          {
+            index,
+            heading: line.slice(3).trim(),
+          },
+        ]
+      : [],
   );
   const actual = sections.map(({ heading }) => heading);
   const order = readCanonicalOrder("agents-sections.yaml");
@@ -30,7 +36,6 @@ export function validateAgentsStructure(content, specificationHeadings = new Set
     return emptySections.map(({ heading }) => `AGENTS.md section ${heading} must contain content.`);
   return [];
 }
-
 function isKnownHeading(heading, order, specificationHeadings) {
   return (
     Object.values(order.profileHeadings).includes(heading) || specificationHeadings.has(heading)

@@ -1,9 +1,8 @@
-import { collectBindingNames } from "./binding-names.mjs";
-import { isJestGlobalsImport } from "../jest-globals-import.mjs";
-import { collectAssignedJestSuiteNames } from "./assigned-jest-suite-names.mjs";
-import { collectHoistedVarNames } from "./hoisted-var-names.mjs";
-
-export function collectModuleShadowedNames(program, names) {
+import collectBindingNames from "./binding-names.mjs";
+import isJestGlobalsImport from "../jest-globals-import.mjs";
+import collectAssignedJestSuiteNames from "./assigned-jest-suite-names.mjs";
+import collectHoistedVarNames from "./hoisted-var-names.mjs";
+export default function collectModuleShadowedNames(program, names) {
   const tests = new Set();
   const describes = new Set();
   const shadowedGlobals = new Set();
@@ -26,9 +25,13 @@ export function collectModuleShadowedNames(program, names) {
     }
     collectAssignedJestSuiteNames(node, names.describes, describes);
   }
-  return { tests, callbacks: new Set(), describes, shadowedGlobals };
+  return {
+    tests,
+    callbacks: new Set(),
+    describes,
+    shadowedGlobals,
+  };
 }
-
 function declarationNames(node, add) {
   if (!node) return;
   if (node.type === "ExportNamedDeclaration") return declarationNames(node.declaration, add);

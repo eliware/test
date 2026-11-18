@@ -1,7 +1,6 @@
-import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-import { validateNoUnreleasedReleaseNotes } from "./unreleased.mjs";
-
-export function validateReleaseNotesTitle(content) {
+import removeMarkdownCode from "../../../../E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+import validateNoUnreleasedReleaseNotes from "./unreleased.mjs";
+export default function validateReleaseNotesTitle(content) {
   const errors = [];
   const normalized = content.replace(/^\uFEFF/u, "");
   const originalLines = normalized.split(/\r?\n/u);

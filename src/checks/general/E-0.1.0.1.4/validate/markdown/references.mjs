@@ -1,8 +1,7 @@
-import { extractMarkdownAssets } from "../../extract-markdown/assets.mjs";
-import { extractMarkdownLinks } from "../../extract-markdown/links.mjs";
-import { validateExternalLink } from "../external-markdown-link.mjs";
-
-export async function validateMarkdownReferences(file, text, validateLocal) {
+import extractMarkdownAssets from "../../extract-markdown/assets.mjs";
+import extractMarkdownLinks from "../../extract-markdown/links.mjs";
+import validateExternalLink from "../external-markdown-link.mjs";
+export default async function validateMarkdownReferences(file, text, validateLocal) {
   const errors = [];
   for (const { reference } of [...extractMarkdownLinks(text), ...extractMarkdownAssets(text)]) {
     if (!reference) {

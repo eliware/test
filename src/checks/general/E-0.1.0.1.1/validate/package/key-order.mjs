@@ -1,10 +1,13 @@
-import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-
-export function validatePackageKeyOrder(packageJson) {
+import readCanonicalOrder from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+export default function validatePackageKeyOrder(packageJson) {
   const canonicalKeys = readCanonicalOrder("package-json.yaml").topLevelKeys;
   const keys = Object.keys(packageJson ?? {});
   const positions = keys
-    .map((key, index) => ({ key, index, order: canonicalKeys.indexOf(key) }))
+    .map((key, index) => ({
+      key,
+      index,
+      order: canonicalKeys.indexOf(key),
+    }))
     .filter(({ order }) => order >= 0);
   const ordered = [...positions].sort((left, right) => left.order - right.order);
   const firstOther = keys.findIndex((key) => !canonicalKeys.includes(key));

@@ -1,7 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { validateLicenseContent } from "./license-content.mjs";
-
+import validateLicenseContent from "./license-content.mjs";
 const requiredFiles = [
   "package.json",
   "package-lock.json",
@@ -33,8 +32,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`;
-
-export async function validateRequiredPackageFiles(root, { getStat = stat, read = readFile } = {}) {
+export default async function validateRequiredPackageFiles(
+  root,
+  { getStat = stat, read = readFile } = {},
+) {
   const errors = [];
   for (const file of requiredFiles) {
     try {

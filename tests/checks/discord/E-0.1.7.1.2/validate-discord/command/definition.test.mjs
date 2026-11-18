@@ -1,10 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { validateDiscordCommandDefinition } from "../../../../../../src/checks/discord/E-0.1.7.1.2/validate-discord/command/definition.mjs";
+import validateDiscordCommandDefinition from "../../../../../../src/checks/discord/E-0.1.7.1.2/validate-discord/command/definition.mjs";
 import {
   commandDefinition,
   createDiscordRecordFixture,
 } from "../../../../../../test-fixtures/discord/E-0.1.7.1.2/record-fixtures.mjs";
-
 test("rejects invalid command JSON", async () => {
   const inventory = createDiscordRecordFixture();
   inventory.contents.set("commands/help.json", "{");
@@ -12,7 +11,6 @@ test("rejects invalid command JSON", async () => {
     "commands/help.json must contain valid JSON.",
   );
 });
-
 test("validates command fields and locale values", async () => {
   const inventory = createDiscordRecordFixture();
   const definition = commandDefinition();
@@ -33,7 +31,6 @@ test("validates command fields and locale values", async () => {
     ]),
   );
 });
-
 test("requires the command name to match the definition file name", async () => {
   const inventory = createDiscordRecordFixture();
   inventory.contents.set("commands/help.json", JSON.stringify(commandDefinition("other")));

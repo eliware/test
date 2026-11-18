@@ -1,9 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/npm-published/E-0.1.10.1.0.mjs";
-
+import { ruleId } from "../../../src/checks/npm-published/E-0.1.10.1.0.mjs";
+import run from "../../../src/checks/npm-published/E-0.1.10.1.0.mjs";
 const packageJson = {
   name: "@eliware/fixture",
-  repository: { url: "https://github.com/eliware/fixture" },
+  repository: {
+    url: "https://github.com/eliware/fixture",
+  },
 };
 const badge =
   "## @eliware/fixture " +
@@ -17,15 +19,18 @@ const repositoryInventory = {
     return "";
   },
 };
-
 test("requires canonical npm publication documentation", async () => {
-  await expect(run({ packageJson, repositoryInventory })).resolves.toEqual({
+  await expect(
+    run({
+      packageJson,
+      repositoryInventory,
+    }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
   });
 });
-
 test("reports missing documentation and invalid npm badges", async () => {
   await expect(run()).resolves.toMatchObject({
     ruleId,
@@ -33,7 +38,12 @@ test("reports missing documentation and invalid npm badges", async () => {
     message: expect.stringContaining("Repository documents could not be inspected"),
   });
   await expect(
-    run({ packageJson, repositoryInventory: { readText: async () => "invalid" } }),
+    run({
+      packageJson,
+      repositoryInventory: {
+        readText: async () => "invalid",
+      },
+    }),
   ).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining("canonical npm"),

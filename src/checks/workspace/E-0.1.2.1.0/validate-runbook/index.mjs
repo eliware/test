@@ -1,8 +1,7 @@
 import { posix } from "node:path";
-import { extractMarkdownLinks } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
-
-export function validateRunbookIndex(content, runbooks) {
+import extractMarkdownLinks from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import removeMarkdownCode from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
+export default function validateRunbookIndex(content, runbooks) {
   const body = removeMarkdownCode(content);
   const lines = body.split(/\r?\n/u).filter((line) => line.trim());
   const definitions = new Set(
@@ -27,7 +26,6 @@ export function validateRunbookIndex(content, runbooks) {
     errors.push("runbooks/README.md must link every runbook.");
   return errors;
 }
-
 function isNavigationLine(line, definitions) {
   if (/^\s{0,3}#{1,6}\s+\S.*$/u.test(line)) return true;
   if (/^\s{0,3}\[[^\]]+\]:\s*(?:<[^>\r\n]+>|\S+)(?:\s+.*)?$/u.test(line)) return true;
@@ -38,7 +36,6 @@ function isNavigationLine(line, definitions) {
   if (/^\[[^\]]*\]$/u.test(suffix)) return true;
   return !suffix && definitions.has(normalizeLabel(link[1]));
 }
-
 function normalizeLabel(value) {
   return value.trim().replace(/\s+/gu, " ").toLowerCase();
 }

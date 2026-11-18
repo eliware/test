@@ -1,4 +1,4 @@
-export function createStageTimer(
+export default function createStageTimer(
   enabled,
   now = () => Date.now(),
   write = () => {},
@@ -8,7 +8,6 @@ export function createStageTimer(
   let lastStartedLabel;
   let nestedOutput = false;
   let nestedLineOpen = false;
-
   return {
     elapsed() {
       return ((now() - startedAt) / 1000).toFixed(3);

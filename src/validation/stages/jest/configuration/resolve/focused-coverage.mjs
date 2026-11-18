@@ -1,8 +1,7 @@
 import { access } from "node:fs/promises";
 import { extname, join } from "node:path";
-import { mapFocusedSourceExtension } from "../map-focused-source-extension.mjs";
-
-export async function resolveFocusedCoverage(root, focusedPaths) {
+import mapFocusedSourceExtension from "../map-focused-source-extension.mjs";
+export default async function resolveFocusedCoverage(root, focusedPaths) {
   const paths = Array.isArray(focusedPaths) ? focusedPaths : focusedPaths ? [focusedPaths] : [];
   if (paths.length === 0) return [];
   const coveragePaths = [];
@@ -12,7 +11,12 @@ export async function resolveFocusedCoverage(root, focusedPaths) {
   const threshold = Object.fromEntries(
     selectedSources.map((path) => [
       `./${path}`,
-      { branches: 100, functions: 100, lines: 100, statements: 100 },
+      {
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
     ]),
   );
   return [
@@ -21,10 +25,8 @@ export async function resolveFocusedCoverage(root, focusedPaths) {
     JSON.stringify(threshold),
   ];
 }
-
 async function resolveSource(root, focusedPath) {
   const normalized = focusedPath.replaceAll("\\", "/").replace(/^\.\//, "");
-
   const marker = normalized.match(/^tests?\/(.*)$/i);
   if (!marker || !/\.(?:test|spec)\.[^.]+$/i.test(marker[1])) return null;
   const sourceBase = marker[1].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, "");

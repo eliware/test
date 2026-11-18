@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { prepareValidationExemptions } from "../../../../src/validation/planning/prepare-validation/exemptions.mjs";
-
+import prepareValidationExemptions from "../../../../src/validation/planning/prepare-validation/exemptions.mjs";
 test("combines package exemptions with validated ignored rule IDs", () => {
   const packageJson = {
     eliware: {
@@ -15,7 +14,14 @@ test("combines package exemptions with validated ignored rule IDs", () => {
       ],
     },
   };
-  const checks = [{ ruleId: "E-0.1.0" }, { ruleId: "E-0.1.1" }];
+  const checks = [
+    {
+      ruleId: "E-0.1.0",
+    },
+    {
+      ruleId: "E-0.1.1",
+    },
+  ];
   expect(prepareValidationExemptions(packageJson, checks, ["E-0.1.1"])).toEqual(
     new Map([
       ["E-0.1.0", null],
@@ -23,13 +29,19 @@ test("combines package exemptions with validated ignored rule IDs", () => {
     ]),
   );
 });
-
 test("rejects an unknown CLI ignored ID", () => {
-  expect(() => prepareValidationExemptions({}, [{ ruleId: "E-0.1.0" }], ["E-9"])).toThrow(
-    /Unknown convention exemption rule ID/,
-  );
+  expect(() =>
+    prepareValidationExemptions(
+      {},
+      [
+        {
+          ruleId: "E-0.1.0",
+        },
+      ],
+      ["E-9"],
+    ),
+  ).toThrow(/Unknown convention exemption rule ID/);
 });
-
 test("rejects exemptions for unknown checks", () => {
   expect(() =>
     prepareValidationExemptions(
@@ -46,7 +58,11 @@ test("rejects exemptions for unknown checks", () => {
           ],
         },
       },
-      [{ ruleId: "E-0.1.0" }],
+      [
+        {
+          ruleId: "E-0.1.0",
+        },
+      ],
     ),
   ).toThrow(/Unknown convention exemption rule ID/);
 });

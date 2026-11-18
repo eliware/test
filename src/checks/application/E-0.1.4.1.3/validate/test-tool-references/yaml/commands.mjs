@@ -1,4 +1,4 @@
-export function extractYamlCommands(content) {
+export default function extractYamlCommands(content) {
   const lines = content.split(/\r?\n/u);
   const commands = [];
   for (let index = 0; index < lines.length; index += 1) {
@@ -10,7 +10,6 @@ export function extractYamlCommands(content) {
   }
   return commands.join("\n");
 }
-
 function appendBlockCommands(lines, index, keyIndent, commands) {
   let next = index + 1;
   while (next < lines.length && (!lines[next].trim() || indentation(lines[next]) > keyIndent)) {
@@ -19,7 +18,6 @@ function appendBlockCommands(lines, index, keyIndent, commands) {
   }
   return next - 1;
 }
-
 function indentation(line) {
   return line.length - line.trimStart().length;
 }

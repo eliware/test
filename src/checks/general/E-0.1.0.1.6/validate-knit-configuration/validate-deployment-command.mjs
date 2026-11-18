@@ -1,9 +1,7 @@
-import { isProhibitedNpmOrGhcrPublishCommand } from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
-import { validateNpmRunCommand } from "../../../shared/package-scripts/validate/npm-run-command.mjs";
-
+import isProhibitedNpmOrGhcrPublishCommand from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
+import validateNpmRunCommand from "../../../shared/package-scripts/validate/npm-run-command.mjs";
 const requiredPrefixLength = 3;
-
-export function validateDeploymentCommand(command, label, position, packageJson) {
+export default function validateDeploymentCommand(command, label, position, packageJson) {
   const errors = [];
   if (isProhibitedNpmOrGhcrPublishCommand(command))
     errors.push(`${label} must not publish npm packages or GHCR images.`);

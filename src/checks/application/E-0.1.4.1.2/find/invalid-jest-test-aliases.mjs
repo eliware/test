@@ -1,6 +1,5 @@
-import { isActiveJestTestExpression } from "../is/active-jest-test-expression.mjs";
-
-export function findInvalidJestTestAliases(program, names) {
+import isActiveJestTestExpression from "../is/active-jest-test-expression.mjs";
+export default function findInvalidJestTestAliases(program, names) {
   const invalid = new Set();
   visit(program, (node) => {
     if (
@@ -15,7 +14,6 @@ export function findInvalidJestTestAliases(program, names) {
   });
   return invalid;
 }
-
 function visit(node, callback) {
   if (!node || typeof node !== "object") return;
   callback(node);

@@ -1,4 +1,4 @@
-export function findCommandLists(value, lists = []) {
+export default function findCommandLists(value, lists = []) {
   if (Array.isArray(value)) value.forEach((item) => findCommandLists(item, lists));
   else if (value && typeof value === "object")
     for (const [key, item] of Object.entries(value)) {

@@ -1,6 +1,5 @@
-import { collectCommonJsAliases } from "./aliases.mjs";
-
-export function collectCommonJsExportAliases(root) {
+import collectCommonJsAliases from "./aliases.mjs";
+export default function collectCommonJsExportAliases(root) {
   const modules = collectCommonJsAliases(root, "module");
   const aliases = collectCommonJsAliases(root, "exports");
   let changed = true;
@@ -37,7 +36,6 @@ export function collectCommonJsExportAliases(root) {
   }
   return aliases;
 }
-
 function visit(node, callback) {
   if (!node || typeof node !== "object") return;
   callback(node);

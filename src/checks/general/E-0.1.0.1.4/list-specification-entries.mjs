@@ -1,20 +1,29 @@
 import { readdir } from "node:fs/promises";
 import { join, sep } from "node:path";
-import { findIgnoredRepositoryPaths } from "../../../validation/shared/repository/find-repository-files.mjs";
-import { isIgnoredRepositoryPath } from "../../../validation/shared/repository/repository-inventory/path-filters.mjs";
-
+import findIgnoredRepositoryPaths from "../../../validation/shared/repository/find-repository-files/find/ignored-repository-paths.mjs";
+import isIgnoredRepositoryPath from "../../../validation/shared/repository/repository-inventory/path-filters/is/ignored-repository-path.mjs";
 export const specificationEntryLimit = 10_000;
 export const specificationDepthLimit = 128;
-
-export async function listSpecificationEntries(root, { list = readdir, ignoredPaths } = {}) {
+export default async function listSpecificationEntries(
+  root,
+  { list = readdir, ignoredPaths } = {},
+) {
   ignoredPaths ??= await findIgnoredRepositoryPaths(root);
   const base = join(root, "specs");
-  const pending = [{ path: base, relative: "specs", depth: 0 }];
+  const pending = [
+    {
+      path: base,
+      relative: "specs",
+      depth: 0,
+    },
+  ];
   const result = [];
   let count = 0;
   while (pending.length) {
     const directory = pending.pop();
-    const children = await list(directory.path, { withFileTypes: true });
+    const children = await list(directory.path, {
+      withFileTypes: true,
+    });
     children.sort((left, right) => left.name.localeCompare(right.name));
     for (const entry of children) {
       const path = join(directory.path, entry.name);
@@ -27,10 +36,20 @@ export async function listSpecificationEntries(root, { list = readdir, ignoredPa
         const depth = directory.depth + 1;
         if (depth > specificationDepthLimit)
           throw new Error(`specs/ exceeds ${specificationDepthLimit} directory levels.`);
-        result.push({ type: "directory", path: relativePath });
-        pending.push({ path, relative: relativePath, depth });
+        result.push({
+          type: "directory",
+          path: relativePath,
+        });
+        pending.push({
+          path,
+          relative: relativePath,
+          depth,
+        });
       } else {
-        result.push({ type: entry.isFile() ? "file" : "unsupported", path: relativePath });
+        result.push({
+          type: entry.isFile() ? "file" : "unsupported",
+          path: relativePath,
+        });
       }
     }
   }

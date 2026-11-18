@@ -1,9 +1,7 @@
-import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
-
+import readCanonicalOrder from "../../../validation/shared/conventions/read-canonical-order.mjs";
 const profileOrder = ["application", "database", "cli", "discord", "mcp-server"];
 const discordSections = ["Events", "Intents and permissions"];
-
-export function validateDiscordOrdering(readOrder = readCanonicalOrder) {
+export default function validateDiscordOrdering(readOrder = readCanonicalOrder) {
   const agents = readOrder("agents-sections.yaml");
   const readme = readOrder("readme-sections.yaml");
   const errors = [];
@@ -19,7 +17,6 @@ export function validateDiscordOrdering(readOrder = readCanonicalOrder) {
     );
   return errors;
 }
-
 function hasOrderedProfiles(profiles = []) {
   if (!Array.isArray(profiles)) return false;
   if (profileOrder.some((profile) => profiles.filter((item) => item === profile).length !== 1))

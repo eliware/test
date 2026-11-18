@@ -1,7 +1,6 @@
-import { normalizeRedactedStreamPolicy } from "./policy-normalization.mjs";
-import { buildRedactedStreamPolicy } from "./build-policy.mjs";
-
-export function createRedactedStreamPolicy(
+import normalizeRedactedStreamPolicy from "./policy-normalization.mjs";
+import buildRedactedStreamPolicy from "./build-policy.mjs";
+export default function createRedactedStreamPolicy(
   secrets,
   outputLimit,
   { maxSearchWorkPerChunk, maxPendingLength, getSecretMatcher } = {},

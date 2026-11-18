@@ -1,4 +1,4 @@
-export function collectValidationInventoryOptions(checks, modeRuleId) {
+export default function collectValidationInventoryOptions(checks, modeRuleId) {
   const inventoryChecks = modeRuleId
     ? checks.filter(({ ruleId }) => ruleId === modeRuleId)
     : checks;

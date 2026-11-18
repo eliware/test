@@ -1,6 +1,4 @@
-const commandPrefix = /^(?:(?:[A-Z_][A-Z\d_]*=\S+)\s+)*(?:command\s+|exec\s+)?/iu;
-
-export function splitTestCommandChain(value) {
+export default function splitTestCommandChain(value) {
   const parts = [];
   let start = 0;
   let quote = null;
@@ -42,8 +40,4 @@ export function splitTestCommandChain(value) {
   }
   parts.push(value.slice(start).trim());
   return parts;
-}
-
-export function normalizeCommandPrefix(command) {
-  return command.replace(commandPrefix, "");
 }

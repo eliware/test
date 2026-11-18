@@ -1,10 +1,9 @@
-import { collectRedactionSecrets } from "../../../output/redaction/collect-redaction-secrets.mjs";
-import { createOutputByteBudget } from "../../../output/redaction/create/output-byte-budget.mjs";
-import { createSecretTextMatcher } from "../../../output/redaction/create/secret-text-matcher.mjs";
-import { redactChildProcessDiagnostic } from "./redact-diagnostic.mjs";
-import { createLazyChildProcessRedactors } from "./process-output-capture/redactors.mjs";
-
-export function createChildProcessOutputCapture(
+import collectRedactionSecrets from "../../../output/redaction/collect-redaction-secrets.mjs";
+import createOutputByteBudget from "../../../output/redaction/create/output-byte-budget/create-output-byte-budget.mjs";
+import createSecretTextMatcher from "../../../output/redaction/create/secret-text-matcher.mjs";
+import redactChildProcessDiagnostic from "./redact-diagnostic.mjs";
+import createLazyChildProcessRedactors from "./process-output-capture/redactors.mjs";
+export default function createChildProcessOutputCapture(
   options,
   suppliedSecrets,
   outputLimit,
@@ -22,7 +21,6 @@ export function createChildProcessOutputCapture(
     makeSecretMatcher,
   );
   const budget = createOutputByteBudget(outputLimit);
-
   return {
     redactDiagnostic(text) {
       return redactChildProcessDiagnostic(text, redactors.get().stdout, outputLimit);

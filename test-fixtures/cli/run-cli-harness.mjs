@@ -13,33 +13,51 @@ const acquireValidationLock = jest.fn();
 const runNpmPrerequisite = jest.fn(async () => true);
 jest.unstable_mockModule("../../src/cli/read/diagnostic-options.mjs", () => ({
   readDiagnosticOptions,
+  default: readDiagnosticOptions,
 }));
 jest.unstable_mockModule("../../src/cli/timing/create/stage-timer.mjs", () => ({
   createStageTimer,
+  default: createStageTimer,
 }));
 jest.unstable_mockModule("../../src/cli/timing/create/timing-log.mjs", () => ({
   createTimingLog,
+  default: createTimingLog,
 }));
 jest.unstable_mockModule("../../src/validation/check-execution/run-convention-stage.mjs", () => ({
   runConventionStage,
+  default: runConventionStage,
 }));
-jest.unstable_mockModule("../../src/validation/run-validation.mjs", () => ({ runValidation }));
+jest.unstable_mockModule("../../src/validation/run-validation/run-validation.mjs", () => ({
+  runValidation,
+  default: runValidation,
+}));
 jest.unstable_mockModule("../../src/cli/dispatch-informational-command.mjs", () => ({
   dispatchInformationalCommand,
+  default: dispatchInformationalCommand,
 }));
 jest.unstable_mockModule("../../src/cli/create-validation-run-options.mjs", () => ({
   createValidationRunOptions,
+  default: createValidationRunOptions,
 }));
 jest.unstable_mockModule("../../src/cli/write/validation-results.mjs", () => ({
   writeValidationResults,
+  default: writeValidationResults,
 }));
-jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({ normalizeCliError }));
-jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatExitCode }));
+jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({
+  normalizeCliError,
+  default: normalizeCliError,
+}));
+jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({
+  formatExitCode,
+  default: formatExitCode,
+}));
 jest.unstable_mockModule("../../src/cli/acquire-validation-lock.mjs", () => ({
   acquireValidationLock,
+  default: acquireValidationLock,
 }));
 jest.unstable_mockModule("../../src/cli/run/npm-prerequisite.mjs", () => ({
   runNpmPrerequisite,
+  default: runNpmPrerequisite,
 }));
 const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
 const timing = {

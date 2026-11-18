@@ -1,10 +1,8 @@
-import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import { isNpmPublishCommand } from "../../../shared/is/npm-publish-command.mjs";
-
+import parseBoundedYamlDocuments from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import isNpmPublishCommand from "../../../shared/is/npm-publish-command.mjs";
 const workflowDirectory = ".github/workflows/";
 const tokenNames = new Set(["NPM_TOKEN", "NODE_AUTH_TOKEN"]);
-
-export async function validatePrivateWorkflows(inventory) {
+export default async function validatePrivateWorkflows(inventory) {
   if (!inventory?.files || !inventory?.readText)
     return ["GitHub workflows could not be inspected for npm publication settings."];
   try {
@@ -16,7 +14,6 @@ export async function validatePrivateWorkflows(inventory) {
     return [`GitHub workflows could not be inspected: ${error.message}`];
   }
 }
-
 async function validateWorkflow(inventory, path) {
   try {
     const documents = parseBoundedYamlDocuments(await inventory.readText(path), path);
@@ -27,7 +24,6 @@ async function validateWorkflow(inventory, path) {
     return [`${path} could not be inspected: ${error.message}`];
   }
 }
-
 function findViolations(value, path) {
   if (Array.isArray(value))
     return value.flatMap((entry, index) => findViolations(entry, `${path}.${index}`));
@@ -44,7 +40,6 @@ function findViolations(value, path) {
   }
   return errors;
 }
-
 function hasTokenReference(value) {
   return /(?:^|[\s;,])(?:export\s+|set\s+)?(?:NPM_TOKEN|NODE_AUTH_TOKEN)\s*=|\$\{(?:NPM_TOKEN|NODE_AUTH_TOKEN)\}|\$(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b|\$\{\{\s*secrets\.(?:NPM_TOKEN|NODE_AUTH_TOKEN)\s*\}\}/u.test(
     value,

@@ -1,4 +1,4 @@
-export function matchesRepositoryPathPattern(pattern, repositoryPath) {
+export default function matchesRepositoryPathPattern(pattern, repositoryPath) {
   let source = "^";
   const path = repositoryPath.replaceAll("\\", "/");
   for (let index = 0; index < pattern.length; index += 1) {

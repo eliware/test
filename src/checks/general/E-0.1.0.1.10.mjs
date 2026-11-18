@@ -1,10 +1,9 @@
-import { fail, pass } from "../check-result.mjs";
-import { findRepeatedParentNames } from "./E-0.1.0.1.10/find-repeated-parent-names.mjs";
-import { planSourcePrefixMoves } from "./E-0.1.0.1.10/plan-source-prefix-moves.mjs";
-
+import fail from "../check-result/fail.mjs";
+import pass from "../check-result.mjs";
+import findRepeatedParentNames from "./E-0.1.0.1.10/find-repeated-parent-names.mjs";
+import planSourcePrefixMoves from "./E-0.1.0.1.10/plan-source-prefix-moves.mjs";
 export const ruleId = "E-0.1.0.1.10";
-
-export async function run(context = {}) {
+export default async function run(context = {}) {
   const inventory = context.repositoryInventory;
   if (!inventory?.repositoryFiles) return fail(ruleId, "Repository files could not be inspected.");
   try {
@@ -22,7 +21,6 @@ export async function run(context = {}) {
     return fail(ruleId, `Repository files could not be inspected: ${error.message}`);
   }
 }
-
 function findTestMoveFindings(sourceMoves, files) {
   const findings = [];
   for (const move of sourceMoves) {
@@ -34,19 +32,15 @@ function findTestMoveFindings(sourceMoves, files) {
   }
   return findings;
 }
-
 function sourceToTest(path) {
   return path.replace(/^src\//u, "tests/").replace(/\.mjs$/u, ".test.mjs");
 }
-
 function formatSourceMove({ from, to }) {
   return `Move ${from} to ${to}.`;
 }
-
 function formatRepeatedName(path) {
   return `${path} repeats its parent folder name in the file name.`;
 }
-
 function isSourceOrTestModule(path) {
   return (
     (path.startsWith("src/") && path.endsWith(".mjs")) ||
