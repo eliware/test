@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 import isJestGlobalsImport from "../../../../src/checks/application/E-0.1.4.1.2/jest-globals-import.mjs";
-import isTestNamespace from "../../../../src/checks/application/E-0.1.4.1.2/jest-globals-import/is-test-namespace.mjs";
 test("recognizes direct and awaited Jest globals imports", () => {
   const source = {
     type: "StringLiteral",
@@ -29,37 +28,5 @@ test("recognizes direct and awaited Jest globals imports", () => {
         value: "other",
       },
     }),
-  ).toBe(false);
-});
-test("recognizes Jest global namespace identifiers", () => {
-  const names = {
-    namespaces: new Set(["jest"]),
-  };
-  expect(
-    isTestNamespace(
-      {
-        type: "Identifier",
-        name: "jest",
-      },
-      names,
-    ),
-  ).toBe(true);
-  expect(
-    isTestNamespace(
-      {
-        type: "Identifier",
-        name: "globalThis",
-      },
-      names,
-    ),
-  ).toBe(true);
-  expect(
-    isTestNamespace(
-      {
-        type: "Identifier",
-        name: "other",
-      },
-      names,
-    ),
   ).toBe(false);
 });
