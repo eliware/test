@@ -39,7 +39,18 @@ export default function validateRepoMapMetadata(packageJson, record) {
     errors.push("package.json.keywords must match repo-map.yaml.");
   if (!sameList(packageJson?.eliware?.apply, profiles))
     errors.push("package.json.eliware.apply must match repo-map.yaml.");
-  if (!repoMapExemptionsMatch(packageJson, record))
-    errors.push("The package exemption list must match repo-map.yaml.");
+  if (!repoMapExemptionsMatch(packageJson, record)) {
+    const packageExemptions = Object.hasOwn(packageJson?.eliware ?? {}, "exempt")
+      ? packageJson.eliware.exempt
+      : [];
+    const repoMapExemptions = Object.hasOwn(record, "exemptions") ? record.exemptions : [];
+    errors.push(
+      [
+        "The package exemption list must match repo-map.yaml.",
+        `package.json.eliware.exempt: ${JSON.stringify(packageExemptions, null, 2)}`,
+        `../docs/repo-map.yaml exemptions for ${record.repository}: ${JSON.stringify(repoMapExemptions, null, 2)}`,
+      ].join("\n"),
+    );
+  }
   return errors.length ? errors.join("\n") : null;
 }

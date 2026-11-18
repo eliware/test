@@ -134,6 +134,42 @@ test("requires matching exemption fields and path lists", () => {
     },
   );
   expect(failure).toContain("package exemption list must match repo-map.yaml");
+  expect(failure).toContain('package.json.eliware.exempt: [\n  {\n    "ruleId": "E-0.1.0.1.8"');
+  expect(failure).toContain(
+    '../docs/repo-map.yaml exemptions for eliware/example: [\n  {\n    "ruleId": "E-0.1.0.1.8"',
+  );
+  expect(failure).toContain('"paths": [\n      "secrets/*.yaml"');
+});
+test("shows empty exemption lists when only one side defines exemptions", () => {
+  const exemption = {
+    ruleId: "E-0.1.0.1.8",
+    reason: "Keep encrypted secret files.",
+    approver: "Eli",
+    approvalTimestamp: "2026-10-16T00:00:00Z",
+    expiry: null,
+  };
+  const packageExemptionFailure = validateRepoMapMetadata(
+    {
+      ...packageJson,
+      eliware: null,
+    },
+    {
+      ...record,
+      exemptions: [exemption],
+    },
+  );
+  expect(packageExemptionFailure).toContain("package.json.eliware.exempt: []");
+  const mapExemptionFailure = validateRepoMapMetadata(
+    {
+      ...packageJson,
+      eliware: {
+        ...packageJson.eliware,
+        exempt: [exemption],
+      },
+    },
+    record,
+  );
+  expect(mapExemptionFailure).toContain("repo-map.yaml exemptions for eliware/example: []");
 });
 test("treats omitted exemption lists as empty lists", () => {
   expect(validateRepoMapMetadata(packageJson, record)).toBeNull();
