@@ -1,6 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { parseDocument } from "yaml";
-import visitYamlScalars from "../../../../../../src/checks/general/E-0.1.0.1.11/extract/yaml-prose/collect.mjs";
+import visitYamlScalars from "../../../../../../src/checks/general/E-0.1.0.1.11/extract/yaml-prose/scalars.mjs";
 test("visits scalar YAML values with normalized mapping paths", () => {
   const document = parseDocument("Description: text\nitems:\n  - name: first\n  - name: second\n");
   const values = [];

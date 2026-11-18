@@ -1,10 +1,8 @@
 import { readdir } from "node:fs/promises";
-import { execFile } from "node:child_process";
 import { join, relative } from "node:path";
-import { promisify } from "node:util";
 import validateInventoryScope from "./validate/inventory-scope.mjs";
 import isIgnoredRepositoryPath from "./repository-inventory/path-filters/is/ignored-repository-path.mjs";
-const runFile = promisify(execFile);
+import findIgnoredRepositoryPaths from "./find-repository-files/find/ignored-repository-paths.mjs";
 const pruneDirectories = new Set([
   ".git",
   "node_modules",
@@ -79,25 +77,4 @@ export default async function findRepositoryEntries(
     });
   await visit(scope ? join(root, scope) : root, scope ? scope.split("/").length : 0);
   return entries;
-}
-async function findIgnoredRepositoryPaths(root) {
-  try {
-    const { stdout } = await runFile(
-      "git",
-      ["-C", root, "ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"],
-      {
-        encoding: "buffer",
-        windowsHide: true,
-      },
-    );
-    return new Set(
-      stdout
-        .toString("utf8")
-        .split("\0")
-        .filter(Boolean)
-        .map((path) => path.replace(/\/$/u, "")),
-    );
-  } catch {
-    return new Set();
-  }
 }

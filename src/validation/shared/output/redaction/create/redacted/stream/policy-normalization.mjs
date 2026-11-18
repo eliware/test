@@ -1,10 +1,9 @@
 import createSuppressedPolicy from "./policy-normalization/suppressed-policy.mjs";
 import normalizeRedactedStreamSecretBounds from "./policy-normalization/secret-bounds.mjs";
-const DEFAULT_PENDING_LENGTH = 64_000;
 export default function normalizeRedactedStreamPolicy(
   secrets,
   outputLimit,
-  { maxSearchWorkPerChunk, maxPendingLength = DEFAULT_PENDING_LENGTH } = {},
+  { maxSearchWorkPerChunk, maxPendingLength } = {},
 ) {
   const normalized = normalizeRedactedStreamSecretBounds(
     secrets,
@@ -16,7 +15,7 @@ export default function normalizeRedactedStreamPolicy(
     normalized.values,
     normalized.bounds.outputLimit,
     normalized.bounds.workLimit,
-    maxPendingLength,
+    normalized.bounds.pendingLimit,
   );
   return {
     maximumSecretLength: normalized.maximumSecretLength,

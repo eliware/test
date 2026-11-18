@@ -1,4 +1,4 @@
-import visitYamlScalars from "./collect.mjs";
+import visitYamlScalars from "./scalars.mjs";
 import isYamlDirectiveField from "./directive-fields.mjs";
 import isYamlExamplePath from "./examples.mjs";
 import isYamlProseField from "./prose-fields.mjs";

@@ -1,11 +1,12 @@
 import normalizeRedactionPolicySecrets from "../../../../normalize-redaction-policy-secrets.mjs";
 import { MAX_SECRET_SEARCH_WORK_PER_CHUNK } from "../bounds.mjs";
 import resolveRedactedStreamBounds from "../bounds.mjs";
+import { DEFAULT_PENDING_LENGTH } from "../bounds/pending-limit.mjs";
 export default function normalizeRedactedStreamSecretBounds(
   secrets,
   outputLimit,
   maxSearchWorkPerChunk = MAX_SECRET_SEARCH_WORK_PER_CHUNK,
-  maxPendingLength = 64_000,
+  maxPendingLength = DEFAULT_PENDING_LENGTH,
 ) {
   const values = normalizeRedactionPolicySecrets(secrets);
   const maximumSecretLength =
